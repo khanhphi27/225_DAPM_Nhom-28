@@ -1,0 +1,319 @@
+﻿@model List<QLTB.Models.ChiPhiViewModel>
+@{
+    ViewBag.Title = "Quản Lý Chi Phí Bảo Trì";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    decimal tongChiPhi = Model != null ? Model.Sum(x => x.ChiPhiThucTe) : 0;
+}
+
+<style>
+    .total-badge-danger {
+        background: linear-gradient(135deg, #ef4444, #b91c1c);
+        color: white;
+        padding: 12px 25px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.15rem;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .modern-card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .custom-table th {
+        background-color: #f8fafc;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #e2e8f0;
+        padding: 15px 10px;
+    }
+
+    .custom-table td {
+        vertical-align: middle;
+        padding: 15px 10px;
+        color: #334155;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .data-row {
+        transition: all 0.2s ease;
+    }
+
+        .data-row:hover {
+            background-color: #fff1f2 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(225, 29, 72, 0.08);
+            position: relative;
+            z-index: 10;
+        }
+
+    .btn-modern {
+        border-radius: 8px;
+        font-weight: 500;
+        padding: 8px 16px;
+        transition: all 0.2s;
+    }
+
+        .btn-modern:hover {
+            transform: translateY(-1px);
+        }
+
+    .modal-content {
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .modal-header-danger {
+        background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+        border-bottom: 1px solid #fecdd3;
+    }
+
+    .detail-label {
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+    /* Tùy chỉnh input cập nhật tiền */
+    .input-chiphi {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #dc3545;
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mt-3 mb-4">
+    <h2 class="fw-bold text-dark" style="font-size: 1.5rem;">
+        <i class="bi bi-cash-stack text-danger me-2"></i>Lịch Sử Chi Phí Bảo Trì
+    </h2>
+    <div class="total-badge-danger">
+        <i class="bi bi-wallet2 me-2"></i>Tổng chi: <span id="tongChiPhiDisplay">@tongChiPhi.ToString("N0") VNĐ</span>
+    </div>
+</div>
+
+<div class="card shadow-sm modern-card mb-4 bg-white">
+    <div class="card-body p-4">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label fw-bold text-secondary" style="font-size: 0.9rem;">Từ ngày:</label>
+                <input type="date" id="tuNgay" class="form-control text-secondary">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold text-secondary" style="font-size: 0.9rem;">Đến ngày:</label>
+                <input type="date" id="denNgay" class="form-control text-secondary">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold text-secondary" style="font-size: 0.9rem;">Nội dung sửa chữa:</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="noiDung" class="form-control border-start-0 ps-0" placeholder="Nhập từ khóa nội dung hoặc đơn vị...">
+                </div>
+            </div>
+            <div class="col-12 d-flex justify-content-end gap-2 mt-3">
+                <button class="btn btn-danger btn-modern shadow-sm" onclick="filterChiPhi()">
+                    <i class="bi bi-funnel"></i> Thống kê
+                </button>
+                <button class="btn btn-light btn-modern border shadow-sm text-secondary" onclick="resetFilter()">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+                <button class="btn btn-success btn-modern shadow-sm" onclick="xuatExcel('tableChiPhi', 'LichSuChiPhi_KHTC')">
+                    <i class="bi bi-file-earmark-excel"></i> Xuất Excel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm modern-card overflow-hidden bg-white">
+    <div class="table-responsive">
+        <table class="table custom-table mb-0" id="tableChiPhi">
+            <thead>
+                <tr>
+                    <th class="ps-4">Mã Phiếu</th>
+                    <th>Ngày Thực Hiện</th>
+                    <th>Đơn Vị Thực Hiện</th>
+                    <th>Nội Dung Sửa Chữa</th>
+                    <th class="text-end pe-4">Chi Phí (VNĐ)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr class="data-row" style="cursor: pointer;"
+                        data-id="@item.ID_GhiNhan"
+                        data-date="@item.NgayThucHien.ToString("yyyy-MM-dd")"
+                        data-datevn="@item.NgayThucHien.ToString("dd/MM/yyyy")"
+                        data-donvi="@item.DonViThucHien"
+                        data-noidung="@item.KetQua"
+                        data-chiphi="@item.ChiPhiThucTe"
+                        onclick="showDetail(this)">
+
+                        <td class="ps-4">
+                            <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-3 py-2 fw-medium">
+                                <i class="bi bi-receipt me-1"></i> @item.ID_GhiNhan
+                            </span>
+                        </td>
+                        <td class="fw-medium text-dark"><i class="bi bi-calendar-event text-muted me-2"></i>@item.NgayThucHien.ToString("dd/MM/yyyy")</td>
+                        <td><span class="text-secondary"><i class="bi bi-building me-2"></i>@item.DonViThucHien</span></td>
+                        <td class="fw-semibold text-dark">@item.KetQua</td>
+                        <td class="text-end fw-bold text-danger pe-4 chi-phi-text">- @item.ChiPhiThucTe.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer bg-white border-top-0 pt-0 pb-3 ps-4">
+        <div class="text-muted" style="font-size: 0.85rem;">
+            <i class="bi bi-info-circle text-danger me-1"></i> Bấm vào từng phiếu để cập nhật lại chi phí.
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header modal-header-danger px-4 py-3">
+                <h5 class="modal-title text-danger fw-bold"><i class="bi bi-receipt-cutoff me-2"></i>Chi Tiết Hóa Đơn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4 border-bottom border-danger border-opacity-25 pb-3">
+                    <h6 class="text-muted mb-1">Mã Phiếu Ghi Nhận</h6>
+                    <h3 id="md-id" class="fw-bold text-dark mb-0"></h3>
+                </div>
+
+                <table class="table table-borderless mb-0">
+                    <tbody>
+                        <tr class="border-bottom border-light">
+                            <th class="detail-label" width="40%"><i class="bi bi-calendar3 me-2"></i>Ngày thực hiện:</th>
+                            <td id="md-date" class="fw-medium text-dark text-end"></td>
+                        </tr>
+                        <tr class="border-bottom border-light">
+                            <th class="detail-label"><i class="bi bi-building-gear me-2"></i>Đơn vị sửa chữa:</th>
+                            <td id="md-donvi" class="fw-medium text-primary text-end"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="pt-3 pb-1 detail-label"><i class="bi bi-card-text me-2"></i>Nội dung công việc:</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="pt-0">
+                                <div id="md-noidung" class="p-3 bg-light rounded-3 text-dark fw-medium border"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="mt-4 p-3 bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded-4">
+                    <label class="fw-bold text-danger mb-2 d-block">TỔNG THANH TOÁN (VNĐ):</label>
+                    <div class="input-group">
+                        <input type="number" id="md-chiphi-input" class="form-control input-chiphi text-end" min="0" step="1000">
+                        <button class="btn btn-danger fw-bold px-4" onclick="luuChiPhi()">
+                            <i class="bi bi-save me-1"></i> Lưu
+                        </button>
+                    </div>
+                    <small class="text-muted mt-1 d-block fst-italic">*Nhập số tiền mới và bấm Lưu để cập nhật CSDL.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    let currentGhiNhanId = '';
+
+    // 1. POPUP CHI TIẾT
+    function showDetail(row) {
+        currentGhiNhanId = $(row).data('id');
+
+        $('#md-id').text(currentGhiNhanId);
+        $('#md-date').text($(row).data('datevn'));
+        $('#md-donvi').text($(row).data('donvi'));
+        $('#md-noidung').text($(row).data('noidung'));
+
+        // Đổ số tiền hiện tại vào ô Input để sửa
+        $('#md-chiphi-input').val($(row).data('chiphi'));
+
+        $('#detailModal').modal('show');
+    }
+
+    // 2. LƯU CHI PHÍ MỚI XUỐNG DATABASE
+    function luuChiPhi() {
+        let chiPhiMoi = $('#md-chiphi-input').val();
+
+        if (chiPhiMoi === '' || chiPhiMoi < 0) {
+            alert("Vui lòng nhập số tiền hợp lệ!");
+            return;
+        }
+
+        if(!confirm("Bạn có chắc chắn muốn cập nhật chi phí cho phiếu " + currentGhiNhanId + " thành " + Number(chiPhiMoi).toLocaleString('vi-VN') + " VNĐ không?")) {
+            return;
+        }
+
+        $.post('@Url.Action("CapNhatChiPhi", "KHTC")', { id: currentGhiNhanId, chiPhiMoi: chiPhiMoi }, function(res) {
+            if (res.ok) {
+                alert("Cập nhật thành công!");
+                location.reload(); // Tải lại trang để Data nhảy số mới
+            } else {
+                alert("Lỗi cập nhật: " + res.msg);
+            }
+        });
+    }
+
+    // 3. LỌC DỮ LIỆU
+    function filterChiPhi() {
+        let tuNgay = $('#tuNgay').val();
+        let denNgay = $('#denNgay').val();
+        let txtNoiDung = $('#noiDung').val().toLowerCase().trim();
+        let tongChiPhiMoi = 0;
+
+        $('.data-row').each(function () {
+            let rowDate = $(this).data('date');
+            let noidung = $(this).data('noidung').toLowerCase();
+            let donvi = $(this).data('donvi').toLowerCase();
+            let chiPhi = parseFloat($(this).data('chiphi')) || 0;
+
+            let matchNoiDung = noidung.includes(txtNoiDung) || donvi.includes(txtNoiDung);
+            let matchTuNgay = tuNgay === "" || rowDate >= tuNgay;
+            let matchDenNgay = denNgay === "" || rowDate <= denNgay;
+
+            if (matchNoiDung && matchTuNgay && matchDenNgay) {
+                $(this).removeClass('d-none');
+                tongChiPhiMoi += chiPhi;
+            } else {
+                $(this).addClass('d-none');
+            }
+        });
+
+        $('#tongChiPhiDisplay').text(tongChiPhiMoi.toLocaleString('vi-VN') + ' VNĐ');
+    }
+
+    // 4. NÚT LÀM MỚI
+    function resetFilter() {
+        $('#tuNgay').val('');
+        $('#denNgay').val('');
+        $('#noiDung').val('');
+        $('.data-row').removeClass('d-none');
+
+        let tongBanDau = 0;
+        $('.data-row').each(function() {
+            tongBanDau += parseFloat($(this).data('chiphi')) || 0;
+        });
+        $('#tongChiPhiDisplay').text(tongBanDau.toLocaleString('vi-VN') + ' VNĐ');
+    }
+
+    // 5. XUẤT EXCEL CHUẨN
+    function xuatExcel(tableId, fileName) {
+        let table = document.getElementById(tableId);
+        let cloneTable = table.cloneNode(true);
+        $(cloneTable).find('tr.d-none').remove();
+
+        var wb = XLSX.utils.table_to_book(cloneTable, {sheet: "Chi Phí"});
+        XLSX.writeFile(wb, fileName + '.xlsx');
+    }
+</script>

@@ -1,0 +1,105 @@
+/* =============================================
+   QLTB - Notifications Page Styles
+   ============================================= */
+
+.notif-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.notif-item {
+    border-bottom: 1px solid #f0f0f0;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+}
+
+.notif-item:last-child {
+    border-bottom: none;
+}
+
+.notif-item:hover {
+    background: #f8f9ff;
+}
+
+.notif-item.unread {
+    background: #eef2ff;
+    border-left: 4px solid #3949ab;
+}
+
+.notif-item.unread:hover {
+    background: #e8edf8;
+}
+
+.notif-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #3949ab;
+    display: inline-block;
+    margin-right: 6px;
+    flex-shrink: 0;
+    margin-top: 5px;
+}
+
+.notif-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.notif-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: #222;
+    margin-bottom: 3px;
+}
+
+.notif-body {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 4px;
+}
+
+.notif-time {
+    font-size: 12px;
+    color: #999;
+}
+
+.filter-btn {
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-size: 13px;
+}
+
+.filter-btn.active {
+    background: #1a237e;
+    color: #fff;
+    border-color: #1a237e;
+}
+
+.stats-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    padding: 16px 20px;
+    text-align: center;
+}
+
+.stats-num {
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.badge-type {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+}

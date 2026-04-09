@@ -1,0 +1,326 @@
+@model QLTB.Models.LoginViewModel
+
+@{
+    ViewBag.Title = "Đăng Nhập";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - Quản lý thiết bị</title>
+
+    <style>
+        /* Reset & Font */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* Nền trang chủ đạo - Xanh nhạt iPhone 15 */
+        body {
+            background-color: #EBF2FA; /* Màu xanh nhạt dịu mắt */
+            background-image: radial-gradient(circle at top right, #FFFFFF, #EBF2FA 60%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        /* Container chính chứa 2 cột */
+        .login-wrapper {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 850px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(119, 142, 172, 0.15);
+            display: flex;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        /* Cột trái: Thông tin & Demo (Nền xanh nhạt hơn một chút) */
+        .login-left {
+            background-color: #F4F8FC;
+            width: 45%;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-right: 1px solid #E2EBF5;
+        }
+
+        .login-header h1 {
+            color: #2C4B70;
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            letter-spacing: -0.5px;
+        }
+
+        .login-header p {
+            color: #6C849D;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .demo-box {
+            background-color: #ffffff;
+            border: 1px solid #DCE6F2;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+
+        .demo-box h3 {
+            font-size: 13px;
+            color: #2C4B70;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .demo-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 12px;
+            color: #556B82;
+        }
+
+        .demo-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .demo-item strong {
+            color: #3A5A7D;
+        }
+
+        /* Cột phải: Form đăng nhập */
+        .login-right {
+            width: 55%;
+            padding: 50px 40px;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-title {
+            font-size: 22px;
+            color: #2C4B70;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        /* Xử lý thông báo lỗi */
+        .alert-danger {
+            background-color: #FFF2F2;
+            color: #D32F2F;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            border: 1px solid #FFCDCD;
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #4A637C;
+            font-size: 14px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #D2DFEE;
+            border-radius: 10px;
+            font-size: 15px;
+            background-color: #FAFCFF;
+            transition: all 0.3s ease;
+            color: #333;
+        }
+
+        .form-control:focus {
+            border-color: #92BCE3;
+            outline: none;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(146, 188, 227, 0.2);
+        }
+
+        .error-message {
+            color: #D32F2F;
+            font-size: 12px;
+            margin-top: 6px;
+            display: block;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            cursor: pointer;
+            accent-color: #7DA6D4;
+        }
+
+        .checkbox-group label {
+            font-size: 14px;
+            color: #556B82;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* Nút đăng nhập */
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background-color: #8EBAE5; /* Màu xanh chủ đạo của iPhone 15 Blue */
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(142, 186, 229, 0.4);
+        }
+
+        .btn-login:hover {
+            background-color: #7AAAD9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(142, 186, 229, 0.5);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        /* Footer */
+        .login-footer {
+            text-align: center;
+            font-size: 13px;
+            color: #8BA3BC;
+        }
+
+        /* Responsive - Chuyển thành cột dọc trên điện thoại */
+        @@media (max-width: 768px) {
+            .login-wrapper {
+                flex-direction: column;
+                max-width: 450px;
+            }
+            .login-left, .login-right {
+                width: 100%;
+                border-right: none;
+            }
+            .login-left {
+                padding: 30px 25px;
+                border-bottom: 1px solid #E2EBF5;
+            }
+            .login-right {
+                padding: 30px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-wrapper">
+        <div class="login-left">
+            <div class="login-header">
+                <h1>Đăng Nhập</h1>
+                <p>Hệ Thống Quản Lý Thiết Bị</p>
+            </div>
+
+            <div class="demo-box">
+                <h3><span>💡</span> Tài khoản Demo</h3>
+                <div class="demo-item">
+                    <span>Trưởng khoa</span>
+                    <strong>truongkhoa / 123456</strong>
+                </div>
+                <div class="demo-item">
+                    <span>Phòng CSVC</span>
+                    <strong>csvc / 123456</strong>
+                </div>
+                <div class="demo-item">
+                    <span>Phòng KHTC</span>
+                    <strong>khtc / 123456</strong>
+                </div>
+                <div class="demo-item">
+                    <span>Ban Giám Hiệu</span>
+                    <strong>bgh / 123456</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="login-right">
+            <h2 class="form-title">Chào mừng trở lại! 👋</h2>
+
+            @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.Any(x => x.Errors.Any()))
+            {
+                <div class="alert alert-danger">
+                    @foreach (var modelState in ViewData.ModelState.Values)
+                    {
+                        foreach (var error in modelState.Errors)
+                        {
+                            <div>@error.ErrorMessage</div>
+                        }
+                    }
+                </div>
+            }
+
+            @using (Html.BeginForm("Login", "Account", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    <label class="form-label" for="Username">Tên Đăng Nhập</label>
+                    @Html.TextBoxFor(m => m.Username, new { @class = "form-control", placeholder = "Nhập tên đăng nhập của bạn", autocomplete = "username" })
+                    @Html.ValidationMessageFor(m => m.Username, "", new { @class = "error-message" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="Password">Mật Khẩu</label>
+                    @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "••••••••", autocomplete = "current-password" })
+                    @Html.ValidationMessageFor(m => m.Password, "", new { @class = "error-message" })
+                </div>
+
+                <div class="checkbox-group">
+                    @Html.CheckBoxFor(m => m.RememberMe)
+                    <label for="RememberMe">Ghi nhớ đăng nhập</label>
+                </div>
+
+                <button type="submit" class="btn-login">ĐĂNG NHẬP</button>
+            }
+        </div>
+    </div>
+
+    <div class="login-footer">
+        © 2026 Hệ Thống Quản Lý Thiết Bị - Trường Đại học Sư Phạm Kỹ Thuật
+    </div>
+
+    <script src="~/Scripts/jquery-3.7.0.min.js"></script>
+</body>
+</html>

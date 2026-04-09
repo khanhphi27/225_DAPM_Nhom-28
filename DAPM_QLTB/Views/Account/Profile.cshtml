@@ -1,0 +1,493 @@
+@{
+    ViewBag.Title = "Thông Tin Cá Nhân";
+    Layout = null;
+
+    string userName  = Session["UserName"]  != null ? Session["UserName"].ToString()  : "Người dùng";
+    string email     = Session["UserEmail"] != null ? Session["UserEmail"].ToString()  : "";
+    int    roleId    = Session["UserRole"]  != null ? (int)Session["UserRole"]         : 0;
+    string[] roleNames = { "", "Trưởng Khoa", "Phòng CSVC", "Phòng KHTC", "BGH" };
+    string roleName  = roleId > 0 && roleId <= 4 ? roleNames[roleId] : "Người dùng";
+    string loginTime = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - QLTB ĐH SPKT</title>
+
+    <style>
+        /* 1. Reset & Variables */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        :root {
+            --bg-main: #EBF2FA; /* Nền trang: Xanh nhạt iPhone 15 */
+            --bg-card: #FFFFFF; /* Nền thẻ trắng */
+            --primary: #8EBAE5; /* Xanh chủ đạo */
+            --primary-hover: #7AAAD9;
+            --text-main: #2C4B70; /* Chữ tiêu đề: Xanh dương đậm */
+            --text-muted: #6C849D; /* Chữ phụ: Xám xanh */
+            --border-color: #E2EBF5;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 2. Sidebar (Menu trái) */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-card);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 15px rgba(119, 142, 172, 0.03);
+            z-index: 100;
+        }
+
+        .sidebar-logo {
+            padding: 24px;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-menu {
+            padding: 20px 15px;
+            flex-grow: 1;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+        }
+
+            .menu-item:hover {
+                background-color: #F4F8FC;
+                color: var(--text-main);
+            }
+
+            .menu-item.active {
+                background-color: var(--primary);
+                color: white;
+                box-shadow: 0 4px 12px rgba(142, 186, 229, 0.4);
+            }
+
+        .menu-badge {
+            margin-left: auto;
+            background-color: #FFEBEE;
+            color: #D32F2F;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        /* 3. Main Content Area */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 4. Top Header */
+        .top-header {
+            height: 75px;
+            background-color: var(--bg-main);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .header-search {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            border-radius: 20px;
+            width: 300px;
+            color: var(--text-muted);
+            font-size: 14px;
+            box-shadow: 0 2px 10px rgba(119, 142, 172, 0.05);
+        }
+
+        .header-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: var(--bg-card);
+            padding: 6px 16px 6px 6px;
+            border-radius: 30px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(119, 142, 172, 0.05);
+        }
+
+        .profile-avatar {
+            width: 36px;
+            height: 36px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* 5. Dashboard Container */
+        .dashboard-container {
+            padding: 10px 40px 40px 40px;
+        }
+
+        .welcome-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 25px;
+        }
+
+            .welcome-text span {
+                color: var(--primary);
+            }
+
+        /* Thẻ dùng chung */
+        .apple-card {
+            background-color: var(--bg-card);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 8px 24px rgba(119, 142, 172, 0.06);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Bố cục Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr; /* Cột trái 2 phần, cột phải 1 phần */
+            gap: 25px;
+        }
+
+        /* Thống kê (Cột Trái) */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            transition: transform 0.3s ease;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-4px);
+            }
+
+        .stat-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+        }
+
+        .stat-info h4 {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .stat-info .num {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        /* Chức năng chính */
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--text-main);
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .action-card {
+            background-color: #F8FBFF;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+            .action-card:hover {
+                background-color: var(--primary);
+                color: white;
+                transform: translateY(-2px);
+                box-shadow: 0 6px 15px rgba(142, 186, 229, 0.3);
+            }
+
+        .action-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* Thẻ Thông tin cá nhân (Cột Phải) - Gọn và giống Apple ID */
+        .profile-id-card {
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .profile-id-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 90px;
+                background: linear-gradient(135deg, #8EBAE5, #B6D4F0);
+            }
+
+        .pid-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: white;
+            border: 4px solid white;
+            margin: 40px auto 10px auto;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .pid-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .pid-role {
+            display: inline-block;
+            background-color: #FFF3E0;
+            color: #EF6C00;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+            margin-bottom: 20px;
+        }
+
+        .pid-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px dashed var(--border-color);
+            font-size: 13px;
+        }
+
+            .pid-info-row:last-child {
+                border-bottom: none;
+            }
+
+        .pid-label {
+            color: var(--text-muted);
+        }
+
+        .pid-val {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <span style="font-size:26px;">🏫</span> QLTB - ĐH SPKT
+        </div>
+        <div class="sidebar-menu">
+            <a href="@Url.Action("Index", "Home")" class="menu-item active">
+                <span>🏠</span> Trang chủ
+            </a>
+            <a href="@Url.Action("QuanLyThietBi", "CSVC")" class="menu-item">
+                <span>💻</span> Quản lý thiết bị
+            </a>
+            <a href="@Url.Action("PheDuyetDeXuat", "CSVC")" class="menu-item">
+                <span>📝</span> Đề xuất mua sắm
+            </a>
+            <a href="@Url.Action("Notifications", "Account")" class="menu-item">
+                <span>🔔</span> Thông báo
+                <span class="menu-badge">3</span>
+            </a>
+            <a href="@Url.Action("Profile", "Account")" class="menu-item">
+                <span>👤</span> Thông tin cá nhân
+            </a>
+        </div>
+        <div style="padding: 20px;">
+            <a href="@Url.Action("Logout", "Account")" class="menu-item" style="color: #D32F2F; justify-content: center; background: #FFEBEE;">
+                Đăng xuất
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content">
+
+        <div class="top-header">
+            <div class="header-search">
+                🔍 Tìm kiếm thiết bị, đề xuất...
+            </div>
+            <div class="header-profile">
+                <div class="profile-btn">
+                    <div class="profile-avatar">T</div>
+                    <div style="font-size: 13px; font-weight: 600; padding-right: 8px;">
+                        @userName
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-container">
+            <h1 class="welcome-text">Chào mừng trở lại, <span>@userName</span>! 👋</h1>
+
+            <div class="dashboard-grid">
+
+                <div class="grid-left">
+                    <div class="stats-grid">
+                        <div class="apple-card stat-card">
+                            <div class="stat-icon" style="background: #EBF2FA; color: #4A90E2;">💻</div>
+                            <div class="stat-info">
+                                <h4>Tổng thiết bị</h4>
+                                <div class="num">124</div>
+                            </div>
+                        </div>
+                        <div class="apple-card stat-card">
+                            <div class="stat-icon" style="background: #E8F5E9; color: #4CAF50;">✅</div>
+                            <div class="stat-info">
+                                <h4>Đang hoạt động</h4>
+                                <div class="num">98</div>
+                            </div>
+                        </div>
+                        <div class="apple-card stat-card">
+                            <div class="stat-icon" style="background: #FFF3E0; color: #FF9800;">⚠️</div>
+                            <div class="stat-info">
+                                <h4>Cần bảo trì</h4>
+                                <div class="num">18</div>
+                            </div>
+                        </div>
+                        <div class="apple-card stat-card">
+                            <div class="stat-icon" style="background: #FFEBEE; color: #F44336;">❌</div>
+                            <div class="stat-info">
+                                <h4>Đang báo hỏng</h4>
+                                <div class="num">8</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="apple-card">
+                        <h3 class="section-title">⚡ Chức năng chính</h3>
+                        <div class="actions-grid">
+                            <a href="#" class="action-card">
+                                <span class="action-icon">📋</span>
+                                Quản lý thiết bị khoa
+                            </a>
+                            <a href="#" class="action-card">
+                                <span class="action-icon">➕</span>
+                                Tạo đề xuất mua sắm
+                            </a>
+                            <a href="#" class="action-card">
+                                <span class="action-icon">🔧</span>
+                                Lập phiếu báo hỏng
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-right">
+                    <div class="apple-card profile-id-card">
+                        <div class="pid-avatar">👨‍🏫</div>
+                        <div class="pid-name">@userName</div>
+                        <div class="pid-role">@roleName</div>
+
+                        <div style="text-align: left; margin-top: 10px;">
+                            <div class="pid-info-row">
+                                <span class="pid-label">Trạng thái</span>
+                                <span class="pid-val" style="color: #4CAF50;">● Đang trực tuyến</span>
+                            </div>
+                            <div class="pid-info-row">
+                                <span class="pid-label">Email</span>
+                                <span class="pid-val">@email</span>
+                            </div>
+                            <div class="pid-info-row">
+                                <span class="pid-label">Lần đăng nhập cuối</span>
+                                <span class="pid-val">@loginTime</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,456 @@
+@{
+    ViewBag.Title = "Xét Duyệt Yêu Cầu Lần Cuối";
+    var choDuyet = ViewBag.ChoDuyet as List<QLTB.Models.DeXuatViewModel> ?? new List<QLTB.Models.DeXuatViewModel>();
+    var lichSu = ViewBag.LichSu as List<QLTB.Models.DeXuatViewModel> ?? new List<QLTB.Models.DeXuatViewModel>();
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+    :root {
+        --ip-blue-bg: #F2F7FB;
+        --ip-blue-light: #D1E4F3;
+        --ip-blue-dark: #7EA1BB;
+        --ip-text-main: #3A4D5C;
+        --glass-white: rgba(255, 255, 255, 0.85);
+    }
+
+    body {
+        background-color: var(--ip-blue-bg);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: var(--ip-text-main);
+        margin: 0;
+        padding-top: 90px;
+    }
+
+    /* Ẩn các menu thừa của hệ thống cũ */
+    .sidebar, .main-sidebar, .navbar-static-top, .main-header {
+        display: none !important;
+    }
+
+    /* Top Navigation (Đồng bộ) */
+    .top-nav {
+        height: 70px;
+        background: var(--glass-white);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 5%;
+        z-index: 2000;
+    }
+
+    .nav-brand {
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--ip-text-main);
+        text-decoration: none;
+    }
+
+    .nav-center {
+        display: flex;
+        background: #f1f3f5;
+        padding: 5px;
+        border-radius: 15px;
+        gap: 5px;
+    }
+
+    .nav-item {
+        padding: 8px 18px;
+        border-radius: 12px;
+        color: var(--ip-text-main);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: 0.2s;
+    }
+
+        .nav-item.active {
+            background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            color: var(--ip-blue-dark);
+        }
+
+    .container-custom {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 0 20px 40px;
+    }
+
+    /* Header & Back Button */
+    .page-header {
+        background: var(--ip-blue-light);
+        padding: 2.5rem;
+        border-radius: 35px;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid rgba(255,255,255,0.4);
+    }
+
+    .back-btn {
+        background: white;
+        padding: 10px 22px;
+        border-radius: 14px;
+        color: var(--ip-text-main);
+        text-decoration: none;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    /* Stats Grid */
+    .stat-group {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+    }
+
+        .stat-card .num {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .stat-card .label {
+            font-size: 0.7rem;
+            opacity: 0.6;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+    /* Table Section */
+    .section-card {
+        background: white;
+        border-radius: 35px;
+        padding: 2rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+        margin-bottom: 2.5rem;
+    }
+
+    .section-title {
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .table thead th {
+        background: #F8FAFC;
+        border: none;
+        color: #64748B;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        padding: 18px;
+    }
+
+    .table tbody td {
+        padding: 18px;
+        vertical-align: middle;
+        border-bottom: 1px solid #F1F5F9;
+        font-size: 0.9rem;
+    }
+
+    /* Buttons & Badges */
+    .status-pill {
+        padding: 6px 14px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .badge-da-duyet {
+        background: #E2F5E9;
+        color: #2D6A4F;
+    }
+
+    .badge-tu-choi {
+        background: #FEE2E2;
+        color: #991B1B;
+    }
+
+    .badge-cho-duyet {
+        background: #FFF4E5;
+        color: #B07000;
+    }
+
+    .btn-action {
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        border: none;
+        transition: 0.2s;
+    }
+
+    .btn-duyet {
+        background: #E2F5E9;
+        color: #2D6A4F;
+    }
+
+        .btn-duyet:hover {
+            background: #2D6A4F;
+            color: white;
+        }
+
+    .btn-tuchoi {
+        background: #FEE2E2;
+        color: #991B1B;
+    }
+
+        .btn-tuchoi:hover {
+            background: #991B1B;
+            color: white;
+        }
+
+    /* Modal Styling */
+    .modal-content {
+        border-radius: 30px;
+        border: none;
+        padding: 10px;
+    }
+
+    .modal-header {
+        border: none;
+        padding-bottom: 0;
+    }
+
+    .modal-footer {
+        border: none;
+        padding-top: 0;
+    }
+
+    .form-control {
+        border-radius: 15px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        padding: 12px;
+    }
+</style>
+
+<nav class="top-nav">
+    <a href="@Url.Action("Index","BGH")" class="nav-brand">
+        <i class="bi bi-apple"></i>
+        <span>HỆ THỐNG QUẢN LÝ</span>
+    </a>
+    <div class="nav-center">
+        <a href="@Url.Action("Index","BGH")" class="nav-item">Trang chủ</a>
+        <a href="@Url.Action("Index","BGH")" class="nav-item">Dashboard</a>
+        <a href="@Url.Action("XetDuyetYeuCau","BGH")" class="nav-item active">Xét duyệt</a>
+        <a href="@Url.Action("ThongKeTaiSan","BGH")" class="nav-item">Thống kê</a>
+        <a href="@Url.Action("TheoDoi","BGH")" class="nav-item">Theo dõi</a>
+    </div>
+    <div class="nav-right">
+        <span class="fw-bold small me-3">Đại diện BGH</span>
+        <a href="#" class="text-danger"><i class="bi bi-box-arrow-right fs-5"></i></a>
+    </div>
+</nav>
+
+<div class="container-custom">
+    <div class="page-header">
+        <div>
+            <h2 class="fw-bold mb-1">✅ Phê Duyệt Lần Cuối</h2>
+            <p class="mb-0 text-muted small opacity-75">Thẩm định các đề xuất mua sắm thiết bị</p>
+        </div>
+        <a href="@Url.Action("Index","BGH")" class="back-btn"><i class="bi bi-chevron-left"></i> Quay lại</a>
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-warning border-0 rounded-4 shadow-sm mb-4">⚠️ @ViewBag.Error</div>
+    }
+
+    <div class="stat-group">
+        <div class="stat-card">
+            <span class="label text-warning">⏳ Chờ duyệt</span>
+            <span class="num text-warning">@choDuyet.Count</span>
+        </div>
+        <div class="stat-card">
+            <span class="label text-success">✅ Đã duyệt</span>
+            <span class="num text-success">@lichSu.FindAll(x => x.TrangThai == "Đã duyệt").Count</span>
+        </div>
+        <div class="stat-card">
+            <span class="label text-danger">❌ Từ chối</span>
+            <span class="num text-danger">@lichSu.FindAll(x => x.TrangThai == "Từ chối").Count</span>
+        </div>
+        <div class="stat-card">
+            <span class="label text-primary">📋 Tổng cộng</span>
+            <span class="num text-primary">@(choDuyet.Count + lichSu.Count)</span>
+        </div>
+    </div>
+
+    <div class="section-card">
+        <div class="section-title text-warning">
+            <i class="bi bi-clock-history"></i> Danh Sách Chờ Phê Duyệt
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Mã ĐX</th>
+                        <th>Nội dung</th>
+                        <th>Đơn vị</th>
+                        <th>Ngân sách</th>
+                        <th>Ngày gửi</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!choDuyet.Any())
+                    {
+                        <tr><td colspan="6" class="text-center py-5 text-muted">Hiện tại không có yêu cầu nào cần xử lý.</td></tr>
+                    }
+                    else
+                    {
+                        foreach (var dx in choDuyet)
+                        {
+                            <tr>
+                                <td class="fw-bold text-primary">#@dx.ID_DeXuat</td>
+                                <td class="fw-semibold">@dx.MoTa</td>
+                                <td><span class="badge bg-light text-dark rounded-pill px-3">@dx.KhoaPhongBan</span></td>
+                                <td class="fw-bold">@dx.TongGiaDuKien.ToString("N0") <small>đ</small></td>
+                                <td class="text-muted">@dx.NgayDeXuat.ToString("dd/MM/yyyy")</td>
+                                <td class="text-end">
+                                    <button class="btn-action btn-duyet me-1" onclick="showModal('@dx.ID_DeXuat','@dx.MoTa','duyet')">Duyệt</button>
+                                    <button class="btn-action btn-tuchoi" onclick="showModal('@dx.ID_DeXuat','@dx.MoTa','tuchoi')">Từ chối</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="section-card">
+        <div class="section-title text-primary">
+            <i class="bi bi-journal-check"></i> Lịch Sử Đã Xử Lý
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Mã ĐX</th>
+                        <th>Nội dung</th>
+                        <th>Ngân sách</th>
+                        <th>Kết quả</th>
+                        <th>Ngày xử lý</th>
+                        <th>Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var dx in lichSu)
+                    {
+                        var cls = dx.TrangThai == "Đã duyệt" ? "badge-da-duyet" : "badge-tu-choi";
+                        <tr>
+                            <td class="fw-bold">#@dx.ID_DeXuat</td>
+                            <td>@dx.MoTa <br><small class="text-muted">@dx.KhoaPhongBan</small></td>
+                            <td class="small">@dx.TongGiaDuKien.ToString("N0")</td>
+                            <td><span class="status-pill @cls">@dx.TrangThai</span></td>
+                            <td class="text-muted small">@dx.NgayDeXuat.ToString("dd/MM/yyyy")</td>
+                            <td class="small italic text-muted">@(string.IsNullOrEmpty(dx.LyDoTuChoi) ? "—" : dx.LyDoTuChoi)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header">
+                <h5 class="fw-bold" id="modalTitle">Xác nhận</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="modalBody" class="mb-3"></p>
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted mb-2">Ghi chú hoặc lý do:</label>
+                    <textarea class="form-control" id="modalNote" rows="3" placeholder="Nhập tại đây..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn rounded-pill px-4 text-white" id="modalConfirmBtn" onclick="confirmAction()">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="position-fixed bottom-0 end-0 p-4" style="z-index:9999">
+    <div id="toastMsg" class="toast align-items-center text-white border-0 shadow-lg rounded-4" role="alert">
+        <div class="d-flex">
+            <div class="toast-body fw-bold" id="toastText"></div>
+            <button type="button" class="btn-close btn-close-white me-3 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+    var currentId = '', currentAction = '';
+
+    function showModal(id, name, action) {
+        currentId = id; currentAction = action;
+        var btn = document.getElementById('modalConfirmBtn');
+        var title = document.getElementById('modalTitle');
+
+        if (action === 'duyet') {
+            title.innerHTML = '<i class="bi bi-check-circle-fill text-success me-2"></i>Phê Duyệt Đề Xuất';
+            document.getElementById('modalBody').innerHTML = 'Bạn chắc chắn muốn phê duyệt đề xuất <b>#' + id + '</b>?';
+            btn.className = 'btn btn-success rounded-pill px-4'; btn.textContent = 'Xác nhận Duyệt';
+        } else {
+            title.innerHTML = '<i class="bi bi-x-circle-fill text-danger me-2"></i>Từ Chối Đề Xuất';
+            document.getElementById('modalBody').innerHTML = 'Xác nhận từ chối đề xuất <b>#' + id + '</b>?';
+            btn.className = 'btn btn-danger rounded-pill px-4'; btn.textContent = 'Xác nhận Từ chối';
+        }
+        new bootstrap.Modal(document.getElementById('confirmModal')).show();
+    }
+
+    function confirmAction() {
+        var note = document.getElementById('modalNote').value;
+        var modalEl = document.getElementById('confirmModal');
+        bootstrap.Modal.getInstance(modalEl).hide();
+
+        $.post('@Url.Action("DuyetDeXuat","BGH")',
+            { id: currentId, action: currentAction, ghiChu: note },
+            function(res) {
+                if (res.ok) {
+                    showToast(currentAction === 'duyet' ? '✅ Đã phê duyệt thành công!' : '❌ Đã từ chối đề xuất!',
+                               currentAction === 'duyet' ? 'success' : 'danger');
+                    setTimeout(function() { location.reload(); }, 1200);
+                } else {
+                    showToast('⚠️ Lỗi: ' + (res.msg || 'Không xác định'), 'warning');
+                }
+            });
+    }
+
+    function showToast(msg, type) {
+        var toastEl = document.getElementById('toastMsg');
+        toastEl.className = 'toast align-items-center text-white border-0 shadow-lg rounded-4 bg-' + type;
+        document.getElementById('toastText').textContent = msg;
+        new bootstrap.Toast(toastEl, { delay: 3000 }).show();
+    }
+    </script>
+}

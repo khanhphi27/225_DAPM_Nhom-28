@@ -1,0 +1,569 @@
+﻿@{
+    ViewBag.Title = "Ghi Nhận Sửa Chữa Thiết Bị - Phòng CSVC";
+}
+
+<style>
+    .page-hdr {
+        margin-bottom: 22px;
+    }
+
+        .page-hdr h2 {
+            color: #1a237e;
+            font-weight: 700;
+            font-size: 22px;
+            margin: 0;
+        }
+
+        .page-hdr p {
+            color: #666;
+            font-size: 13px;
+            margin: 3px 0 0;
+        }
+
+    .two-col-layout {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
+        gap: 18px;
+    }
+
+    /* Danh sách báo hỏng chờ xử lý -->*/
+    .panel {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+        overflow: hidden;
+    }
+
+    .panel-header {
+        padding: 14px 18px;
+        background: #e8eaf6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #d0d5e8;
+    }
+
+        .panel-header h3 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a237e;
+        }
+
+    .report-item {
+        padding: 14px 18px;
+        border-bottom: 1px solid #f0f2f8;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+        .report-item:last-child {
+            border: none;
+        }
+
+        .report-item:hover {
+            background: #f5f6ff;
+        }
+
+        .report-item.selected {
+            background: #e8eaf6;
+            border-left: 3px solid #1a237e;
+        }
+
+    .ri-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 4px;
+    }
+
+    .ri-code {
+        font-size: 11px;
+        color: #888;
+        font-weight: 600;
+    }
+
+    .ri-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: #222;
+    }
+
+    .ri-meta {
+        font-size: 12px;
+        color: #888;
+        margin-top: 2px;
+    }
+
+    .badge-urg {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+        .badge-urg.high {
+            background: #fce4ec;
+            color: #c62828;
+        }
+
+        .badge-urg.medium {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .badge-urg.low {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+    /* Form ghi nhận sửa chữa -->*/
+    .repair-form {
+        padding: 18px 20px;
+    }
+
+        .repair-form h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1a237e;
+            margin: 0 0 16px;
+        }
+
+    .device-info-box {
+        background: #f5f6ff;
+        border: 1px solid #d0d5e8;
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-bottom: 18px;
+    }
+
+        .device-info-box h5 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a237e;
+            margin: 0 0 8px;
+        }
+
+    .di-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px 20px;
+    }
+
+    .di-item label {
+        font-size: 11px;
+        color: #888;
+        font-weight: 600;
+    }
+
+    .di-item p {
+        font-size: 12px;
+        color: #333;
+        font-weight: 600;
+        margin: 1px 0 0;
+    }
+
+    .section-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 16px 0 10px;
+        border-bottom: 1px solid #f0f2f8;
+        padding-bottom: 6px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+        .form-row.single {
+            grid-template-columns: 1fr;
+        }
+
+    .form-lbl {
+        font-size: 12px;
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .form-inp {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1px solid #d0d5e8;
+        border-radius: 8px;
+        font-size: 13px;
+        background: #f8f9fe;
+        box-sizing: border-box;
+    }
+
+        .form-inp:focus {
+            border-color: #3949ab;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(57,73,171,0.1);
+        }
+
+    .parts-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+        .parts-table th {
+            background: #e8eaf6;
+            color: #1a237e;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 8px 10px;
+            text-align: left;
+        }
+
+        .parts-table td {
+            padding: 7px 10px;
+            font-size: 12px;
+            border-bottom: 1px solid #f0f2f8;
+        }
+
+            .parts-table td input {
+                width: 100%;
+                border: 1px solid #d0d5e8;
+                border-radius: 5px;
+                padding: 4px 7px;
+                font-size: 12px;
+                background: #fff;
+            }
+
+        .parts-table tfoot td {
+            background: #f5f6ff;
+            font-weight: 700;
+            color: #1a237e;
+        }
+
+    .btn-add-part {
+        background: none;
+        border: 1px dashed #1a237e;
+        color: #1a237e;
+        border-radius: 6px;
+        padding: 5px 12px;
+        font-size: 12px;
+        cursor: pointer;
+        margin-top: 8px;
+    }
+
+    .status-group {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .status-opt {
+        padding: 7px 14px;
+        border-radius: 20px;
+        border: 2px solid #d0d5e8;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 700;
+        color: #666;
+        transition: all 0.2s;
+    }
+
+        .status-opt:hover {
+            border-color: #3949ab;
+        }
+
+        .status-opt.selected.ok {
+            border-color: #43a047;
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-opt.selected.repair {
+            border-color: #fb8c00;
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .status-opt.selected.broken {
+            border-color: #e53935;
+            background: #fce4ec;
+            color: #c62828;
+        }
+
+    .form-footer {
+        margin-top: 18px;
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .btn-save {
+        background: #1a237e;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 24px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-save:hover {
+            background: #283593;
+        }
+
+    .btn-cancel {
+        background: #f5f5f5;
+        color: #555;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    /* History tab -->*/
+    .history-list {
+    }
+
+    .history-item {
+        padding: 12px 18px;
+        border-bottom: 1px solid #f0f2f8;
+    }
+
+        .history-item:last-child {
+            border: none;
+        }
+
+    .hi-head {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+    }
+
+    .hi-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .hi-date {
+        font-size: 11px;
+        color: #888;
+    }
+
+    .hi-detail {
+        font-size: 12px;
+        color: #666;
+    }
+
+        .hi-detail span {
+            margin-right: 12px;
+        }
+
+    .tab-mini {
+        display: flex;
+        gap: 4px;
+        margin: 14px 18px 0;
+    }
+
+    .tab-mini-btn {
+        padding: 5px 14px;
+        border-radius: 6px;
+        border: none;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        background: transparent;
+        color: #888;
+    }
+
+        .tab-mini-btn.active {
+            background: #e8eaf6;
+            color: #1a237e;
+        }
+</style>
+
+<div class="page-hdr">
+    <h2>🛠️ Ghi Nhận Sửa Chữa Thiết Bị</h2>
+    <p>Tiếp nhận báo hỏng và ghi nhận kết quả sửa chữa, bảo trì thiết bị</p>
+</div>
+
+<div class="two-col-layout">
+    <!-- Cột trái: Danh sách chờ -->
+    <div>
+        <div class="panel">
+            <div class="panel-header">
+                <h3>⚠️ Báo hỏng chờ xử lý (6)</h3>
+                <span style="font-size:11px;color:#e65100;font-weight:700">6 chưa xử lý</span>
+            </div>
+            <div class="tab-mini">
+                <button class="tab-mini-btn active">Chờ xử lý</button>
+                <button class="tab-mini-btn">Đang sửa</button>
+                <button class="tab-mini-btn">Hoàn thành</button>
+            </div>
+            <div style="padding:10px 0">
+                <div class="report-item selected" onclick="selectItem(this)">
+                    <div class="ri-head">
+                        <div class="ri-code">BH-2024-041</div>
+                        <span class="badge-urg high">🔴 Khẩn</span>
+                    </div>
+                    <div class="ri-name">Oscilloscope Rigol DS1054Z - Hỏng kênh 1</div>
+                    <div class="ri-meta">📅 08/04/2024 &nbsp;|&nbsp; 🏢 Khoa Điện - Điện tử &nbsp;|&nbsp; 👤 GV. Nguyễn Đức</div>
+                </div>
+                <div class="report-item" onclick="selectItem(this)">
+                    <div class="ri-head">
+                        <div class="ri-code">BH-2024-039</div>
+                        <span class="badge-urg medium">🟡 Vừa</span>
+                    </div>
+                    <div class="ri-name">Máy chiếu Epson EB-X51 - Đèn yếu, hình mờ</div>
+                    <div class="ri-meta">📅 06/04/2024 &nbsp;|&nbsp; 🏢 Khoa Điện - Điện tử &nbsp;|&nbsp; 👤 GV. Lê Thị Mai</div>
+                </div>
+                <div class="report-item" onclick="selectItem(this)">
+                    <div class="ri-head">
+                        <div class="ri-code">BH-2024-037</div>
+                        <span class="badge-urg medium">🟡 Vừa</span>
+                    </div>
+                    <div class="ri-name">Máy tính B201-PC05 - Không khởi động được</div>
+                    <div class="ri-meta">📅 05/04/2024 &nbsp;|&nbsp; 🏢 Khoa Công nghệ số &nbsp;|&nbsp; 👤 GV. Trần An</div>
+                </div>
+                <div class="report-item" onclick="selectItem(this)">
+                    <div class="ri-head">
+                        <div class="ri-code">BH-2024-035</div>
+                        <span class="badge-urg low">🟢 Thấp</span>
+                    </div>
+                    <div class="ri-name">Máy in HP LaserJet - Kẹt giấy thường xuyên</div>
+                    <div class="ri-meta">📅 03/04/2024 &nbsp;|&nbsp; 🏢 Khoa Công nghệ số &nbsp;|&nbsp; 👤 GV. Phạm Hoa</div>
+                </div>
+                <div class="report-item" onclick="selectItem(this)">
+                    <div class="ri-head">
+                        <div class="ri-code">BH-2024-033</div>
+                        <span class="badge-urg low">🟢 Thấp</span>
+                    </div>
+                    <div class="ri-name">Switch Cisco - Port 8, 9, 10 bị lỗi</div>
+                    <div class="ri-meta">📅 01/04/2024 &nbsp;|&nbsp; 🏢 Khoa Công nghệ số &nbsp;|&nbsp; 👤 GV. Hoàng Văn</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cột phải: Form ghi nhận -->
+    <div class="panel">
+        <div class="panel-header">
+            <h3>📝 Ghi Nhận Kết Quả Sửa Chữa</h3>
+            <span style="font-size:11px;color:#888">BH-2024-041</span>
+        </div>
+        <div class="repair-form">
+            <!-- Thông tin thiết bị -->
+            <div class="device-info-box">
+                <h5>📦 Thông tin thiết bị báo hỏng</h5>
+                <div class="di-grid">
+                    <div class="di-item"><label>Mã thiết bị</label><p>TB005</p></div>
+                    <div class="di-item"><label>Tên thiết bị</label><p>Oscilloscope Rigol DS1054Z</p></div>
+                    <div class="di-item"><label>Đơn vị</label><p>Khoa Điện - Điện tử</p></div>
+                    <div class="di-item"><label>Năm mua</label><p>2021</p></div>
+                    <div class="di-item" style="grid-column:1/-1"><label>Mô tả hư hỏng</label><p>Kênh 1 không hiển thị tín hiệu, màn hình nhấp nháy khi kết nối đầu đo</p></div>
+                </div>
+            </div>
+
+            <div class="section-title">Thông tin tiếp nhận</div>
+            <div class="form-row">
+                <div>
+                    <label class="form-lbl">Ngày tiếp nhận</label>
+                    <input type="date" class="form-inp" value="2024-04-08" />
+                </div>
+                <div>
+                    <label class="form-lbl">Kỹ thuật viên xử lý</label>
+                    <select class="form-inp">
+                        <option>Nguyễn Văn Tuấn</option>
+                        <option>Trần Thanh Hùng</option>
+                        <option>Lê Văn An</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label class="form-lbl">Phương thức xử lý</label>
+                    <select class="form-inp">
+                        <option>Sửa chữa nội bộ</option>
+                        <option>Thuê đơn vị bên ngoài</option>
+                        <option>Gửi nhà sản xuất bảo hành</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-lbl">Ngày hoàn thành dự kiến</label>
+                    <input type="date" class="form-inp" value="2024-04-12" />
+                </div>
+            </div>
+
+            <div class="section-title">Nguyên nhân & Kết quả</div>
+            <div class="form-row single">
+                <div>
+                    <label class="form-lbl">Nguyên nhân hư hỏng</label>
+                    <textarea class="form-inp" rows="2" placeholder="Mô tả nguyên nhân xác định được...">Linh kiện probe coupling bị hỏng do sử dụng sai điện áp đầu vào, dẫn đến mạch khuếch đại kênh 1 bị cháy.</textarea>
+                </div>
+            </div>
+            <div class="form-row single">
+                <div>
+                    <label class="form-lbl">Công việc đã thực hiện</label>
+                    <textarea class="form-inp" rows="2" placeholder="Mô tả chi tiết công việc sửa chữa..."></textarea>
+                </div>
+            </div>
+
+            <div class="section-title">Vật tư / Linh kiện thay thế</div>
+            <table class="parts-table">
+                <thead><tr><th>Tên vật tư</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th><th></th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td><input type="text" value="IC khuếch đại OPA2134" /></td>
+                        <td><input type="number" value="2" style="width:50px" /></td>
+                        <td><input type="text" value="150,000" /></td>
+                        <td><input type="text" value="300,000" readonly style="background:#f5f6ff" /></td>
+                        <td><button style="background:none;border:none;color:#e53935;cursor:pointer;font-size:14px">✕</button></td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" value="Probe đầu đo 10:1" /></td>
+                        <td><input type="number" value="1" style="width:50px" /></td>
+                        <td><input type="text" value="450,000" /></td>
+                        <td><input type="text" value="450,000" readonly style="background:#f5f6ff" /></td>
+                        <td><button style="background:none;border:none;color:#e53935;cursor:pointer;font-size:14px">✕</button></td>
+                    </tr>
+                </tbody>
+                <tfoot><tr><td colspan="3" style="text-align:right;padding-right:10px">Tổng chi phí:</td><td>750,000 VNĐ</td><td></td></tr></tfoot>
+            </table>
+            <button class="btn-add-part">+ Thêm vật tư</button>
+
+            <div class="section-title">Tình trạng thiết bị sau sửa chữa</div>
+            <div class="status-group">
+                <div class="status-opt selected ok" onclick="selectStatus(this,'ok')">✅ Hoạt động tốt</div>
+                <div class="status-opt" onclick="selectStatus(this,'repair')">⚠️ Tạm thời hoạt động</div>
+                <div class="status-opt" onclick="selectStatus(this,'broken')">❌ Không thể sửa / Đề xuất thanh lý</div>
+            </div>
+
+            <div class="form-footer">
+                <button class="btn-cancel">Hủy</button>
+                <button class="btn-save">💾 Lưu kết quả sửa chữa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function selectItem(el) {
+    document.querySelectorAll('.report-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+}
+function selectStatus(el, type) {
+    document.querySelectorAll('.status-opt').forEach(o => { o.classList.remove('selected','ok','repair','broken'); });
+    el.classList.add('selected', type);
+}
+</script>

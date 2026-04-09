@@ -1,0 +1,238 @@
+﻿@model QLTB.Models.KHTCDashboardViewModel
+@{
+    ViewBag.Title = "Dashboard Kế hoạch & Tài chính";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* 1. Nâng cấp các thẻ thống kê với Gradient */
+    .stat-card {
+        border: none;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        position: relative;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+        }
+
+    .bg-grad-primary {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+    }
+
+    .bg-grad-danger {
+        background: linear-gradient(135deg, #f43f5e, #e11d48);
+    }
+
+    .bg-grad-warning {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+
+    .stat-icon {
+        position: absolute;
+        right: -10px;
+        bottom: -10px;
+        font-size: 5rem;
+        opacity: 0.2;
+        color: #fff;
+    }
+
+    /* 2. Style bảng danh sách hiện đại */
+    .modern-table-card {
+        border-radius: 20px;
+        border: none;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+    }
+
+    .custom-table th {
+        background-color: #f8fafc;
+        color: #64748b;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 20px 15px;
+        border: none;
+    }
+
+    .custom-table td {
+        padding: 20px 15px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .data-row {
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+        .data-row:hover {
+            background-color: #f8fafc !important;
+        }
+
+    /* 3. Badge phong cách mới */
+    .badge-pill-md {
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.75rem;
+    }
+</style>
+
+<div class="container-fluid pb-5">
+    <div class="mb-4 pt-2">
+        <h2 class="fw-bold text-dark mb-1">Tổng quan Tài chính</h2>
+        <p class="text-muted small">Chào mừng trở lại, hệ thống đã cập nhật số liệu mới nhất lúc @DateTime.Now.ToString("HH:mm")</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card stat-card bg-grad-primary text-white shadow-sm">
+                <div class="card-body p-4">
+                    <h6 class="text-white-50 fw-medium">Tổng giá trị tài sản</h6>
+                    <h2 class="fw-bold mb-0">@Model.TongGiaTri.ToString("N0") <small class="fs-6">đ</small></h2>
+                    <i class="bi bi-bank stat-icon"></i>
+                    <div class="mt-3 small"><i class="bi bi-arrow-up-short"></i> Tăng 2.4% so với quý trước</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card stat-card bg-grad-danger text-white shadow-sm">
+                <div class="card-body p-4">
+                    <h6 class="text-white-50 fw-medium">Chi phí bảo trì thực tế</h6>
+                    <h2 class="fw-bold mb-0">@Model.TongSuaChua.ToString("N0") <small class="fs-6">đ</small></h2>
+                    <i class="bi bi-tools stat-icon"></i>
+                    <div class="mt-3 small"><i class="bi bi-clock-history"></i> Cập nhật từ 10 hóa đơn mới</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card stat-card bg-grad-warning text-white shadow-sm">
+                <div class="card-body p-4">
+                    <h6 class="text-white-50 fw-medium">Đề xuất chờ duyệt</h6>
+                    <h2 class="fw-bold mb-0">@Model.ChoDuyet <small class="fs-6">Đơn hàng</small></h2>
+                    <i class="bi bi-hourglass-split stat-icon"></i>
+                    <a href="@Url.Action("PheDuyetNganSach", "KHTC")" class="text-white d-block mt-3 text-decoration-none fw-bold">
+                        Xử lý ngay <i class="bi bi-chevron-right small"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card modern-table-card bg-white p-2">
+                <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-lightning-charge text-warning me-2"></i>Hoạt động đề xuất gần đây</h5>
+                    <button class="btn btn-sm btn-light border">Xem tất cả</button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table custom-table">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">Mã đơn</th>
+                                    <th>Người đề xuất</th>
+                                    <th>Ngày gửi</th>
+                                    <th>Trạng thái</th>
+                                    <th class="text-end pe-4">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.HoatDongGanDay)
+                                {
+                                    <tr class="data-row"
+                                        data-id="@item.ID_DeXuat"
+                                        data-nguoi="@item.NguoiDeXuat"
+                                        data-ngay="@item.NgayDeXuat.ToString("dd/MM/yyyy")"
+                                        data-trangthai="@item.TrangThai"
+                                        data-mota="@item.MoTa"
+                                        onclick="viewDetail(this)">
+                                        <td class="ps-4"><span class="fw-bold text-primary">#@item.ID_DeXuat</span></td>
+                                        <td class="fw-medium text-dark">@item.NguoiDeXuat</td>
+                                        <td class="text-muted">@item.NgayDeXuat.ToString("dd/MM/yyyy")</td>
+                                        <td>
+                                            @if (item.TrangThai == "Đã duyệt")
+                                            {
+                                                <span class="badge badge-pill-md bg-success bg-opacity-10 text-success border border-success border-opacity-25">@item.TrangThai</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-pill-md bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">@item.TrangThai</span>
+                                            }
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            <button class="btn btn-sm btn-outline-primary rounded-pill px-3">Chi tiết</button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="quickViewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
+            <div class="modal-header border-0 pb-0 pt-4 px-4">
+                <h5 class="fw-bold"><i class="bi bi-info-circle text-primary me-2"></i>Chi tiết hoạt động</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="bg-light rounded-4 p-4">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Mã đơn hàng</small>
+                            <span id="qv-id" class="fw-bold text-primary fs-5"></span>
+                        </div>
+                        <div class="col-6 text-end">
+                            <small class="text-muted d-block">Ngày gửi</small>
+                            <span id="qv-ngay" class="fw-bold"></span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Người đề xuất</small>
+                        <span id="qv-nguoi" class="fw-bold text-dark"></span>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block">Mô tả/Ghi chú</small>
+                        <p id="qv-mota" class="mb-0 text-secondary italic small"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pb-4 justify-content-center">
+                <button type="button" class="btn btn-secondary px-5 rounded-pill fw-bold" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function viewDetail(row) {
+        // Lấy dữ liệu từ data-attributes
+        const id = $(row).data('id');
+        const nguoi = $(row).data('nguoi');
+        const ngay = $(row).data('ngay');
+        const mota = $(row).data('mota');
+
+        // Đổ vào Modal
+        $('#qv-id').text('#' + id);
+        $('#qv-nguoi').text(nguoi);
+        $('#qv-ngay').text(ngay);
+        $('#qv-mota').text(mota || 'Không có mô tả chi tiết.');
+
+        // Hiện Modal
+        var myModal = new bootstrap.Modal(document.getElementById('quickViewModal'));
+        myModal.show();
+    }
+</script>

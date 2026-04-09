@@ -1,0 +1,306 @@
+﻿@model List<QLTB.Models.BaoCaoTaiSanViewModel>
+@{
+    ViewBag.Title = "Báo Cáo Tài Sản";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    decimal tongGiaTri = Model != null ? Model.Sum(x => x.Gia) : 0;
+}
+
+<style>
+    /* CSS Tùy chỉnh cho giao diện hiện đại */
+    .total-badge {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        padding: 12px 25px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.15rem;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .modern-card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .custom-table th {
+        background-color: #f8fafc;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #e2e8f0;
+        padding: 15px 10px;
+    }
+
+    .custom-table td {
+        vertical-align: middle;
+        padding: 15px 10px;
+        color: #334155;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    /* Hiệu ứng di chuột vào dòng */
+    .data-row {
+        transition: all 0.2s ease;
+    }
+
+        .data-row:hover {
+            background-color: #f8fafc !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+            position: relative;
+            z-index: 10;
+        }
+
+    /* Nút bấm mềm mại */
+    .btn-modern {
+        border-radius: 8px;
+        font-weight: 500;
+        padding: 8px 16px;
+        transition: all 0.2s;
+    }
+
+        .btn-modern:hover {
+            transform: translateY(-1px);
+        }
+
+    /* Thiết kế Modal (Popup) */
+    .modal-content {
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .modal-title {
+        color: #0f172a;
+        font-weight: 700;
+    }
+
+    .detail-label {
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mt-3 mb-4">
+    <h2 class="fw-bold text-dark" style="font-size: 1.5rem;">
+        <i class="bi bi-pie-chart-fill text-primary me-2"></i>Báo Cáo Tài Sản
+    </h2>
+    <div class="total-badge">
+        <i class="bi bi-wallet2 me-2"></i>Tổng: <span id="tongTienDisplay">@tongGiaTri.ToString("N0") VNĐ</span>
+    </div>
+</div>
+
+<div class="card shadow-sm modern-card mb-4 bg-white">
+    <div class="card-body p-4">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-secondary" style="font-size: 0.9rem;">Tên thiết bị</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="filterTen" class="form-control border-start-0 ps-0" placeholder="Nhập từ khóa...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold text-secondary" style="font-size: 0.9rem;">Trạng thái</label>
+                <select id="filterTrangThai" class="form-select">
+                    <option value="">-- Tất cả trạng thái --</option>
+                    <option value="Đang sử dụng">Đang sử dụng</option>
+                    <option value="Cần bảo trì">Cần bảo trì</option>
+                    <option value="Báo hỏng">Báo hỏng</option>
+                </select>
+            </div>
+            <div class="col-md-5 d-flex justify-content-end gap-2">
+                <button class="btn btn-primary btn-modern shadow-sm" onclick="filterTable()">
+                    <i class="bi bi-funnel"></i> Thống kê
+                </button>
+                <button class="btn btn-light btn-modern border shadow-sm text-secondary" onclick="resetFilter()">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+                <button class="btn btn-success btn-modern shadow-sm" onclick="xuatExcel('tableBaoCao', 'BaoCaoTaiSan_KHTC')">
+                    <i class="bi bi-file-earmark-excel"></i> Xuất Excel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm modern-card overflow-hidden bg-white">
+    <div class="table-responsive">
+        <table class="table custom-table mb-0" id="tableBaoCao">
+            <thead>
+                <tr>
+                    <th class="ps-4">Mã TB</th>
+                    <th>Tên Thiết Bị</th>
+                    <th>Danh Mục</th>
+                    <th>Khoa / Phòng</th>
+                    <th>Trạng Thái</th>
+                    <th class="text-end pe-4">Nguyên Giá (VNĐ)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    // Logic màu sắc cho Badge
+                    string badgeBg = "bg-secondary";
+                    string badgeText = "text-secondary";
+                    string borderCol = "border-secondary";
+
+                    if (item.TrangThaiTB == "Đang sử dụng") { badgeBg = "bg-success"; badgeText = "text-success"; borderCol = "border-success"; }
+                    else if (item.TrangThaiTB == "Cần bảo trì") { badgeBg = "bg-warning"; badgeText = "text-warning"; borderCol = "border-warning"; }
+                    else if (item.TrangThaiTB == "Báo hỏng") { badgeBg = "bg-danger"; badgeText = "text-danger"; borderCol = "border-danger"; }
+
+                    <tr class="data-row" style="cursor: pointer;"
+                        data-id="@item.ID_ThietBi"
+                        data-ten="@item.TenTB"
+                        data-danhmuc="@item.TenDanhMuc"
+                        data-khoa="@item.TenPhongBanKhoa"
+                        data-trangthai="@item.TrangThaiTB"
+                        data-gia="@item.Gia"
+                        data-chiphi="@item.TongChiPhiSuaChua"
+                        onclick="showDetail(this)">
+
+                        <td class="ps-4 fw-bold text-secondary">@item.ID_ThietBi</td>
+                        <td class="col-ten fw-semibold">@item.TenTB</td>
+                        <td><span class="text-muted" style="font-size:0.9rem;"><i class="bi bi-tag me-1"></i>@item.TenDanhMuc</span></td>
+                        <td>@item.TenPhongBanKhoa</td>
+                        <td class="col-trangthai">
+                            <span class="badge rounded-pill @badgeBg bg-opacity-10 @badgeText border @borderCol border-opacity-25 px-3 py-2 fw-medium">
+                                <i class="bi bi-circle-fill me-1" style="font-size: 0.4rem; vertical-align: middle;"></i> @item.TrangThaiTB
+                            </span>
+                        </td>
+                        <td class="text-end fw-bold text-dark pe-4">@item.Gia.ToString("N0")</td>
+                        <td class="col-chiphi d-none">@item.TongChiPhiSuaChua</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer bg-white border-top-0 pt-0 pb-3 ps-4">
+        <div class="text-muted" style="font-size: 0.85rem;">
+            <i class="bi bi-info-circle text-primary me-1"></i> Bấm vào bất kỳ dòng nào để xem lịch sử bảo trì & chi phí chi tiết.
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header px-4 py-3">
+                <h5 class="modal-title"><i class="bi bi-hdd-network text-primary me-2"></i>Chi Tiết Tài Sản</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <i class="bi bi-display text-primary fs-3"></i>
+                    </div>
+                    <h5 id="md-ten" class="fw-bold text-dark mb-1"></h5>
+                    <div id="md-id" class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 rounded-pill px-3"></div>
+                </div>
+
+                <div class="bg-light rounded-4 p-3 mb-3">
+                    <table class="table table-borderless mb-0 table-sm">
+                        <tbody>
+                            <tr><th class="detail-label" width="45%">Danh mục:</th><td id="md-danhmuc" class="fw-medium text-dark text-end"></td></tr>
+                            <tr><th class="detail-label">Đơn vị quản lý:</th><td id="md-khoa" class="fw-medium text-dark text-end"></td></tr>
+                            <tr><th class="detail-label">Trạng thái:</th><td id="md-trangthai" class="text-end"></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="border rounded-4 p-3 border-primary border-opacity-25 bg-primary bg-opacity-10">
+                    <table class="table table-borderless mb-0 table-sm">
+                        <tbody>
+                            <tr><th class="detail-label">Nguyên giá:</th><td id="md-gia" class="text-success fw-bold text-end"></td></tr>
+                            <tr><th class="detail-label">Tổng chi phí sửa:</th><td id="md-chiphi" class="text-danger fw-bold text-end"></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0 justify-content-center pb-4">
+                <button type="button" class="btn btn-light border px-4 rounded-pill fw-medium" data-bs-dismiss="modal">Đóng cửa sổ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    function showDetail(row) {
+        let id = $(row).data('id');
+        let ten = $(row).data('ten');
+        let danhmuc = $(row).data('danhmuc');
+        let khoa = $(row).data('khoa');
+        let trangthai = $(row).data('trangthai');
+        let gia = parseFloat($(row).data('gia')) || 0;
+        let chiphi = parseFloat($(row).data('chiphi')) || 0;
+
+        let badgeHtml = '';
+        if (trangthai === 'Đang sử dụng') badgeHtml = '<span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2">Đang sử dụng</span>';
+        else if (trangthai === 'Cần bảo trì') badgeHtml = '<span class="badge rounded-pill bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2">Cần bảo trì</span>';
+        else badgeHtml = '<span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2">Báo hỏng</span>';
+
+        $('#md-id').text(id);
+        $('#md-ten').text(ten);
+        $('#md-danhmuc').text(danhmuc);
+        $('#md-khoa').text(khoa);
+        $('#md-trangthai').html(badgeHtml);
+        $('#md-gia').text(gia.toLocaleString('vi-VN') + ' đ');
+        $('#md-chiphi').text('- ' + chiphi.toLocaleString('vi-VN') + ' đ');
+
+        $('#detailModal').modal('show');
+    }
+
+    function filterTable() {
+        let txtTen = $('#filterTen').val().toLowerCase().trim();
+        let txtTrangThai = $('#filterTrangThai').val().toLowerCase();
+        let tongTienMoi = 0;
+
+        $('.data-row').each(function () {
+            let ten = $(this).data('ten').toLowerCase();
+            let trangThai = $(this).data('trangthai').toLowerCase();
+            let gia = parseFloat($(this).data('gia')) || 0;
+
+            let matchTen = ten.includes(txtTen);
+            let matchTrangThai = txtTrangThai === "" || trangThai.includes(txtTrangThai);
+
+            if (matchTen && matchTrangThai) {
+                $(this).removeClass('d-none');
+                tongTienMoi += gia;
+            } else {
+                $(this).addClass('d-none');
+            }
+        });
+        $('#tongTienDisplay').text(tongTienMoi.toLocaleString('vi-VN') + ' VNĐ');
+    }
+
+    function resetFilter() {
+        $('#filterTen').val('');
+        $('#filterTrangThai').val('');
+        $('.data-row').removeClass('d-none');
+
+        let tongBanDau = 0;
+        $('.data-row').each(function () {
+            tongBanDau += parseFloat($(this).data('gia')) || 0;
+        });
+        $('#tongTienDisplay').text(tongBanDau.toLocaleString('vi-VN') + ' VNĐ');
+    }
+
+    function xuatExcel(tableId, fileName) {
+        let table = document.getElementById(tableId);
+        let cloneTable = table.cloneNode(true);
+        $(cloneTable).find('tr.d-none').remove();
+        $(cloneTable).find('.d-none').remove();
+
+        var wb = XLSX.utils.table_to_book(cloneTable, { sheet: "Báo Cáo" });
+        XLSX.writeFile(wb, fileName + '.xlsx');
+    }
+</script>

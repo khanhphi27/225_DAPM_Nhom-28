@@ -1,0 +1,549 @@
+﻿@{
+    ViewBag.Title = "Phê Duyệt Đề Xuất Mua Sắm - Phòng CSVC";
+}
+
+<style>
+    .page-hdr {
+        margin-bottom: 22px;
+    }
+
+        .page-hdr h2 {
+            color: #1a237e;
+            font-weight: 700;
+            font-size: 22px;
+            margin: 0;
+        }
+
+        .page-hdr p {
+            color: #666;
+            font-size: 13px;
+            margin: 3px 0 0;
+        }
+
+    .tab-bar {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 18px;
+        background: #fff;
+        border-radius: 10px;
+        padding: 6px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        width: fit-content;
+    }
+
+    .tab-btn {
+        padding: 7px 20px;
+        border-radius: 7px;
+        border: none;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        background: transparent;
+        color: #666;
+        transition: all 0.2s;
+    }
+
+        .tab-btn.active {
+            background: #1a237e;
+            color: #fff;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: #e8eaf6;
+            color: #1a237e;
+        }
+
+    .proposal-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .proposal-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+        overflow: hidden;
+        border-left: 4px solid;
+    }
+
+        .proposal-card.pending {
+            border-color: #fb8c00;
+        }
+
+        .proposal-card.approved {
+            border-color: #43a047;
+        }
+
+        .proposal-card.rejected {
+            border-color: #e53935;
+        }
+
+        .proposal-card.review {
+            border-color: #1e88e5;
+        }
+
+    .card-head {
+        padding: 14px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 1px solid #f0f2f8;
+    }
+
+    .card-id {
+        font-size: 12px;
+        color: #888;
+        font-weight: 600;
+    }
+
+    .card-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1a237e;
+        margin: 2px 0 4px;
+    }
+
+    .card-meta {
+        font-size: 12px;
+        color: #666;
+    }
+
+        .card-meta span {
+            margin-right: 14px;
+        }
+
+    .badge-p {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+        .badge-p.pending {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .badge-p.approved {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-p.rejected {
+            background: #fce4ec;
+            color: #c62828;
+        }
+
+        .badge-p.review {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+    .card-body {
+        padding: 14px 20px;
+    }
+
+    .info-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .info-item label {
+        font-size: 11px;
+        color: #888;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .info-item p {
+        font-size: 13px;
+        color: #333;
+        font-weight: 600;
+        margin: 2px 0 0;
+    }
+
+    .items-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 12px;
+    }
+
+        .items-table th {
+            background: #e8eaf6;
+            color: #1a237e;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .items-table td {
+            padding: 8px 12px;
+            font-size: 12px;
+            border-bottom: 1px solid #f0f2f8;
+        }
+
+        .items-table tr:last-child td {
+            border: none;
+        }
+
+        .items-table tfoot td {
+            font-weight: 700;
+            color: #1a237e;
+            background: #f5f6ff;
+        }
+
+    .card-foot {
+        padding: 12px 20px;
+        background: #fafbff;
+        border-top: 1px solid #f0f2f8;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .foot-note {
+        font-size: 12px;
+        color: #888;
+    }
+
+    .action-group {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-view {
+        background: #e8eaf6;
+        color: #1a237e;
+        border: none;
+        border-radius: 7px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-approve {
+        background: #43a047;
+        color: #fff;
+        border: none;
+        border-radius: 7px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-approve:hover {
+            background: #2e7d32;
+        }
+
+    .btn-reject {
+        background: #fce4ec;
+        color: #c62828;
+        border: none;
+        border-radius: 7px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-reject:hover {
+            background: #f8bbd0;
+        }
+
+    .btn-forward {
+        background: #1e88e5;
+        color: #fff;
+        border: none;
+        border-radius: 7px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-forward:hover {
+            background: #1565c0;
+        }
+
+    /* Modal xác nhận -->*/
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+    .modal-box {
+        background: #fff;
+        border-radius: 14px;
+        padding: 28px 30px;
+        width: 460px;
+        max-width: 95vw;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+
+    .modal-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1a237e;
+        margin-bottom: 12px;
+    }
+
+    .modal-body {
+        font-size: 13px;
+        color: #555;
+        margin-bottom: 16px;
+        line-height: 1.6;
+    }
+
+    .modal-footer {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .form-lbl {
+        font-size: 12px;
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .form-inp {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1px solid #d0d5e8;
+        border-radius: 8px;
+        font-size: 13px;
+        background: #f8f9fe;
+        box-sizing: border-box;
+        margin-bottom: 14px;
+    }
+
+        .form-inp:focus {
+            border-color: #3949ab;
+            outline: none;
+        }
+
+    .btn-cancel {
+        background: #f5f5f5;
+        color: #555;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-ok {
+        background: #43a047;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 24px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-ok.red {
+            background: #e53935;
+        }
+</style>
+
+<div class="page-hdr">
+    <h2>📋 Phê Duyệt Đề Xuất Mua Sắm Thiết Bị</h2>
+    <p>Xem xét và xử lý các đề xuất mua sắm thiết bị từ các khoa / phòng ban</p>
+</div>
+
+<!-- Tab lọc theo trạng thái -->
+<div class="tab-bar">
+    <button class="tab-btn active" onclick="setTab(this,'all')">Tất cả (12)</button>
+    <button class="tab-btn" onclick="setTab(this,'pending')">⏳ Chờ xử lý (5)</button>
+    <button class="tab-btn" onclick="setTab(this,'review')">🔍 Đang xem xét (3)</button>
+    <button class="tab-btn" onclick="setTab(this,'approved')">✅ Đã duyệt (3)</button>
+    <button class="tab-btn" onclick="setTab(this,'rejected')">❌ Từ chối (1)</button>
+</div>
+
+<div class="proposal-grid">
+    <!-- Đề xuất 1 - Chờ xử lý -->
+    <div class="proposal-card pending">
+        <div class="card-head">
+            <div>
+                <div class="card-id">DX-2024-018 &nbsp;|&nbsp; Ngày gửi: 05/04/2024</div>
+                <div class="card-title">Mua sắm thiết bị phòng thực hành Mạng máy tính</div>
+                <div class="card-meta">
+                    <span>👤 Trưởng khoa: Nguyễn Văn An</span>
+                    <span>🏢 Khoa Công nghệ số</span>
+                    <span>📅 Hạn: 15/04/2024</span>
+                </div>
+            </div>
+            <span class="badge-p pending">⏳ Chờ xử lý</span>
+        </div>
+        <div class="card-body">
+            <div class="info-row">
+                <div class="info-item"><label>Tổng giá trị</label><p>185,000,000 VNĐ</p></div>
+                <div class="info-item"><label>Số lượng mục</label><p>4 thiết bị</p></div>
+                <div class="info-item"><label>Mức ưu tiên</label><p>🔴 Cao</p></div>
+                <div class="info-item"><label>Năm học</label><p>2023 - 2024</p></div>
+            </div>
+            <table class="items-table">
+                <thead><tr><th>STT</th><th>Tên thiết bị</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+                <tbody>
+                    <tr><td>1</td><td>Switch Cisco Catalyst 2960-X</td><td>10</td><td>12,000,000</td><td>120,000,000</td></tr>
+                    <tr><td>2</td><td>Router Cisco 2911</td><td>5</td><td>8,000,000</td><td>40,000,000</td></tr>
+                    <tr><td>3</td><td>Cáp patch panel + phụ kiện</td><td>1 bộ</td><td>15,000,000</td><td>15,000,000</td></tr>
+                    <tr><td>4</td><td>Rack 19" 24U</td><td>1</td><td>10,000,000</td><td>10,000,000</td></tr>
+                </tbody>
+                <tfoot><tr><td colspan="4" style="text-align:right">Tổng cộng:</td><td>185,000,000 VNĐ</td></tr></tfoot>
+            </table>
+        </div>
+        <div class="card-foot">
+            <div class="foot-note">💬 Lý do: Thiết bị phòng thực hành cũ, xuống cấp, không đủ cho 30 sinh viên/lớp</div>
+            <div class="action-group">
+                <button class="btn-view">📄 Xem chi tiết</button>
+                <button class="btn-reject" onclick="openReject()">❌ Từ chối</button>
+                <button class="btn-forward" onclick="openForward()">📤 Chuyển BGH duyệt</button>
+                <button class="btn-approve" onclick="openApprove()">✅ Xác nhận đề xuất</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Đề xuất 2 - Đang xem xét -->
+    <div class="proposal-card review">
+        <div class="card-head">
+            <div>
+                <div class="card-id">DX-2024-015 &nbsp;|&nbsp; Ngày gửi: 28/03/2024</div>
+                <div class="card-title">Nâng cấp máy tính phòng CAD/CAM Khoa Cơ khí</div>
+                <div class="card-meta">
+                    <span>👤 Trưởng khoa: Phạm Hùng</span>
+                    <span>🏢 Khoa Cơ khí</span>
+                    <span>📅 Hạn: 10/04/2024</span>
+                </div>
+            </div>
+            <span class="badge-p review">🔍 Đang xem xét</span>
+        </div>
+        <div class="card-body">
+            <div class="info-row">
+                <div class="info-item"><label>Tổng giá trị</label><p>240,000,000 VNĐ</p></div>
+                <div class="info-item"><label>Số lượng mục</label><p>2 thiết bị</p></div>
+                <div class="info-item"><label>Mức ưu tiên</label><p>🟡 Trung bình</p></div>
+                <div class="info-item"><label>Năm học</label><p>2023 - 2024</p></div>
+            </div>
+        </div>
+        <div class="card-foot">
+            <div class="foot-note">📝 Ghi chú CSVC: Đang xác minh thông số kỹ thuật với nhà cung cấp</div>
+            <div class="action-group">
+                <button class="btn-view">📄 Xem chi tiết</button>
+                <button class="btn-reject" onclick="openReject()">❌ Từ chối</button>
+                <button class="btn-forward" onclick="openForward()">📤 Chuyển BGH duyệt</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Đề xuất 3 - Đã duyệt -->
+    <div class="proposal-card approved">
+        <div class="card-head">
+            <div>
+                <div class="card-id">DX-2024-011 &nbsp;|&nbsp; Ngày gửi: 15/03/2024</div>
+                <div class="card-title">Mua máy chiếu cho các phòng học lý thuyết</div>
+                <div class="card-meta">
+                    <span>👤 Trưởng khoa: Lê Thị Mai</span>
+                    <span>🏢 Khoa Điện - Điện tử</span>
+                    <span>✅ Duyệt: 25/03/2024</span>
+                </div>
+            </div>
+            <span class="badge-p approved">✅ Đã duyệt</span>
+        </div>
+        <div class="card-body">
+            <div class="info-row">
+                <div class="info-item"><label>Tổng giá trị</label><p>96,000,000 VNĐ</p></div>
+                <div class="info-item"><label>Số lượng mục</label><p>8 máy chiếu</p></div>
+                <div class="info-item"><label>Mức ưu tiên</label><p>🟢 Thấp</p></div>
+                <div class="info-item"><label>Người duyệt CSVC</label><p>Trần Thị B</p></div>
+            </div>
+        </div>
+        <div class="card-foot">
+            <div class="foot-note">✅ Đã chuyển Phòng KHTC duyệt ngân sách — đang chờ BGH ký</div>
+            <div class="action-group">
+                <button class="btn-view">📄 Xem chi tiết</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xác nhận duyệt -->
+<div class="modal-overlay" id="approveModal">
+    <div class="modal-box">
+        <div class="modal-title">✅ Xác nhận đề xuất</div>
+        <div class="modal-body">Bạn xác nhận đề xuất <strong>DX-2024-018</strong> là hợp lệ và chuyển tiếp để phê duyệt ngân sách?</div>
+        <label class="form-lbl">Ghi chú xác nhận</label>
+        <textarea class="form-inp" rows="3" placeholder="Nhận xét, yêu cầu bổ sung (nếu có)..."></textarea>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-ok" onclick="closeAll()">✅ Xác nhận</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Từ chối -->
+<div class="modal-overlay" id="rejectModal">
+    <div class="modal-box">
+        <div class="modal-title">❌ Từ chối đề xuất</div>
+        <div class="modal-body">Vui lòng cung cấp lý do từ chối để thông báo cho khoa gửi đề xuất.</div>
+        <label class="form-lbl">Lý do từ chối *</label>
+        <textarea class="form-inp" rows="4" placeholder="Nhập lý do từ chối chi tiết..."></textarea>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-ok red" onclick="closeAll()">❌ Xác nhận từ chối</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Chuyển BGH -->
+<div class="modal-overlay" id="forwardModal">
+    <div class="modal-box">
+        <div class="modal-title">📤 Chuyển Ban Giám Hiệu duyệt</div>
+        <div class="modal-body">Đề xuất <strong>DX-2024-018</strong> sẽ được chuyển tới Ban Giám Hiệu để xét duyệt lần cuối.</div>
+        <label class="form-lbl">Ý kiến đề xuất của Phòng CSVC</label>
+        <textarea class="form-inp" rows="3" placeholder="Nhận xét và kiến nghị của Phòng CSVC..."></textarea>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-ok" style="background:#1e88e5" onclick="closeAll()">📤 Chuyển lên BGH</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function setTab(el, tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+}
+function openApprove()  { document.getElementById('approveModal').classList.add('active'); }
+function openReject()   { document.getElementById('rejectModal').classList.add('active'); }
+function openForward()  { document.getElementById('forwardModal').classList.add('active'); }
+function closeAll() {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+}
+document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) closeAll(); });
+});
+</script>

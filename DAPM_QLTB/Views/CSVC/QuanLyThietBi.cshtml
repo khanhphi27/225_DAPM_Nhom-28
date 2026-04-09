@@ -1,0 +1,585 @@
+﻿@{
+    ViewBag.Title = "Quản Lý Thiết Bị - Phòng CSVC";
+}
+
+<style>
+    .tb-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+        .tb-header h2 {
+            color: #1a237e;
+            font-weight: 700;
+            font-size: 22px;
+            margin: 0;
+        }
+
+        .tb-header p {
+            color: #666;
+            font-size: 13px;
+            margin: 2px 0 0;
+        }
+
+    .filter-bar {
+        background: #fff;
+        border-radius: 10px;
+        padding: 16px 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        margin-bottom: 20px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+
+        .filter-bar .form-group {
+            margin: 0;
+            flex: 1;
+            min-width: 160px;
+        }
+
+        .filter-bar label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .filter-bar .form-control, .filter-bar .form-select {
+            font-size: 13px;
+            border-radius: 7px;
+            border: 1px solid #d0d5e8;
+            padding: 7px 10px;
+            background: #f8f9fe;
+        }
+
+            .filter-bar .form-control:focus, .filter-bar .form-select:focus {
+                border-color: #3949ab;
+                box-shadow: 0 0 0 3px rgba(57,73,171,0.1);
+            }
+
+    .btn-search {
+        background: #1a237e;
+        color: #fff;
+        border: none;
+        border-radius: 7px;
+        padding: 8px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+        .btn-search:hover {
+            background: #283593;
+        }
+
+    .btn-add {
+        background: #43a047;
+        color: #fff;
+        border: none;
+        border-radius: 7px;
+        padding: 8px 18px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        white-space: nowrap;
+    }
+
+        .btn-add:hover {
+            background: #2e7d32;
+        }
+
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .stat-box {
+        background: #fff;
+        border-radius: 10px;
+        padding: 16px 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        border-left: 4px solid;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+        .stat-box.total {
+            border-color: #1a237e;
+        }
+
+        .stat-box.active {
+            border-color: #43a047;
+        }
+
+        .stat-box.repair {
+            border-color: #fb8c00;
+        }
+
+        .stat-box.broken {
+            border-color: #e53935;
+        }
+
+    .stat-icon {
+        font-size: 28px;
+    }
+
+    .stat-num {
+        font-size: 26px;
+        font-weight: 700;
+        color: #222;
+    }
+
+    .stat-lbl {
+        font-size: 12px;
+        color: #888;
+    }
+
+    .card-table {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        overflow: hidden;
+    }
+
+        .card-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .card-table thead th {
+            background: #e8eaf6;
+            color: #1a237e;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 14px;
+            border: none;
+            white-space: nowrap;
+        }
+
+        .card-table tbody td {
+            padding: 11px 14px;
+            font-size: 13px;
+            color: #333;
+            border-bottom: 1px solid #f0f2f8;
+            vertical-align: middle;
+        }
+
+        .card-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .card-table tbody tr:hover td {
+            background: #f5f6ff;
+        }
+
+    .badge-status {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+        .badge-status.ok {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-status.repair {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .badge-status.broken {
+            background: #fce4ec;
+            color: #c62828;
+        }
+
+        .badge-status.new {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+    .action-btns {
+        display: flex;
+        gap: 6px;
+    }
+
+    .btn-edit {
+        background: #e8eaf6;
+        color: #1a237e;
+        border: none;
+        border-radius: 6px;
+        padding: 5px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-edit:hover {
+            background: #c5cae9;
+        }
+
+    .btn-del {
+        background: #fce4ec;
+        color: #c62828;
+        border: none;
+        border-radius: 6px;
+        padding: 5px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-del:hover {
+            background: #f8bbd0;
+        }
+
+    /* Modal */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+    .modal-box {
+        background: #fff;
+        border-radius: 14px;
+        padding: 28px 32px;
+        width: 540px;
+        max-width: 95vw;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+
+    .modal-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1a237e;
+        margin-bottom: 20px;
+    }
+
+    .modal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+        .modal-grid .full {
+            grid-column: 1 / -1;
+        }
+
+    .form-lbl {
+        font-size: 12px;
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .form-inp {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1px solid #d0d5e8;
+        border-radius: 8px;
+        font-size: 13px;
+        background: #f8f9fe;
+        box-sizing: border-box;
+    }
+
+        .form-inp:focus {
+            border-color: #3949ab;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(57,73,171,0.1);
+        }
+
+    .modal-footer {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 22px;
+    }
+
+    .btn-cancel {
+        background: #f5f5f5;
+        color: #555;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-save {
+        background: #1a237e;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 24px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-save:hover {
+            background: #283593;
+        }
+
+    .pagination {
+        display: flex;
+        gap: 6px;
+        justify-content: flex-end;
+        padding: 14px 16px;
+    }
+
+    .pg-btn {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        background: #f0f2f8;
+        color: #333;
+    }
+
+        .pg-btn.active {
+            background: #1a237e;
+            color: #fff;
+        }
+
+        .pg-btn:hover:not(.active) {
+            background: #e8eaf6;
+        }
+</style>
+
+<!-- Header -->
+<div class="tb-header">
+    <div>
+        <h2>📦 Quản Lý Thiết Bị</h2>
+        <p>Cập nhật, thêm mới và theo dõi tình trạng thiết bị trong hệ thống</p>
+    </div>
+    <button class="btn-add" onclick="openModal('add')">+ Thêm Thiết Bị Mới</button>
+</div>
+
+<!-- Thống kê nhanh -->
+<div class="stats-row">
+    <div class="stat-box total">
+        <div class="stat-icon">📦</div>
+        <div><div class="stat-num">124</div><div class="stat-lbl">Tổng thiết bị</div></div>
+    </div>
+    <div class="stat-box active">
+        <div class="stat-icon">✅</div>
+        <div><div class="stat-num">98</div><div class="stat-lbl">Đang hoạt động</div></div>
+    </div>
+    <div class="stat-box repair">
+        <div class="stat-icon">🔧</div>
+        <div><div class="stat-num">18</div><div class="stat-lbl">Đang bảo trì</div></div>
+    </div>
+    <div class="stat-box broken">
+        <div class="stat-icon">❌</div>
+        <div><div class="stat-num">8</div><div class="stat-lbl">Hư hỏng</div></div>
+    </div>
+</div>
+
+<!-- Bộ lọc -->
+<div class="filter-bar">
+    <div class="form-group">
+        <label>Tìm kiếm</label>
+        <input type="text" class="form-control" placeholder="Tên thiết bị, mã TB..." />
+    </div>
+    <div class="form-group">
+        <label>Loại thiết bị</label>
+        <select class="form-select">
+            <option value="">Tất cả loại</option>
+            <option>Máy tính</option>
+            <option>Máy chiếu</option>
+            <option>Thiết bị thực hành</option>
+            <option>Thiết bị văn phòng</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Tình trạng</label>
+        <select class="form-select">
+            <option value="">Tất cả</option>
+            <option>Đang hoạt động</option>
+            <option>Đang bảo trì</option>
+            <option>Hư hỏng</option>
+            <option>Mới nhập</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Đơn vị quản lý</label>
+        <select class="form-select">
+            <option value="">Tất cả khoa</option>
+            <option>Khoa Công nghệ số</option>
+            <option>Khoa Điện - Điện tử</option>
+            <option>Khoa Cơ khí</option>
+        </select>
+    </div>
+    <button class="btn-search">🔍 Tìm kiếm</button>
+</div>
+
+<!-- Bảng danh sách -->
+<div class="card-table">
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Mã TB</th>
+                <th>Tên thiết bị</th>
+                <th>Loại</th>
+                <th>Đơn vị quản lý</th>
+                <th>Năm mua</th>
+                <th>Giá trị (VNĐ)</th>
+                <th>Tình trạng</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                var devices = new[] {
+                    new { id=1, code="TB001", name="Máy tính Dell OptiPlex 7090",   type="Máy tính",          unit="Khoa Công nghệ số",   year=2022, price="18,500,000", status="ok"     },
+                    new { id=2, code="TB002", name="Máy chiếu Epson EB-X51",        type="Máy chiếu",         unit="Khoa Điện - Điện tử", year=2021, price="12,000,000", status="repair" },
+                    new { id=3, code="TB003", name="Bộ thực hành PLC Siemens S7-200",type="Thiết bị thực hành",unit="Khoa Cơ khí",          year=2020, price="45,000,000", status="ok"     },
+                    new { id=4, code="TB004", name="Máy in HP LaserJet Pro M404n",  type="Thiết bị văn phòng",unit="Khoa Công nghệ số",   year=2023, price="5,800,000",  status="new"    },
+                    new { id=5, code="TB005", name="Oscilloscope Rigol DS1054Z",     type="Thiết bị thực hành",unit="Khoa Điện - Điện tử", year=2021, price="8,900,000",  status="broken" },
+                    new { id=6, code="TB006", name="Máy tính xách tay Lenovo ThinkPad",type="Máy tính",       unit="Khoa Công nghệ số",   year=2022, price="22,000,000", status="ok"     },
+                    new { id=7, code="TB007", name="Màn hình Samsung 27\" 4K",      type="Thiết bị văn phòng",unit="Khoa Cơ khí",          year=2023, price="9,500,000",  status="ok"     },
+                };
+            }
+            @foreach (var d in devices)
+            {
+                var badgeCls = d.status == "ok" ? "ok" : d.status == "repair" ? "repair" : d.status == "broken" ? "broken" : "new";
+                var badgeTxt = d.status == "ok" ? "Hoạt động" : d.status == "repair" ? "Bảo trì" : d.status == "broken" ? "Hư hỏng" : "Mới nhập";
+                <tr>
+                    <td>@d.id</td>
+                    <td><strong>@d.code</strong></td>
+                    <td>@d.name</td>
+                    <td>@d.type</td>
+                    <td>@d.unit</td>
+                    <td>@d.year</td>
+                    <td>@d.price</td>
+                    <td><span class="badge-status @badgeCls">@badgeTxt</span></td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn-edit" onclick="openModal('edit')">✏️ Sửa</button>
+                            <button class="btn-del">🗑️ Xóa</button>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="pagination">
+        <button class="pg-btn active">1</button>
+        <button class="pg-btn">2</button>
+        <button class="pg-btn">3</button>
+        <button class="pg-btn">›</button>
+    </div>
+</div>
+
+<!-- Modal Thêm / Sửa thiết bị -->
+<div class="modal-overlay" id="deviceModal">
+    <div class="modal-box">
+        <div class="modal-title" id="modalTitle">➕ Thêm Thiết Bị Mới</div>
+        <div class="modal-grid">
+            <div>
+                <label class="form-lbl">Mã thiết bị *</label>
+                <input type="text" class="form-inp" id="fCode" placeholder="VD: TB008" />
+            </div>
+            <div>
+                <label class="form-lbl">Năm mua *</label>
+                <input type="number" class="form-inp" id="fYear" placeholder="2024" />
+            </div>
+            <div class="full">
+                <label class="form-lbl">Tên thiết bị *</label>
+                <input type="text" class="form-inp" id="fName" placeholder="Nhập tên thiết bị đầy đủ" />
+            </div>
+            <div>
+                <label class="form-lbl">Loại thiết bị *</label>
+                <select class="form-inp" id="fType">
+                    <option>Máy tính</option>
+                    <option>Máy chiếu</option>
+                    <option>Thiết bị thực hành</option>
+                    <option>Thiết bị văn phòng</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-lbl">Đơn vị quản lý *</label>
+                <select class="form-inp" id="fUnit">
+                    <option>Khoa Công nghệ số</option>
+                    <option>Khoa Điện - Điện tử</option>
+                    <option>Khoa Cơ khí</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-lbl">Giá trị (VNĐ)</label>
+                <input type="text" class="form-inp" id="fPrice" placeholder="VD: 15,000,000" />
+            </div>
+            <div>
+                <label class="form-lbl">Tình trạng</label>
+                <select class="form-inp" id="fStatus">
+                    <option value="new">Mới nhập</option>
+                    <option value="ok">Đang hoạt động</option>
+                    <option value="repair">Đang bảo trì</option>
+                    <option value="broken">Hư hỏng</option>
+                </select>
+            </div>
+            <div class="full">
+                <label class="form-lbl">Ghi chú</label>
+                <textarea class="form-inp" id="fNote" rows="2" placeholder="Mô tả, vị trí lưu trữ..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal()">Hủy</button>
+            <button class="btn-save" onclick="closeModal()">💾 Lưu thiết bị</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function openModal(mode) {
+    document.getElementById('deviceModal').classList.add('active');
+    document.getElementById('modalTitle').textContent = mode === 'add' ? '➕ Thêm Thiết Bị Mới' : '✏️ Cập Nhật Thông Tin Thiết Bị';
+    if (mode === 'edit') {
+        document.getElementById('fCode').value = 'TB002';
+        document.getElementById('fName').value = 'Máy chiếu Epson EB-X51';
+        document.getElementById('fYear').value = '2021';
+        document.getElementById('fPrice').value = '12,000,000';
+        document.getElementById('fStatus').value = 'repair';
+    }
+}
+function closeModal() {
+    document.getElementById('deviceModal').classList.remove('active');
+}
+document.getElementById('deviceModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+</script>

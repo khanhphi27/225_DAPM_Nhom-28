@@ -1,0 +1,668 @@
+﻿@{
+    ViewBag.Title = "Lập Kế Hoạch Bảo Trì - Phòng CSVC";
+}
+
+<style>
+    .page-hdr {
+        margin-bottom: 22px;
+    }
+
+        .page-hdr h2 {
+            color: #1a237e;
+            font-weight: 700;
+            font-size: 22px;
+            margin: 0;
+        }
+
+        .page-hdr p {
+            color: #666;
+            font-size: 13px;
+            margin: 3px 0 0;
+        }
+
+    .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .toolbar-left {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .toolbar-right {
+        display: flex;
+        gap: 10px;
+    }
+
+    .filter-sel {
+        padding: 8px 14px;
+        border: 1px solid #d0d5e8;
+        border-radius: 8px;
+        font-size: 13px;
+        background: #fff;
+        color: #333;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: #1a237e;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 18px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-primary:hover {
+            background: #283593;
+        }
+
+    .btn-secondary {
+        background: #e8eaf6;
+        color: #1a237e;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 18px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+    }
+
+    /* Calendar widget */
+    .calendar-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+        overflow: hidden;
+    }
+
+    .cal-header {
+        background: #1a237e;
+        color: #fff;
+        padding: 14px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+        .cal-header h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+    .cal-nav {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: #fff;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .cal-grid {
+        padding: 16px;
+    }
+
+    .cal-days-header {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        text-align: center;
+        margin-bottom: 6px;
+    }
+
+        .cal-days-header span {
+            font-size: 11px;
+            font-weight: 700;
+            color: #888;
+            padding: 4px 0;
+        }
+
+    .cal-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 3px;
+    }
+
+    .cal-day {
+        aspect-ratio: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 12px;
+        position: relative;
+        transition: background 0.15s;
+    }
+
+        .cal-day:hover {
+            background: #e8eaf6;
+        }
+
+        .cal-day.today {
+            background: #1a237e;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .cal-day.has-event::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #fb8c00;
+        }
+
+        .cal-day.today.has-event::after {
+            background: #fff;
+        }
+
+        .cal-day.other-month {
+            color: #ccc;
+        }
+
+        .cal-day.has-done::after {
+            background: #43a047;
+        }
+
+    /* Danh sách kế hoạch -->*/
+    .plan-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    }
+
+    .plan-card-header {
+        padding: 14px 20px;
+        border-bottom: 1px solid #f0f2f8;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+        .plan-card-header h3 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 700;
+            color: #1a237e;
+        }
+
+    .plan-list {
+        padding: 0;
+    }
+
+    .plan-item {
+        padding: 14px 20px;
+        border-bottom: 1px solid #f0f2f8;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+        .plan-item:last-child {
+            border: none;
+        }
+
+    .plan-date {
+        min-width: 52px;
+        text-align: center;
+        background: #e8eaf6;
+        border-radius: 8px;
+        padding: 6px 8px;
+    }
+
+        .plan-date .day {
+            font-size: 20px;
+            font-weight: 800;
+            color: #1a237e;
+        }
+
+        .plan-date .month {
+            font-size: 10px;
+            color: #888;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+    .plan-info {
+        flex: 1;
+    }
+
+    .plan-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: #222;
+    }
+
+    .plan-sub {
+        font-size: 12px;
+        color: #888;
+        margin-top: 2px;
+    }
+
+        .plan-sub span {
+            margin-right: 10px;
+        }
+
+    .badge-type {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+        .badge-type.routine {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .badge-type.repair {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .badge-type.inspect {
+            background: #f3e5f5;
+            color: #6a1b9a;
+        }
+
+    .plan-status {
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+        .plan-status.done {
+            color: #43a047;
+        }
+
+        .plan-status.pending {
+            color: #fb8c00;
+        }
+
+        .plan-status.todo {
+            color: #888;
+        }
+
+    .btn-sm {
+        padding: 5px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+    }
+
+        .btn-sm.edit {
+            background: #e8eaf6;
+            color: #1a237e;
+        }
+
+        .btn-sm.done {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .btn-sm.start {
+            background: #1a237e;
+            color: #fff;
+        }
+
+    /* Modal tạo kế hoạch -->*/
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+    .modal-box {
+        background: #fff;
+        border-radius: 14px;
+        padding: 28px 32px;
+        width: 560px;
+        max-width: 95vw;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+
+    .modal-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1a237e;
+        margin-bottom: 20px;
+    }
+
+    .modal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+        .modal-grid .full {
+            grid-column: 1/-1;
+        }
+
+    .form-lbl {
+        font-size: 12px;
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .form-inp {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1px solid #d0d5e8;
+        border-radius: 8px;
+        font-size: 13px;
+        background: #f8f9fe;
+        box-sizing: border-box;
+    }
+
+        .form-inp:focus {
+            border-color: #3949ab;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(57,73,171,0.1);
+        }
+
+    .modal-footer {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 22px;
+    }
+
+    .btn-cancel {
+        background: #f5f5f5;
+        color: #555;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-save {
+        background: #1a237e;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 24px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    /* Divider item chọn thiết bị -->*/
+    .device-picker {
+        border: 1px dashed #d0d5e8;
+        border-radius: 8px;
+        padding: 10px 14px;
+    }
+
+    .device-picker-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+        .device-picker-row:last-child {
+            margin: 0;
+        }
+
+    .btn-add-row {
+        background: none;
+        border: 1px dashed #1a237e;
+        color: #1a237e;
+        border-radius: 6px;
+        padding: 5px 12px;
+        font-size: 12px;
+        cursor: pointer;
+        margin-top: 8px;
+    }
+</style>
+
+<div class="page-hdr">
+    <h2>🔧 Lập Kế Hoạch Bảo Trì Thiết Bị</h2>
+    <p>Lên lịch bảo trì định kỳ và theo dõi tiến độ bảo dưỡng thiết bị</p>
+</div>
+
+<div class="toolbar">
+    <div class="toolbar-left">
+        <select class="filter-sel">
+            <option>Tháng 4 / 2024</option>
+            <option>Tháng 3 / 2024</option>
+            <option>Tháng 5 / 2024</option>
+        </select>
+        <select class="filter-sel">
+            <option>Tất cả loại bảo trì</option>
+            <option>Bảo trì định kỳ</option>
+            <option>Sửa chữa</option>
+            <option>Kiểm kê</option>
+        </select>
+        <select class="filter-sel">
+            <option>Tất cả đơn vị</option>
+            <option>Khoa Công nghệ số</option>
+            <option>Khoa Cơ khí</option>
+            <option>Khoa Điện - Điện tử</option>
+        </select>
+    </div>
+    <div class="toolbar-right">
+        <button class="btn-secondary">📥 Xuất lịch</button>
+        <button class="btn-primary" onclick="openCreateModal()">+ Tạo Kế Hoạch Mới</button>
+    </div>
+</div>
+
+<div class="two-col">
+    <!-- Lịch tháng -->
+    <div class="calendar-card">
+        <div class="cal-header">
+            <button class="cal-nav">‹</button>
+            <h3>Tháng 4 / 2024</h3>
+            <button class="cal-nav">›</button>
+        </div>
+        <div class="cal-grid">
+            <div class="cal-days-header">
+                <span>CN</span><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span>
+            </div>
+            <div class="cal-days">
+                @{
+                    // April 2024: starts Monday (index 1)
+                    var days = new (int day, bool otherM, bool today, bool hasEvent, bool hasDone)[] {
+                        (31,true,false,false,false),(1,false,false,false,false),(2,false,false,true,false),(3,false,false,false,false),(4,false,false,false,false),(5,false,false,false,false),(6,false,false,true,false),
+                        (7,false,false,false,false),(8,false,true,true,false),(9,false,false,false,false),(10,false,false,false,false),(11,false,false,true,false),(12,false,false,false,false),(13,false,false,false,false),
+                        (14,false,false,false,false),(15,false,false,true,false),(16,false,false,false,false),(17,false,false,false,false),(18,false,false,false,false),(19,false,false,true,false),(20,false,false,false,false),
+                        (21,false,false,false,false),(22,false,false,false,true),(23,false,false,false,false),(24,false,false,false,false),(25,false,false,true,false),(26,false,false,false,false),(27,false,false,false,false),
+                        (28,false,false,false,false),(29,false,false,false,false),(30,false,false,false,false),(1,true,false,false,false),(2,true,false,false,false),(3,true,false,false,false),(4,true,false,false,false),
+                    };
+                }
+                @foreach (var d in days)
+                {
+                    var cls = "cal-day";
+                    if (d.otherM) cls += " other-month";
+                    if (d.today) cls += " today";
+                    if (d.hasEvent) cls += " has-event";
+                    if (d.hasDone) cls += " has-done";
+                    <div class="@cls">@d.day</div>
+                }
+            </div>
+        </div>
+        <div style="padding: 0 16px 14px; display:flex; gap:16px; font-size:11px; color:#888;">
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:#fb8c00;display:inline-block"></span> Sắp tới</span>
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:#43a047;display:inline-block"></span> Đã xong</span>
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:#1a237e;display:inline-block"></span> Hôm nay</span>
+        </div>
+    </div>
+
+    <!-- Danh sách kế hoạch -->
+    <div class="plan-card">
+        <div class="plan-card-header">
+            <h3>📋 Danh sách kế hoạch tháng 4</h3>
+            <span style="font-size:12px;color:#888">8 kế hoạch</span>
+        </div>
+        <div class="plan-list">
+            <div class="plan-item">
+                <div class="plan-date"><div class="day">08</div><div class="month">Tháng 4</div></div>
+                <div class="plan-info">
+                    <div class="plan-name">Bảo trì định kỳ máy tính phòng B201</div>
+                    <div class="plan-sub">
+                        <span>🏢 Khoa Công nghệ số</span>
+                        <span>👤 Kỹ thuật viên Minh</span>
+                        <span class="badge-type routine">Định kỳ</span>
+                    </div>
+                </div>
+                <div class="plan-status pending">⏳ Hôm nay</div>
+                <button class="btn-sm start">▶ Bắt đầu</button>
+            </div>
+            <div class="plan-item">
+                <div class="plan-date"><div class="day">11</div><div class="month">Tháng 4</div></div>
+                <div class="plan-info">
+                    <div class="plan-name">Kiểm tra máy chiếu 8 phòng học lý thuyết</div>
+                    <div class="plan-sub">
+                        <span>🏢 Toàn trường</span>
+                        <span>👤 Kỹ thuật viên Hùng</span>
+                        <span class="badge-type inspect">Kiểm tra</span>
+                    </div>
+                </div>
+                <div class="plan-status todo">📅 Sắp tới</div>
+                <button class="btn-sm edit">✏️ Sửa</button>
+            </div>
+            <div class="plan-item">
+                <div class="plan-date"><div class="day">15</div><div class="month">Tháng 4</div></div>
+                <div class="plan-info">
+                    <div class="plan-name">Sửa chữa bộ thực hành PLC phòng C305</div>
+                    <div class="plan-sub">
+                        <span>🏢 Khoa Điện - Điện tử</span>
+                        <span>👤 Kỹ thuật viên Tuấn</span>
+                        <span class="badge-type repair">Sửa chữa</span>
+                    </div>
+                </div>
+                <div class="plan-status todo">📅 Sắp tới</div>
+                <button class="btn-sm edit">✏️ Sửa</button>
+            </div>
+            <div class="plan-item">
+                <div class="plan-date"><div class="day">22</div><div class="month">Tháng 4</div></div>
+                <div class="plan-info">
+                    <div class="plan-name">Vệ sinh và kiểm tra UPS phòng Server</div>
+                    <div class="plan-sub">
+                        <span>🏢 Trung tâm CNTT</span>
+                        <span>👤 Kỹ thuật viên An</span>
+                        <span class="badge-type routine">Định kỳ</span>
+                    </div>
+                </div>
+                <div class="plan-status done">✅ Hoàn thành</div>
+                <button class="btn-sm done">📋 Xem BC</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal tạo kế hoạch mới -->
+<div class="modal-overlay" id="createModal">
+    <div class="modal-box">
+        <div class="modal-title">🔧 Tạo Kế Hoạch Bảo Trì Mới</div>
+        <div class="modal-grid">
+            <div class="full">
+                <label class="form-lbl">Tên kế hoạch bảo trì *</label>
+                <input type="text" class="form-inp" placeholder="VD: Bảo trì định kỳ máy tính phòng B201" />
+            </div>
+            <div>
+                <label class="form-lbl">Loại bảo trì *</label>
+                <select class="form-inp">
+                    <option>Bảo trì định kỳ</option>
+                    <option>Sửa chữa đột xuất</option>
+                    <option>Kiểm tra tình trạng</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-lbl">Ngày thực hiện *</label>
+                <input type="date" class="form-inp" />
+            </div>
+            <div>
+                <label class="form-lbl">Đơn vị phụ trách</label>
+                <select class="form-inp">
+                    <option>Khoa Công nghệ số</option>
+                    <option>Khoa Cơ khí</option>
+                    <option>Khoa Điện - Điện tử</option>
+                    <option>Toàn trường</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-lbl">Kỹ thuật viên phụ trách</label>
+                <select class="form-inp">
+                    <option>Nguyễn Văn Minh</option>
+                    <option>Trần Thanh Hùng</option>
+                    <option>Lê Văn Tuấn</option>
+                </select>
+            </div>
+            <div class="full">
+                <label class="form-lbl">Thiết bị cần bảo trì</label>
+                <div class="device-picker">
+                    <div class="device-picker-row">
+                        <select class="form-inp" style="flex:1;margin:0">
+                            <option>-- Chọn thiết bị --</option>
+                            <option>TB001 - Máy tính Dell OptiPlex 7090</option>
+                            <option>TB002 - Máy chiếu Epson EB-X51</option>
+                        </select>
+                        <input type="text" class="form-inp" style="width:120px;margin:0" placeholder="Ghi chú..." />
+                    </div>
+                    <button class="btn-add-row">+ Thêm thiết bị</button>
+                </div>
+            </div>
+            <div class="full">
+                <label class="form-lbl">Mô tả công việc</label>
+                <textarea class="form-inp" rows="3" placeholder="Mô tả chi tiết công việc bảo trì, vật tư cần thiết..."></textarea>
+            </div>
+            <div>
+                <label class="form-lbl">Chi phí dự tính (VNĐ)</label>
+                <input type="text" class="form-inp" placeholder="VD: 2,500,000" />
+            </div>
+            <div>
+                <label class="form-lbl">Thời gian hoàn thành (giờ)</label>
+                <input type="number" class="form-inp" placeholder="VD: 4" />
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal()">Hủy</button>
+            <button class="btn-save" onclick="closeModal()">💾 Lưu kế hoạch</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function openCreateModal() { document.getElementById('createModal').classList.add('active'); }
+function closeModal()       { document.getElementById('createModal').classList.remove('active'); }
+document.getElementById('createModal').addEventListener('click', e => { if (e.target === document.getElementById('createModal')) closeModal(); });
+</script>
