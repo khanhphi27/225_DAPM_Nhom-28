@@ -238,6 +238,9 @@
     <Content Include="Views\KHTC\PheDuyetNganSach.cshtml" />
     <Content Include="Views\KHTC\QuanLyChiPhi.cshtml" />
     <Content Include="Views\TruongKhoa\Index.cshtml" />
+    <Content Include="Views\TruongKhoa\DanhSachThietBi.cshtml" />
+    <Content Include="Views\TruongKhoa\GuiDeXuat.cshtml" />
+    <Content Include="Views\TruongKhoa\XemDeXuat.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

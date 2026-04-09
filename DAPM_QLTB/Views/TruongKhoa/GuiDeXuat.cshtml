@@ -1,0 +1,31 @@
+﻿<div class="container mt-4" style="max-width: 600px;">
+    <div class="card shadow p-4">
+        <h3 class="text-primary border-bottom pb-2">Phiếu Đề Xuất Mua Sắm</h3>
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            <div class="form-group mb-3">
+                <label>Tên thiết bị</label>
+                <input name="tenTB" class="form-control" required placeholder="Ví dụ: Máy chiếu Sony" />
+            </div>
+            <div class="row">
+                <div class="col-6 mb-3">
+                    <label>Số lượng</label>
+                    <input name="soluong" type="number" min="1" class="form-control" required value="1" />
+                </div>
+                <div class="col-6 mb-3">
+                    <label>Giá dự kiến (VNĐ)</label>
+                    <input name="gia" type="number" class="form-control" required placeholder="0" />
+                </div>
+            </div>
+            <div class="form-group mb-3">
+                <label>Lý do / Mô tả</label>
+                <textarea name="mota" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="d-flex justify-content-between">
+                <a href="@Url.Action("Index")" class="btn btn-secondary">Quay lại</a>
+                <button type="submit" class="btn btn-primary px-4">Xác nhận gửi</button>
+            </div>
+        }
+    </div>
+</div>

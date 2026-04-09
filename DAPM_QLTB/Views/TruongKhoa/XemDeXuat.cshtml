@@ -1,0 +1,31 @@
+﻿@model System.Data.DataTable
+
+<h3>Danh sách đề xuất</h3>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Ngày đề xuất</th>
+            <th>Tên thiết bị</th>
+            <th>Số lượng</th>
+            <th>Giá dự kiến</th>
+            <th>Trạng thái</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (System.Data.DataRow row in Model.Rows)
+        {
+            <tr>
+                <td>@Convert.ToDateTime(row["NgayDeXuat"]).ToString("dd/MM/yyyy")</td>
+                <td>@row["TenThietBiDeXuat"]</td>
+                <td>@row["SoLuong"]</td>
+                <td>@string.Format("{0:N0}", row["GiaDuKien"]) đ</td>
+                <td>
+                    <span class="badge @(row["TrangThai"].ToString() == "Chờ duyệt" ? "bg-warning" : "bg-success")">
+                        @row["TrangThai"]
+                    </span>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
