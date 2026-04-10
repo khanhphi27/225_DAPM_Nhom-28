@@ -1,6 +1,4 @@
-﻿@{
-    ViewBag.Title = "Quản Lý Thiết Bị - Phòng CSVC";
-}
+﻿@{ ViewBag.Title = "Quản Lý Thiết Bị - Phòng CSVC"; }
 
 <style>
     .tb-header {
@@ -38,7 +36,7 @@
         .filter-bar .form-group {
             margin: 0;
             flex: 1;
-            min-width: 160px;
+            min-width: 150px;
         }
 
         .filter-bar label {
@@ -55,12 +53,8 @@
             border: 1px solid #d0d5e8;
             padding: 7px 10px;
             background: #f8f9fe;
+            width: 100%;
         }
-
-            .filter-bar .form-control:focus, .filter-bar .form-select:focus {
-                border-color: #3949ab;
-                box-shadow: 0 0 0 3px rgba(57,73,171,0.1);
-            }
 
     .btn-search {
         background: #1a237e;
@@ -71,12 +65,7 @@
         font-size: 13px;
         font-weight: 600;
         cursor: pointer;
-        transition: background 0.2s;
     }
-
-        .btn-search:hover {
-            background: #283593;
-        }
 
     .btn-add {
         background: #43a047;
@@ -87,7 +76,6 @@
         font-size: 13px;
         font-weight: 600;
         cursor: pointer;
-        transition: background 0.2s;
         white-space: nowrap;
     }
 
@@ -97,7 +85,7 @@
 
     .stats-row {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(4,1fr);
         gap: 14px;
         margin-bottom: 20px;
     }
@@ -162,7 +150,7 @@
             font-size: 12px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: .5px;
             padding: 12px 14px;
             border: none;
             white-space: nowrap;
@@ -228,10 +216,6 @@
         cursor: pointer;
     }
 
-        .btn-edit:hover {
-            background: #c5cae9;
-        }
-
     .btn-del {
         background: #fce4ec;
         color: #c62828;
@@ -243,9 +227,16 @@
         cursor: pointer;
     }
 
-        .btn-del:hover {
-            background: #f8bbd0;
-        }
+    .btn-report {
+        background: #fff3e0;
+        color: #e65100;
+        border: none;
+        border-radius: 6px;
+        padding: 5px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
 
     /* Modal */
     .modal-overlay {
@@ -266,7 +257,7 @@
         background: #fff;
         border-radius: 14px;
         padding: 28px 32px;
-        width: 540px;
+        width: 600px;
         max-width: 95vw;
         max-height: 90vh;
         overflow-y: auto;
@@ -287,7 +278,7 @@
     }
 
         .modal-grid .full {
-            grid-column: 1 / -1;
+            grid-column: 1/-1;
         }
 
     .form-lbl {
@@ -343,9 +334,17 @@
         cursor: pointer;
     }
 
-        .btn-save:hover {
-            background: #283593;
-        }
+    .section-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #1a237e;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        margin: 16px 0 10px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #e8eaf6;
+        grid-column: 1/-1;
+    }
 
     .pagination {
         display: flex;
@@ -373,38 +372,34 @@
             background: #1a237e;
             color: #fff;
         }
-
-        .pg-btn:hover:not(.active) {
-            background: #e8eaf6;
-        }
 </style>
 
 <!-- Header -->
 <div class="tb-header">
     <div>
         <h2>📦 Quản Lý Thiết Bị</h2>
-        <p>Cập nhật, thêm mới và theo dõi tình trạng thiết bị trong hệ thống</p>
+        <p>Xem, thêm, sửa thông tin thiết bị — dữ liệu từ bảng THIETBI, DANHMUC, KHOA_PHONGBAN, NHACUNGCAP</p>
     </div>
     <button class="btn-add" onclick="openModal('add')">+ Thêm Thiết Bị Mới</button>
 </div>
 
-<!-- Thống kê nhanh -->
+<!-- Thống kê — ánh xạ TrangThaiTB trong THIETBI -->
 <div class="stats-row">
     <div class="stat-box total">
         <div class="stat-icon">📦</div>
-        <div><div class="stat-num">124</div><div class="stat-lbl">Tổng thiết bị</div></div>
+        <div><div class="stat-num">7</div><div class="stat-lbl">Tổng thiết bị</div></div>
     </div>
     <div class="stat-box active">
         <div class="stat-icon">✅</div>
-        <div><div class="stat-num">98</div><div class="stat-lbl">Đang hoạt động</div></div>
+        <div><div class="stat-num">4</div><div class="stat-lbl">Đang sử dụng</div></div>
     </div>
     <div class="stat-box repair">
         <div class="stat-icon">🔧</div>
-        <div><div class="stat-num">18</div><div class="stat-lbl">Đang bảo trì</div></div>
+        <div><div class="stat-num">2</div><div class="stat-lbl">Đang bảo trì</div></div>
     </div>
     <div class="stat-box broken">
         <div class="stat-icon">❌</div>
-        <div><div class="stat-num">8</div><div class="stat-lbl">Hư hỏng</div></div>
+        <div><div class="stat-num">1</div><div class="stat-lbl">Hư hỏng</div></div>
     </div>
 </div>
 
@@ -412,174 +407,237 @@
 <div class="filter-bar">
     <div class="form-group">
         <label>Tìm kiếm</label>
-        <input type="text" class="form-control" placeholder="Tên thiết bị, mã TB..." />
+        <input type="text" class="form-control" placeholder="Tên thiết bị, mã TB, số seri..." />
     </div>
     <div class="form-group">
-        <label>Loại thiết bị</label>
+        <label>Danh mục (DANHMUC)</label>
         <select class="form-select">
-            <option value="">Tất cả loại</option>
-            <option>Máy tính</option>
+            <option value="">Tất cả danh mục</option>
+            <option>Máy tính &amp; Laptop</option>
             <option>Máy chiếu</option>
             <option>Thiết bị thực hành</option>
             <option>Thiết bị văn phòng</option>
         </select>
     </div>
     <div class="form-group">
-        <label>Tình trạng</label>
+        <label>Khoa / Phòng ban (KHOA_PHONGBAN)</label>
         <select class="form-select">
             <option value="">Tất cả</option>
-            <option>Đang hoạt động</option>
+            <option>Khoa Công nghệ thông tin</option>
+            <option>Phòng Cơ sở vật chất</option>
+            <option>Phòng Kế hoạch tài chính</option>
+            <option>Ban Giám Hiệu</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Tình trạng (TrangThaiTB)</label>
+        <select class="form-select">
+            <option value="">Tất cả</option>
+            <option>Đang sử dụng</option>
             <option>Đang bảo trì</option>
             <option>Hư hỏng</option>
             <option>Mới nhập</option>
         </select>
     </div>
-    <div class="form-group">
-        <label>Đơn vị quản lý</label>
-        <select class="form-select">
-            <option value="">Tất cả khoa</option>
-            <option>Khoa Công nghệ số</option>
-            <option>Khoa Điện - Điện tử</option>
-            <option>Khoa Cơ khí</option>
-        </select>
-    </div>
     <button class="btn-search">🔍 Tìm kiếm</button>
 </div>
 
-<!-- Bảng danh sách -->
+<!-- Bảng danh sách — các cột khớp với THIETBI -->
 <div class="card-table">
     <table>
         <thead>
             <tr>
                 <th>#</th>
-                <th>Mã TB</th>
-                <th>Tên thiết bị</th>
-                <th>Loại</th>
-                <th>Đơn vị quản lý</th>
-                <th>Năm mua</th>
-                <th>Giá trị (VNĐ)</th>
+                <th>ID_ThietBi</th>
+                <th>TenTB</th>
+                <th>Danh mục</th>
+                <th>Khoa / Phòng ban</th>
+                <th>Nhà cung cấp</th>
+                <th>Số Seri</th>
+                <th>Giá (VNĐ)</th>
                 <th>Tình trạng</th>
                 <th>Thao tác</th>
             </tr>
         </thead>
         <tbody>
-            @{
-                var devices = new[] {
-                    new { id=1, code="TB001", name="Máy tính Dell OptiPlex 7090",   type="Máy tính",          unit="Khoa Công nghệ số",   year=2022, price="18,500,000", status="ok"     },
-                    new { id=2, code="TB002", name="Máy chiếu Epson EB-X51",        type="Máy chiếu",         unit="Khoa Điện - Điện tử", year=2021, price="12,000,000", status="repair" },
-                    new { id=3, code="TB003", name="Bộ thực hành PLC Siemens S7-200",type="Thiết bị thực hành",unit="Khoa Cơ khí",          year=2020, price="45,000,000", status="ok"     },
-                    new { id=4, code="TB004", name="Máy in HP LaserJet Pro M404n",  type="Thiết bị văn phòng",unit="Khoa Công nghệ số",   year=2023, price="5,800,000",  status="new"    },
-                    new { id=5, code="TB005", name="Oscilloscope Rigol DS1054Z",     type="Thiết bị thực hành",unit="Khoa Điện - Điện tử", year=2021, price="8,900,000",  status="broken" },
-                    new { id=6, code="TB006", name="Máy tính xách tay Lenovo ThinkPad",type="Máy tính",       unit="Khoa Công nghệ số",   year=2022, price="22,000,000", status="ok"     },
-                    new { id=7, code="TB007", name="Màn hình Samsung 27\" 4K",      type="Thiết bị văn phòng",unit="Khoa Cơ khí",          year=2023, price="9,500,000",  status="ok"     },
-                };
-            }
+            @{ var devices = new[] {
+                    new { id=1, code="TB001", name="Macbook Pro M3",               cat="Máy tính & Laptop",    unit="Khoa Công nghệ thông tin", ncc="Apple Việt Nam",    seri=1001, price="45,000,000", status="ok"     },
+                    new { id=2, code="TB002", name="Máy chiếu Epson EB-X51",       cat="Máy chiếu",            unit="Khoa Công nghệ thông tin", ncc="Epson Việt Nam",    seri=1002, price="12,000,000", status="repair" },
+                    new { id=3, code="TB003", name="Bộ thực hành PLC Siemens S7",  cat="Thiết bị thực hành",   unit="Khoa Công nghệ thông tin", ncc="Siemens VN",        seri=1003, price="45,000,000", status="ok"     },
+                    new { id=4, code="TB004", name="Máy in HP LaserJet Pro M404n", cat="Thiết bị văn phòng",   unit="Phòng Cơ sở vật chất",     ncc="HP Việt Nam",       seri=1004, price="5,800,000",  status="new"    },
+                    new { id=5, code="TB005", name="Oscilloscope Rigol DS1054Z",   cat="Thiết bị thực hành",   unit="Khoa Công nghệ thông tin", ncc="Rigol Technologies",seri=1005, price="8,900,000",  status="broken" },
+                    new { id=6, code="TB006", name="Laptop Lenovo ThinkPad E15",   cat="Máy tính & Laptop",    unit="Phòng Kế hoạch tài chính", ncc="Lenovo Việt Nam",   seri=1006, price="22,000,000", status="ok"     },
+                    new { id=7, code="TB007", name="Màn hình Samsung 27\" 4K",    cat="Thiết bị văn phòng",   unit="Ban Giám Hiệu",             ncc="Samsung Việt Nam",  seri=1007, price="9,500,000",  status="repair" },
+                }; }
             @foreach (var d in devices)
             {
                 var badgeCls = d.status == "ok" ? "ok" : d.status == "repair" ? "repair" : d.status == "broken" ? "broken" : "new";
-                var badgeTxt = d.status == "ok" ? "Hoạt động" : d.status == "repair" ? "Bảo trì" : d.status == "broken" ? "Hư hỏng" : "Mới nhập";
-                <tr>
-                    <td>@d.id</td>
-                    <td><strong>@d.code</strong></td>
-                    <td>@d.name</td>
-                    <td>@d.type</td>
-                    <td>@d.unit</td>
-                    <td>@d.year</td>
-                    <td>@d.price</td>
-                    <td><span class="badge-status @badgeCls">@badgeTxt</span></td>
-                    <td>
-                        <div class="action-btns">
-                            <button class="btn-edit" onclick="openModal('edit')">✏️ Sửa</button>
-                            <button class="btn-del">🗑️ Xóa</button>
-                        </div>
-                    </td>
-                </tr>
-            }
+                var badgeTxt = d.status == "ok" ? "Đang sử dụng" : d.status == "repair" ? "Đang bảo trì" : d.status == "broken" ? "Hư hỏng" : "Mới nhập";
+<tr>
+    <td>@d.id</td>
+    <td><strong>@d.code</strong></td>
+    <td>@d.name</td>
+    <td>@d.cat</td>
+    <td>@d.unit</td>
+    <td>@d.ncc</td>
+    <td>@d.seri</td>
+    <td>@d.price</td>
+    <td><span class="badge-status @badgeCls">@badgeTxt</span></td>
+    <td>
+        <div class="action-btns">
+            <button class="btn-edit" onclick="openModal('edit')">✏️ Sửa</button>
+            @if (d.status == "ok" || d.status == "repair")
+            {
+<button class="btn-report" onclick="openBaoHong('@d.code', '@d.name')">⚠️ Báo hỏng</button>}
+            <button class="btn-del">🗑️ Xóa</button>
+        </div>
+    </td>
+</tr>            }
         </tbody>
     </table>
     <div class="pagination">
         <button class="pg-btn active">1</button>
         <button class="pg-btn">2</button>
-        <button class="pg-btn">3</button>
         <button class="pg-btn">›</button>
     </div>
 </div>
 
-<!-- Modal Thêm / Sửa thiết bị -->
+<!-- Modal Thêm / Sửa thiết bị — khớp cột THIETBI -->
 <div class="modal-overlay" id="deviceModal">
     <div class="modal-box">
         <div class="modal-title" id="modalTitle">➕ Thêm Thiết Bị Mới</div>
         <div class="modal-grid">
+            <div class="section-label">Thông tin cơ bản (THIETBI)</div>
             <div>
-                <label class="form-lbl">Mã thiết bị *</label>
+                <label class="form-lbl">ID_ThietBi *</label>
                 <input type="text" class="form-inp" id="fCode" placeholder="VD: TB008" />
             </div>
             <div>
-                <label class="form-lbl">Năm mua *</label>
-                <input type="number" class="form-inp" id="fYear" placeholder="2024" />
+                <label class="form-lbl">Số Seri (SoSeri)</label>
+                <input type="number" class="form-inp" id="fSeri" placeholder="VD: 1008" />
             </div>
             <div class="full">
-                <label class="form-lbl">Tên thiết bị *</label>
+                <label class="form-lbl">Tên thiết bị (TenTB) *</label>
                 <input type="text" class="form-inp" id="fName" placeholder="Nhập tên thiết bị đầy đủ" />
             </div>
             <div>
-                <label class="form-lbl">Loại thiết bị *</label>
-                <select class="form-inp" id="fType">
-                    <option>Máy tính</option>
-                    <option>Máy chiếu</option>
-                    <option>Thiết bị thực hành</option>
-                    <option>Thiết bị văn phòng</option>
+                <label class="form-lbl">Danh mục (DanhMucNo → DANHMUC)</label>
+                <select class="form-inp" id="fCat">
+                    <option value="DM_MT">Máy tính &amp; Laptop</option>
+                    <option value="DM_MC">Máy chiếu</option>
+                    <option value="DM_TH">Thiết bị thực hành</option>
+                    <option value="DM_VP">Thiết bị văn phòng</option>
                 </select>
             </div>
             <div>
-                <label class="form-lbl">Đơn vị quản lý *</label>
+                <label class="form-lbl">Tình trạng (TrangThaiTB)</label>
+                <select class="form-inp" id="fStatus">
+                    <option value="Mới nhập">Mới nhập</option>
+                    <option value="Đang sử dụng">Đang sử dụng</option>
+                    <option value="Đang bảo trì">Đang bảo trì</option>
+                    <option value="Hư hỏng">Hư hỏng</option>
+                </select>
+            </div>
+
+            <div class="section-label">Phân bổ & Nguồn gốc</div>
+            <div>
+                <label class="form-lbl">Khoa / Phòng ban (KhoaPhongBan → KHOA_PHONGBAN)</label>
                 <select class="form-inp" id="fUnit">
-                    <option>Khoa Công nghệ số</option>
-                    <option>Khoa Điện - Điện tử</option>
-                    <option>Khoa Cơ khí</option>
+                    <option value="KHOA01">Khoa Công nghệ thông tin</option>
+                    <option value="P_CSVC">Phòng Cơ sở vật chất</option>
+                    <option value="P_KHTC">Phòng Kế hoạch tài chính</option>
+                    <option value="BGH_DV">Ban Giám Hiệu</option>
                 </select>
             </div>
             <div>
-                <label class="form-lbl">Giá trị (VNĐ)</label>
+                <label class="form-lbl">Nhà cung cấp (NhaCCNo → NHACUNGCAP)</label>
+                <select class="form-inp" id="fNcc">
+                    <option value="NCC01">Apple Việt Nam</option>
+                    <option value="NCC02">Epson Việt Nam</option>
+                    <option value="NCC03">HP Việt Nam</option>
+                    <option value="NCC04">Samsung Việt Nam</option>
+                    <option value="NCC05">Lenovo Việt Nam</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-lbl">Giá trị (Gia — VNĐ)</label>
                 <input type="text" class="form-inp" id="fPrice" placeholder="VD: 15,000,000" />
             </div>
-            <div>
-                <label class="form-lbl">Tình trạng</label>
-                <select class="form-inp" id="fStatus">
-                    <option value="new">Mới nhập</option>
-                    <option value="ok">Đang hoạt động</option>
-                    <option value="repair">Đang bảo trì</option>
-                    <option value="broken">Hư hỏng</option>
-                </select>
-            </div>
             <div class="full">
-                <label class="form-lbl">Ghi chú</label>
-                <textarea class="form-inp" id="fNote" rows="2" placeholder="Mô tả, vị trí lưu trữ..."></textarea>
+                <label class="form-lbl">Thông số kỹ thuật (ThongSoKT)</label>
+                <textarea class="form-inp" id="fSpec" rows="2" placeholder="CPU, RAM, dung lượng, model..."></textarea>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn-cancel" onclick="closeModal()">Hủy</button>
-            <button class="btn-save" onclick="closeModal()">💾 Lưu thiết bị</button>
+            <button class="btn-cancel" onclick="closeModal('deviceModal')">Hủy</button>
+            <button class="btn-save" onclick="closeModal('deviceModal')">💾 Lưu thiết bị</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Báo hỏng — tạo bản ghi BAOHONG_THIETBI -->
+<div class="modal-overlay" id="baoHongModal">
+    <div class="modal-box">
+        <div class="modal-title">⚠️ Báo Hỏng Thiết Bị</div>
+        <p style="font-size:13px;color:#666;margin-bottom:16px">Tạo phiếu báo hỏng → lưu vào bảng <strong>BAOHONG_THIETBI</strong>. Phòng CSVC sẽ lập kế hoạch sửa chữa đột xuất.</p>
+        <div class="modal-grid">
+            <div>
+                <label class="form-lbl">ID Báo hỏng (ID_BaoHong)</label>
+                <input type="text" class="form-inp" id="bhCode" placeholder="VD: BH-2024-042" />
+            </div>
+            <div>
+                <label class="form-lbl">Thiết bị (ThietBiNo)</label>
+                <input type="text" class="form-inp" id="bhDevice" readonly />
+            </div>
+            <div>
+                <label class="form-lbl">Ngày báo (NgayBao)</label>
+                <input type="date" class="form-inp" id="bhDate" />
+            </div>
+            <div>
+                <label class="form-lbl">Mức độ ưu tiên (MucDoUuTien)</label>
+                <select class="form-inp" id="bhPriority">
+                    <option value="Khẩn">🔴 Khẩn cấp</option>
+                    <option value="Vừa">🟡 Vừa</option>
+                    <option value="Thấp">🟢 Thấp</option>
+                </select>
+            </div>
+            <div class="full">
+                <label class="form-lbl">Mô tả hư hỏng (MoTaHong)</label>
+                <textarea class="form-inp" id="bhDesc" rows="3" placeholder="Mô tả chi tiết tình trạng hư hỏng..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal('baoHongModal')">Hủy</button>
+            <button class="btn-save" style="background:#e65100" onclick="submitBaoHong()">⚠️ Gửi báo hỏng</button>
         </div>
     </div>
 </div>
 
 <script>
-function openModal(mode) {
-    document.getElementById('deviceModal').classList.add('active');
-    document.getElementById('modalTitle').textContent = mode === 'add' ? '➕ Thêm Thiết Bị Mới' : '✏️ Cập Nhật Thông Tin Thiết Bị';
-    if (mode === 'edit') {
-        document.getElementById('fCode').value = 'TB002';
-        document.getElementById('fName').value = 'Máy chiếu Epson EB-X51';
-        document.getElementById('fYear').value = '2021';
-        document.getElementById('fPrice').value = '12,000,000';
-        document.getElementById('fStatus').value = 'repair';
+    function openModal(mode) {
+        var m = document.getElementById('deviceModal');
+        document.getElementById('modalTitle').textContent = mode === 'add' ? '➕ Thêm Thiết Bị Mới' : '✏️ Cập Nhật Thông Tin Thiết Bị';
+        if (mode === 'edit') {
+            document.getElementById('fCode').value = 'TB002';
+            document.getElementById('fName').value = 'Máy chiếu Epson EB-X51';
+            document.getElementById('fSeri').value = '1002';
+            document.getElementById('fPrice').value = '12,000,000';
+            document.getElementById('fStatus').value = 'Đang bảo trì';
+        }
+        m.classList.add('active');
     }
-}
-function closeModal() {
-    document.getElementById('deviceModal').classList.remove('active');
-}
-document.getElementById('deviceModal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
-});
+    function openBaoHong(code, name) {
+        document.getElementById('bhCode').value = 'BH-2024-0' + Math.floor(Math.random() * 90 + 10);
+        document.getElementById('bhDevice').value = code + ' - ' + name;
+        document.getElementById('bhDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('baoHongModal').classList.add('active');
+    }
+    function submitBaoHong() {
+        alert('Phiếu báo hỏng đã được gửi!\nPhòng CSVC sẽ lập kế hoạch sửa chữa đột xuất.');
+        closeModal('baoHongModal');
+    }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    document.querySelectorAll('.modal-overlay').forEach(function (m) {
+        m.addEventListener('click', function (e) { if (e.target === m) m.classList.remove('active'); });
+    });
 </script>
