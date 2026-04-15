@@ -1,5 +1,6 @@
 @{
-    ViewBag.Title = "Theo Dõi Tình Trạng Tài Sản Thiết Bị";
+    ViewBag.Title = "Theo Dõi Tình Trạng Thiết Bị";
+    Layout = "~/Views/Shared/_Layout.cshtml";
     var canChuY = ViewBag.CanChuY as List<QLTB.Models.TheDoiThietBiViewModel> ?? new List<QLTB.Models.TheDoiThietBiViewModel>();
     var hoatDong = ViewBag.HoatDong as List<QLTB.Models.TheDoiThietBiViewModel> ?? new List<QLTB.Models.TheDoiThietBiViewModel>();
     int baoTri = canChuY.FindAll(x => x.TrangThaiTB == "Bảo trì").Count;
@@ -8,327 +9,140 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
-<style>
-    :root {
-        --ip-blue-bg: #F2F7FB;
-        --ip-blue-light: #D1E4F3;
-        --ip-blue-dark: #7EA1BB;
-        --ip-text-main: #3A4D5C;
-        --glass-white: rgba(255, 255, 255, 0.85);
-    }
-
-    body {
-        background-color: var(--ip-blue-bg);
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        color: var(--ip-text-main);
-        margin: 0;
-        padding-top: 90px;
-    }
-
-    /* Top Navigation Sync với Dashboard */
-    .top-nav {
-        height: 70px;
-        background: var(--glass-white);
-        backdrop-filter: blur(20px);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 5%;
-        z-index: 2000;
-    }
-
-    .nav-brand {
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        color: var(--ip-text-main);
-        text-decoration: none;
-    }
-
-    .nav-center {
-        display: flex;
-        background: #f1f3f5;
-        padding: 5px;
-        border-radius: 15px;
-        gap: 5px;
-    }
-
-    .nav-item {
-        padding: 8px 18px;
-        border-radius: 12px;
-        color: var(--ip-text-main);
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 0.9rem;
-        transition: 0.2s;
-    }
-
-        .nav-item.active {
-            background: white;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            color: var(--ip-blue-dark);
-        }
-
-    .container-custom {
-        max-width: 1300px;
-        margin: 0 auto;
-        padding: 0 20px 40px;
-    }
-
-    /* Header & Back Button */
-    .page-header {
-        background: var(--ip-blue-light);
-        padding: 2rem;
-        border-radius: 30px;
-        margin-bottom: 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .back-btn {
-        background: white;
-        padding: 8px 20px;
-        border-radius: 12px;
-        color: var(--ip-text-main);
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.9rem;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-        transition: 0.3s;
-    }
-
-        .back-btn:hover {
-            transform: translateX(-5px);
-            background: #f8f9fa;
-        }
-
-    /* Stats Grid */
-    .stat-group {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .stat-card {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 24px;
-        border: 1px solid rgba(0,0,0,0.01);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.02);
-    }
-
-        .stat-card .num {
-            font-size: 2rem;
-            font-weight: 700;
-            display: block;
-            margin-top: 5px;
-        }
-
-        .stat-card .label {
-            font-size: 0.7rem;
-            opacity: 0.6;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-    /* Table Sections */
-    .section-card {
-        background: white;
-        border-radius: 32px;
-        padding: 1.5rem;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.03);
-        margin-bottom: 2.5rem;
-    }
-
-    .section-title {
-        font-weight: 700;
-        font-size: 1.1rem;
-        margin-bottom: 1.5rem;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .table thead th {
-        background: #F8FAFC;
-        border: none;
-        color: #64748B;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        padding: 15px;
-    }
-
-    .table tbody td {
-        padding: 15px;
-        vertical-align: middle;
-        border-bottom: 1px solid #F1F5F9;
-        font-size: 0.9rem;
-    }
-
-    /* Badges */
-    .status-pill {
-        padding: 6px 14px;
-        border-radius: 50px;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-
-    .bg-good {
-        background: #E2F5E9;
-        color: #2D6A4F;
-    }
-
-    .bg-warning {
-        background: #FFF4E5;
-        color: #B07000;
-    }
-
-    .bg-danger {
-        background: #FEE2E2;
-        color: #991B1B;
-    }
-
-    /* Ẩn các menu thừa của hệ thống cũ */
-    .sidebar, .main-sidebar, .navbar-static-top, .main-header {
-        display: none !important;
-    }
-</style>
-
-<nav class="top-nav">
-    <a href="@Url.Action("Index","BGH")" class="nav-brand">
-        <i class="bi bi-apple"></i>
-        <span>HỆ THỐNG QUẢN LÝ</span>
-    </a>
-    <div class="nav-center">
-        <a href="@Url.Action("Index","BGH")" class="nav-item">Trang chủ</a>
-        <a href="@Url.Action("Index","BGH")" class="nav-item">Dashboard</a>
-        <a href="@Url.Action("XetDuyetYeuCau","BGH")" class="nav-item">Xét duyệt</a>
-        <a href="@Url.Action("ThongKeTaiSan","BGH")" class="nav-item">Thống kê</a>
-        <a href="@Url.Action("TheoDoi","BGH")" class="nav-item active">Theo dõi</a>
-    </div>
-    <div class="nav-right">
-        <span class="fw-bold small me-3">Ban Giám Hiệu</span>
-        <a href="#" class="text-danger"><i class="bi bi-box-arrow-right fs-5"></i></a>
-    </div>
-</nav>
-
-<div class="container-custom">
-    <div class="page-header">
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold mb-1">🔍 Theo Dõi Tình Trạng</h2>
-            <p class="mb-0 text-muted small">Cập nhật lúc: @DateTime.Now.ToString("HH:mm dd/MM/yyyy")</p>
+            <h2 class="fw-bold mb-0">🔍 Theo Dõi Tình Trạng Thiết Bị</h2>
+            <small class="text-muted">Cập nhật lúc: @DateTime.Now.ToString("HH:mm dd/MM/yyyy")</small>
         </div>
-        <a href="@Url.Action("Index","BGH")" class="back-btn"><i class="bi bi-chevron-left"></i> Quay lại Dashboard</a>
+        <a href="@Url.Action("Index","BGH")" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-chevron-left"></i> Quay lại
+        </a>
     </div>
 
     @if (ViewBag.Error != null)
     {
-        <div class="alert alert-warning border-0 rounded-4 shadow-sm mb-4">⚠️ @ViewBag.Error</div>
+        <div class="alert alert-warning">⚠️ @ViewBag.Error</div>
     }
 
-    <div class="stat-group">
-        <div class="stat-card">
-            <span class="label text-success">Hoạt động tốt</span>
-            <span class="num text-success">@hoatDong.Count</span>
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <p class="text-muted small mb-1">Hoạt động tốt</p>
+                <h3 class="text-success fw-bold">@hoatDong.Count</h3>
+            </div>
         </div>
-        <div class="stat-card">
-            <span class="label text-warning">Đang bảo trì</span>
-            <span class="num text-warning">@baoTri</span>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <p class="text-muted small mb-1">Đang bảo trì</p>
+                <h3 class="text-warning fw-bold">@baoTri</h3>
+            </div>
         </div>
-        <div class="stat-card">
-            <span class="label text-danger">Hỏng / Chờ xử lý</span>
-            <span class="num text-danger">@hong</span>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <p class="text-muted small mb-1">Hỏng / Chờ xử lý</p>
+                <h3 class="text-danger fw-bold">@hong</h3>
+            </div>
         </div>
-        <div class="stat-card">
-            <span class="label text-primary">Cần chú ý</span>
-            <span class="num text-primary">@canChuY.Count</span>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <p class="text-muted small mb-1">Cần chú ý</p>
+                <h3 class="text-primary fw-bold">@canChuY.Count</h3>
+            </div>
         </div>
     </div>
 
-    <div class="section-card">
-        <div class="section-title text-danger">
-            <i class="bi bi-exclamation-triangle-fill"></i> Thiết Bị Cần Chú Ý (@canChuY.Count)
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0 pt-3">
+            <h5 class="fw-bold text-danger mb-0">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>Thiết Bị Cần Chú Ý (@canChuY.Count)
+            </h5>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Mã TB</th>
-                        <th>Tên thiết bị</th>
-                        <th>Khoa / Vị trí</th>
-                        <th>Phòng</th>
-                        <th>Tình trạng</th>
-                        <th>Ngày báo</th>
-                        <th>Mô tả hỏng</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (!canChuY.Any())
-                    {
-                        <tr><td colspan="7" class="text-center py-5 text-muted">Mọi thứ đều ổn định 🎉</td></tr>
-                    }
-                    else
-                    {
-                        foreach (var tb in canChuY)
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã TB</th>
+                            <th>Tên thiết bị</th>
+                            <th>Khoa / Vị trí</th>
+                            <th>Phòng</th>
+                            <th>Tình trạng</th>
+                            <th>Ngày báo</th>
+                            <th>Mô tả hỏng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!canChuY.Any())
                         {
-                            var pillCls = tb.TrangThaiTB == "Hỏng" ? "bg-danger" : "bg-warning";
+                            <tr><td colspan="7" class="text-center py-4 text-muted">Mọi thứ đều ổn định 🎉</td></tr>
+                        }
+                        else
+                        {
+                            foreach (var tb in canChuY)
+                            {
+                                <tr>
+                                    <td class="fw-bold text-primary">#@tb.ID_ThietBi</td>
+                                    <td class="fw-semibold">@tb.TenTB</td>
+                                    <td><span class="badge bg-light text-dark">@tb.KhoaPhongBan</span></td>
+                                    <td>@(string.IsNullOrEmpty(tb.Phong) ? "—" : tb.Phong)</td>
+                                    <td>
+                                        @if (tb.TrangThaiTB == "Hỏng")
+                                        {
+                                            <span class="badge bg-danger">@tb.TrangThaiTB</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">@tb.TrangThaiTB</span>
+                                        }
+                                    </td>
+                                    <td class="text-muted">@(tb.NgayBaoHong.HasValue ? tb.NgayBaoHong.Value.ToString("dd/MM/yyyy") : "—")</td>
+                                    <td class="small">@(string.IsNullOrEmpty(tb.MoTaHong) ? "—" : tb.MoTaHong)</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0 pt-3">
+            <h5 class="fw-bold text-success mb-0">
+                <i class="bi bi-check-circle-fill me-2"></i>Hoạt Động Bình Thường (@hoatDong.Count)
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã TB</th>
+                            <th>Tên thiết bị</th>
+                            <th>Khoa / Đơn vị</th>
+                            <th>Phòng</th>
+                            <th>Danh mục</th>
+                            <th>Nhà cung cấp</th>
+                            <th class="text-end">Tình trạng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var tb in hoatDong)
+                        {
                             <tr>
-                                <td class="fw-bold text-primary">#@tb.ID_ThietBi</td>
-                                <td class="fw-semibold">@tb.TenTB</td>
-                                <td><span class="badge bg-light text-dark rounded-pill px-3">@tb.KhoaPhongBan</span></td>
+                                <td class="fw-bold">#@tb.ID_ThietBi</td>
+                                <td>@tb.TenTB</td>
+                                <td>@tb.KhoaPhongBan</td>
                                 <td>@(string.IsNullOrEmpty(tb.Phong) ? "—" : tb.Phong)</td>
-                                <td><span class="status-pill @pillCls">@tb.TrangThaiTB</span></td>
-                                <td class="text-muted">@(tb.NgayBaoHong.HasValue ? tb.NgayBaoHong.Value.ToString("dd/MM/yyyy") : "—")</td>
-                                <td class="small">@(string.IsNullOrEmpty(tb.MoTaHong) ? "—" : tb.MoTaHong)</td>
+                                <td class="text-muted small">@tb.TenDanhMuc</td>
+                                <td class="small">@(string.IsNullOrEmpty(tb.NhaCungCap) ? "—" : tb.NhaCungCap)</td>
+                                <td class="text-end"><span class="badge bg-success">✅ Tốt</span></td>
                             </tr>
                         }
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="section-card">
-        <div class="section-title text-success">
-            <i class="bi bi-check-circle-fill"></i> Hoạt Động Bình Thường (@hoatDong.Count)
-        </div>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Mã TB</th>
-                        <th>Tên thiết bị</th>
-                        <th>Khoa / Đơn vị</th>
-                        <th>Phòng</th>
-                        <th>Danh mục</th>
-                        <th>Nhà cung cấp</th>
-                        <th class="text-end">Tình trạng</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var tb in hoatDong)
-                    {
-                        <tr>
-                            <td class="fw-bold">#@tb.ID_ThietBi</td>
-                            <td>@tb.TenTB</td>
-                            <td>@tb.KhoaPhongBan</td>
-                            <td>@(string.IsNullOrEmpty(tb.Phong) ? "—" : tb.Phong)</td>
-                            <td><span class="text-muted small">@tb.TenDanhMuc</span></td>
-                            <td class="small">@(string.IsNullOrEmpty(tb.NhaCungCap) ? "—" : tb.NhaCungCap)</td>
-                            <td class="text-end"><span class="status-pill bg-good">✅ Tốt</span></td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
