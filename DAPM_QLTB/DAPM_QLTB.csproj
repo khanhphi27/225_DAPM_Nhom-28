@@ -45,10 +45,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -120,19 +128,115 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="BAOHONG_THIETBI.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="CHITIET_DEXUAT.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="CHITIET_KEHOACH.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="CHITIET_KIEMKE.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\BGHController.cs" />
     <Compile Include="Controllers\CSVCController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\KHTCController.cs" />
     <Compile Include="Controllers\TruongKhoaController.cs" />
+    <Compile Include="COSO.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DANHMUC.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DEXUAT_MUASAM.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="GHINHAN_SUA_CHUA.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="KEHOACH_BAOTRI.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="KHOA_PHONGBAN.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="KHUVUC.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="KIEMKE.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\DbHelper.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\ViewModels.cs" />
+    <Compile Include="NGUOIDUNG.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="NGUOIDUNG_THONGBAO.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="NHACUNGCAP.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="PHONG.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="PHONG_THIETBI.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QLTB.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>QLTB.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="QLTB.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="QLTB.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>QLTB.edmx</DependentUpon>
+    </Compile>
+    <Compile Include="sp_helpdiagramdefinition_Result.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="sp_helpdiagrams_Result.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="sysdiagram.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="THIETBI.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="THONGBAO.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="VAITRO.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="VAITRO_NGUOIDUNG.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="View_BaoCaoTaiChinh.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="View_BaoHong_TrangThai.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="View_KeHoach_ChiTiet.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bgh.css" />
@@ -161,6 +265,16 @@
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <Content Include="QLTB.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>QLTB.Context.cs</LastGenOutput>
+      <DependentUpon>QLTB.edmx</DependentUpon>
+    </Content>
+    <Content Include="QLTB.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>QLTB.edmx</DependentUpon>
+      <LastGenOutput>QLTB.cs</LastGenOutput>
+    </Content>
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.esm.js" />
@@ -187,6 +301,13 @@
     <Content Include="Content\bootstrap-utilities.rtl.min.css.map" />
     <Content Include="Content\bootstrap.rtl.css.map" />
     <Content Include="Content\bootstrap.rtl.min.css.map" />
+    <EntityDeploy Include="QLTB.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>QLTB.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <Content Include="QLTB.edmx.diagram">
+      <DependentUpon>QLTB.edmx</DependentUpon>
+    </Content>
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\jquery-3.4.1.js" />
     <Content Include="Scripts\jquery-3.4.1.min.js" />
@@ -257,6 +378,9 @@
     <None Include="packages.config" />
     <Content Include="Scripts\jquery-3.4.1.slim.min.map" />
     <Content Include="Scripts\jquery-3.4.1.min.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
