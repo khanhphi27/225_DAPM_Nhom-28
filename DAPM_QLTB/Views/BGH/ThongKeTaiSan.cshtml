@@ -1,357 +1,157 @@
 @model QLTB.Models.ThongKeTaiSanViewModel
 @{
-    ViewBag.Title = "Thống Kê Tài Sản ";
-    int maxSL = Model.TheoDanhMuc != null && Model.TheoDanhMuc.Count > 0
-                ? Model.TheoDanhMuc[0].SoLuong : 1;
+    ViewBag.Title = "Thống Kê Tài Sản";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int maxSL = Model.TheoDanhMuc != null && Model.TheoDanhMuc.Count > 0 ? Model.TheoDanhMuc[0].SoLuong : 1;
+    int tong = Model.TongThietBi > 0 ? Model.TongThietBi : 1;
+    int pHD = (int)Math.Round((double)Model.HoatDong / tong * 100);
+    int pBT = (int)Math.Round((double)Model.BaoTri / tong * 100);
+    int pH  = (int)Math.Round((double)Model.Hong / tong * 100);
 }
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
-<style>
-    :root {
-        --ip-blue-bg: #F2F7FB;
-        --ip-blue-light: #D1E4F3;
-        --ip-blue-dark: #7EA1BB;
-        --ip-text-main: #3A4D5C;
-        --glass-white: rgba(255, 255, 255, 0.85);
-    }
-
-    body {
-        background-color: var(--ip-blue-bg);
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        color: var(--ip-text-main);
-        margin: 0;
-        padding-top: 90px;
-    }
-
-    /* Ẩn các menu thừa của hệ thống cũ */
-    .sidebar, .main-sidebar, .navbar-static-top, .main-header {
-        display: none !important;
-    }
-
-    /* Top Navigation (Đồng bộ với Dashboard) */
-    .top-nav {
-        height: 70px;
-        background: var(--glass-white);
-        backdrop-filter: blur(20px);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 5%;
-        z-index: 2000;
-    }
-
-    .nav-brand {
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        color: var(--ip-text-main);
-        text-decoration: none;
-    }
-
-    .nav-center {
-        display: flex;
-        background: #f1f3f5;
-        padding: 5px;
-        border-radius: 15px;
-        gap: 5px;
-    }
-
-    .nav-item {
-        padding: 8px 18px;
-        border-radius: 12px;
-        color: var(--ip-text-main);
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 0.9rem;
-        transition: 0.2s;
-    }
-
-        .nav-item.active {
-            background: white;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            color: var(--ip-blue-dark);
-        }
-
-    .container-custom {
-        max-width: 1300px;
-        margin: 0 auto;
-        padding: 0 20px 40px;
-    }
-
-    /* Header & Back Button */
-    .page-header {
-        background: var(--ip-blue-light);
-        padding: 2.5rem;
-        border-radius: 35px;
-        margin-bottom: 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border: 1px solid rgba(255,255,255,0.4);
-    }
-
-    .back-btn {
-        background: white;
-        padding: 10px 22px;
-        border-radius: 14px;
-        color: var(--ip-text-main);
-        text-decoration: none;
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-    }
-
-    /* Stats Grid */
-    .stat-group {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .stat-item {
-        background: white;
-        padding: 1.8rem;
-        border-radius: 28px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.02);
-    }
-
-        .stat-item .num {
-            font-size: 2.2rem;
-            font-weight: 700;
-            display: block;
-        }
-
-        .stat-item .label {
-            font-size: 0.75rem;
-            opacity: 0.6;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-    /* Progress & Charts Section */
-    .chart-card {
-        background: white;
-        padding: 2rem;
-        border-radius: 35px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.02);
-    }
-
-    .progress-list-item {
-        margin-bottom: 20px;
-    }
-
-        .progress-list-item .label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-    .progress {
-        height: 10px;
-        border-radius: 20px;
-        background-color: #F1F5F9;
-    }
-
-    .progress-bar {
-        border-radius: 20px;
-    }
-
-    /* Table Section */
-    .table-container {
-        background: white;
-        border-radius: 35px;
-        padding: 2rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.02);
-        margin-bottom: 2.5rem;
-    }
-
-    .table thead th {
-        background: #F8FAFC;
-        border: none;
-        color: #64748B;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        padding: 18px;
-    }
-
-    .table tbody td {
-        padding: 18px;
-        vertical-align: middle;
-        border-bottom: 1px solid #F1F5F9;
-    }
-
-    .status-badge {
-        padding: 6px 14px;
-        border-radius: 50px;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-
-    .status-done {
-        background: #E2F5E9;
-        color: #2D6A4F;
-    }
-
-    .status-process {
-        background: #E0F2FE;
-        color: #075985;
-    }
-</style>
-
-<nav class="top-nav">
-    <a href="@Url.Action("Index","BGH")" class="nav-brand">
-        <i class="bi bi-apple"></i>
-        <span>HỆ THỐNG QUẢN LÝ</span>
-    </a>
-    <div class="nav-center">
-        <a href="@Url.Action("Index","BGH")" class="nav-item">Trang chủ</a>
-        <a href="@Url.Action("Index","BGH")" class="nav-item">Dashboard</a>
-        <a href="@Url.Action("XetDuyetYeuCau","BGH")" class="nav-item">Xét duyệt</a>
-        <a href="@Url.Action("ThongKeTaiSan","BGH")" class="nav-item active">Thống kê</a>
-        <a href="@Url.Action("TheoDoi","BGH")" class="nav-item">Theo dõi</a>
-    </div>
-    <div class="nav-right">
-        <span class="fw-bold small me-3">Đại diện BGH</span>
-        <a href="#" class="text-danger"><i class="bi bi-box-arrow-right fs-5"></i></a>
-    </div>
-</nav>
-
-<div class="container-custom">
-    <div class="page-header">
-        <div>
-            <h1 class="fw-bold mb-1">📊 Thống Kê Tài Sản</h1>
-            <p class="mb-0 text-muted opacity-75">Báo cáo tổng hợp cơ sở vật chất toàn trường</p>
-        </div>
-        <a href="@Url.Action("Index","BGH")" class="back-btn"><i class="bi bi-chevron-left"></i> Quay lại</a>
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">📊 Thống Kê Tài Sản</h2>
+        <a href="@Url.Action("Index","BGH")" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-chevron-left"></i> Quay lại
+        </a>
     </div>
 
-    <div class="stat-group">
-        <div class="stat-item">
-            <span class="label text-primary">📦 Tổng thiết bị</span>
-            <span class="num">@Model.TongThietBi</span>
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <p class="text-muted small mb-1">📦 Tổng thiết bị</p>
+                <h3 class="text-primary fw-bold">@Model.TongThietBi</h3>
+            </div>
         </div>
-        <div class="stat-item">
-            <span class="label text-success">💰 Tổng giá trị (VNĐ)</span>
-            <span class="num text-success" style="font-size: 1.5rem; margin-top: 12px;">@Model.TongGiaTri.ToString("N0")</span>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <p class="text-muted small mb-1">💰 Tổng giá trị (VNĐ)</p>
+                <h5 class="text-success fw-bold">@Model.TongGiaTri.ToString("N0")</h5>
+            </div>
         </div>
-        <div class="stat-item">
-            <span class="label text-info">🏫 Số khoa / đơn vị</span>
-            <span class="num">@(Model.TheoKhoa?.Count ?? 0)</span>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <p class="text-muted small mb-1">🏫 Số khoa / đơn vị</p>
+                <h3 class="text-info fw-bold">@(Model.TheoKhoa?.Count ?? 0)</h3>
+            </div>
         </div>
-        <div class="stat-item">
-            <span class="label text-warning">📅 Lần kiểm kê</span>
-            <span class="num">@(Model.LichSuKiemKe?.Count ?? 0)</span>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <p class="text-muted small mb-1">📅 Lần kiểm kê</p>
+                <h3 class="text-warning fw-bold">@(Model.LichSuKiemKe?.Count ?? 0)</h3>
+            </div>
         </div>
     </div>
 
     <div class="row g-4 mb-4">
         <div class="col-lg-5">
-            <div class="chart-card">
-                <h5 class="fw-bold mb-4">📈 Tình Trạng Hiện Tại</h5>
-                @{
-                    int tong = Model.TongThietBi > 0 ? Model.TongThietBi : 1;
-                    int pHD = (int)Math.Round((double)Model.HoatDong / tong * 100);
-                    int pBT = (int)Math.Round((double)Model.BaoTri / tong * 100);
-                    int pH = (int)Math.Round((double)Model.Hong / tong * 100);
-                }
-                <div class="progress-list-item">
-                    <div class="label"><span>Đang hoạt động tốt</span><span>@pHD%</span></div>
-                    <div class="progress"><div class="progress-bar bg-success" style="width:@pHD%"></div></div>
-                </div>
-                <div class="progress-list-item">
-                    <div class="label"><span>Đang bảo trì</span><span>@pBT%</span></div>
-                    <div class="progress"><div class="progress-bar bg-warning" style="width:@pBT%"></div></div>
-                </div>
-                <div class="progress-list-item">
-                    <div class="label"><span>Hỏng / Thanh lý</span><span>@pH%</span></div>
-                    <div class="progress"><div class="progress-bar bg-danger" style="width:@pH%"></div></div>
-                </div>
-
-                <hr class="my-4 opacity-25" />
-
-                <h6 class="fw-bold mb-3">📂 Phân loại theo Danh mục</h6>
-                @foreach (var dm in Model.TheoDanhMuc)
-                {
-                    int pct = (int)Math.Round((double)dm.SoLuong / maxSL * 100);
-                    <div class="progress-list-item">
-                        <div class="label"><span class="small">@dm.TenDanhMuc</span><span class="small fw-bold">@dm.SoLuong</span></div>
-                        <div class="progress" style="height: 6px;"><div class="progress-bar bg-primary" style="width:@pct%"></div></div>
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4">📈 Tình Trạng Hiện Tại</h5>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1"><span>Đang hoạt động tốt</span><span>@pHD%</span></div>
+                        <div class="progress" style="height:10px"><div class="progress-bar bg-success" style="width:@pHD%"></div></div>
                     </div>
-                }
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1"><span>Đang bảo trì</span><span>@pBT%</span></div>
+                        <div class="progress" style="height:10px"><div class="progress-bar bg-warning" style="width:@pBT%"></div></div>
+                    </div>
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-1"><span>Hỏng / Thanh lý</span><span>@pH%</span></div>
+                        <div class="progress" style="height:10px"><div class="progress-bar bg-danger" style="width:@pH%"></div></div>
+                    </div>
+
+                    <hr />
+                    <h6 class="fw-bold mb-3">📂 Phân loại theo Danh mục</h6>
+                    @foreach (var dm in Model.TheoDanhMuc)
+                    {
+                        int pct = (int)Math.Round((double)dm.SoLuong / maxSL * 100);
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between mb-1"><span class="small">@dm.TenDanhMuc</span><span class="small fw-bold">@dm.SoLuong</span></div>
+                            <div class="progress" style="height:6px"><div class="progress-bar bg-primary" style="width:@pct%"></div></div>
+                        </div>
+                    }
+                </div>
             </div>
         </div>
 
         <div class="col-lg-7">
-            <div class="table-container h-100">
-                <h5 class="fw-bold mb-4">🏫 Thống Kê Chi Tiết Đơn Vị</h5>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead>
-                            <tr>
-                                <th>Đơn vị</th>
-                                <th class="text-center">Tổng</th>
-                                <th class="text-center text-success">Tốt</th>
-                                <th class="text-center text-danger">Hỏng</th>
-                                <th>Giá trị</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var k in Model.TheoKhoa)
-                            {
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4">🏫 Thống Kê Chi Tiết Đơn Vị</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
                                 <tr>
-                                    <td class="fw-semibold">@k.TenKhoa</td>
-                                    <td class="text-center">@k.Tong</td>
-                                    <td class="text-center fw-bold">@k.HoatDong</td>
-                                    <td class="text-center">@k.Hong</td>
-                                    <td class="small">@k.TongGia.ToString("N0")</td>
+                                    <th>Đơn vị</th>
+                                    <th class="text-center">Tổng</th>
+                                    <th class="text-center text-success">Tốt</th>
+                                    <th class="text-center text-danger">Hỏng</th>
+                                    <th>Giá trị</th>
                                 </tr>
-                            }
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @foreach (var k in Model.TheoKhoa)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">@k.TenKhoa</td>
+                                        <td class="text-center">@k.Tong</td>
+                                        <td class="text-center fw-bold text-success">@k.HoatDong</td>
+                                        <td class="text-center text-danger">@k.Hong</td>
+                                        <td class="small">@k.TongGia.ToString("N0")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="table-container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0 pt-3 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0">📅 Lịch Sử Kiểm Kê Tài Sản</h5>
-            <span class="badge bg-light text-dark rounded-pill px-3 py-2">Dữ liệu lưu trữ</span>
+            <span class="badge bg-light text-dark">Dữ liệu lưu trữ</span>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Mã KK</th>
-                        <th>Ngày thực hiện</th>
-                        <th>Người phụ trách</th>
-                        <th>Số lượng TB</th>
-                        <th>Trạng thái</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var kk in Model.LichSuKiemKe)
-                    {
-                        var cls = kk.TrangThai == "Hoàn thành" ? "status-done" : "status-process";
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
                         <tr>
-                            <td class="fw-bold text-primary">#@kk.ID_KiemKe</td>
-                            <td>@kk.NgayKiemKe.ToString("dd/MM/yyyy")</td>
-                            <td>@kk.NguoiThucHien</td>
-                            <td class="fw-bold">@kk.TongThietBiKK</td>
-                            <td><span class="status-badge @cls">@kk.TrangThai</span></td>
+                            <th>Mã KK</th>
+                            <th>Ngày thực hiện</th>
+                            <th>Người phụ trách</th>
+                            <th>Số lượng TB</th>
+                            <th>Trạng thái</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var kk in Model.LichSuKiemKe)
+                        {
+                            <tr>
+                                <td class="fw-bold text-primary">#@kk.ID_KiemKe</td>
+                                <td>@kk.NgayKiemKe.ToString("dd/MM/yyyy")</td>
+                                <td>@kk.NguoiThucHien</td>
+                                <td class="fw-bold">@kk.TongThietBiKK</td>
+                                <td>
+                                    @if (kk.TrangThai == "Hoàn thành")
+                                    {
+                                        <span class="badge bg-success">@kk.TrangThai</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-info">@kk.TrangThai</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
