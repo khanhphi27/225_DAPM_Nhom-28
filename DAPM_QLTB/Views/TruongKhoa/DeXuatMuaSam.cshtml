@@ -1,0 +1,351 @@
+@model System.Data.DataTable
+@{
+    ViewBag.Title = "Đề Xuất Mua Sắm";
+}
+
+<style>
+    .page-header h2 { color:#1a237e; font-weight:700; font-size:22px; margin:0; }
+    .page-header p  { color:#666; font-size:13px; margin:4px 0 0; }
+
+    .form-card, .history-card {
+        background:#fff; border-radius:14px;
+        box-shadow:0 2px 12px rgba(0,0,0,.08); margin-bottom:28px;
+    }
+    .form-card { padding:28px 32px; }
+    .section-title { color:#1a237e; font-weight:700; font-size:15px; margin-bottom:20px; padding-bottom:10px; border-bottom:2px solid #e8eaf6; }
+
+    .form-label { font-size:13px; font-weight:600; color:#444; margin-bottom:5px; }
+    .form-control { border:1px solid #d0d5e8; border-radius:8px; font-size:13px; padding:9px 12px; background:#f8f9fe; width:100%; box-sizing:border-box; }
+    .form-control:focus { border-color:#3949ab; background:#fff; box-shadow:none; outline:none; }
+
+    /* Bảng thiết bị */
+    .tb-table { width:100%; border-collapse:collapse; margin-bottom:12px; }
+    .tb-table th { background:#e8eaf6; color:#1a237e; font-size:11px; font-weight:700; text-transform:uppercase; padding:9px 12px; text-align:left; }
+    .tb-table td { padding:8px 6px; border-bottom:1px solid #f0f2f8; vertical-align:middle; }
+    .tb-table tr:last-child td { border-bottom:none; }
+    .tb-table input { border:1px solid #d0d5e8; border-radius:6px; font-size:13px; padding:7px 10px; background:#f8f9fe; width:100%; box-sizing:border-box; }
+    .tb-table input:focus { border-color:#3949ab; background:#fff; outline:none; }
+
+    .btn-add-row { background:#e8eaf6; color:#1a237e; border:none; border-radius:7px; padding:7px 16px; font-size:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+    .btn-add-row:hover { background:#c5cae9; }
+    .btn-del-row { background:#fce4ec; color:#c62828; border:none; border-radius:6px; padding:5px 10px; font-size:13px; cursor:pointer; font-weight:700; }
+    .btn-del-row:hover { background:#f8bbd0; }
+
+    .btn-submit { background:#1a237e; color:#fff; border:none; border-radius:8px; padding:10px 28px; font-size:13px; font-weight:600; cursor:pointer; }
+    .btn-submit:hover { background:#283593; }
+
+    /* History */
+    .history-header { padding:18px 24px; border-bottom:1px solid #f0f2f8; display:flex; justify-content:space-between; align-items:center; }
+    .history-header h4 { color:#1a237e; font-weight:700; font-size:15px; margin:0; }
+
+    .dx-card { border:1px solid #e8eaf6; border-radius:12px; margin:16px; overflow:hidden; transition:box-shadow .2s; }
+    .dx-card:hover { box-shadow:0 4px 16px rgba(26,35,126,.1); }
+    .dx-card-head { padding:14px 20px; display:flex; justify-content:space-between; align-items:flex-start; background:#fafbff; border-bottom:1px solid #f0f2f8; }
+    .dx-id   { font-size:11px; color:#888; font-weight:600; }
+    .dx-name { font-size:14px; font-weight:700; color:#1a237e; margin:3px 0; }
+    .dx-meta { font-size:12px; color:#666; }
+    .dx-meta span { margin-right:16px; }
+    .dx-mota { padding:0 20px 10px; font-size:12px; color:#666; }
+    .dx-mota b { color:#444; }
+
+    /* Chi tiết thiết bị trong lịch sử */
+    .dx-items { margin:0 20px 14px; border:1px solid #f0f2f8; border-radius:8px; overflow:hidden; }
+    .dx-items table { width:100%; border-collapse:collapse; }
+    .dx-items th { background:#f5f6ff; color:#1a237e; font-size:10px; font-weight:700; text-transform:uppercase; padding:7px 12px; text-align:left; }
+    .dx-items td { padding:7px 12px; font-size:12px; border-top:1px solid #f5f6ff; color:#333; }
+
+    /* Timeline */
+    .timeline { display:flex; align-items:center; padding:14px 24px 8px; }
+    .tl-step { display:flex; flex-direction:column; align-items:center; flex:1; position:relative; }
+    .tl-step:not(:last-child)::after { content:''; position:absolute; top:12px; left:calc(50% + 12px); width:calc(100% - 24px); height:2px; background:#e0e0e0; z-index:0; }
+    .tl-step.done:not(:last-child)::after { background:#43a047; }
+    .tl-dot { width:24px; height:24px; border-radius:50%; border:2px solid #e0e0e0; background:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; z-index:1; position:relative; }
+    .tl-step.done .tl-dot   { background:#43a047; border-color:#43a047; color:#fff; }
+    .tl-step.active .tl-dot { background:#fb8c00; border-color:#fb8c00; color:#fff; }
+    .tl-step.reject .tl-dot { background:#e53935; border-color:#e53935; color:#fff; }
+    .tl-label { font-size:10px; color:#999; margin-top:4px; text-align:center; font-weight:600; }
+    .tl-step.done .tl-label   { color:#43a047; }
+    .tl-step.active .tl-label { color:#fb8c00; }
+    .tl-step.reject .tl-label { color:#e53935; }
+
+    .badge-status { display:inline-block; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap; }
+    .badge-csvc   { background:#fff3e0; color:#e65100; }
+    .badge-khtc   { background:#e3f2fd; color:#1565c0; }
+    .badge-bgh    { background:#f3e5f5; color:#6a1b9a; }
+    .badge-done   { background:#e8f5e9; color:#2e7d32; }
+    .badge-reject { background:#fce4ec; color:#c62828; }
+    .badge-default{ background:#f5f5f5; color:#555; }
+
+    .empty-state { text-align:center; padding:48px; color:#aaa; }
+    .empty-state span { font-size:44px; display:block; margin-bottom:12px; }
+    .alert-ok  { background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7; border-radius:8px; padding:12px 16px; font-size:13px; font-weight:600; margin-bottom:20px; }
+    .alert-err { background:#fff3e0; color:#e65100; border:1px solid #ffcc80; border-radius:8px; padding:12px 16px; font-size:13px; margin-bottom:20px; }
+
+    .tong-gia { background:#f5f6ff; border-radius:8px; padding:10px 16px; font-size:13px; font-weight:700; color:#1a237e; text-align:right; margin-bottom:16px; }
+</style>
+
+<div class="page-header mb-4">
+    <h2>📋 Đề Xuất Mua Sắm Thiết Bị</h2>
+    <p>Tạo phiếu đề xuất mới và theo dõi trạng thái các đề xuất của bạn</p>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert-ok">✅ @TempData["Success"]</div>
+}
+@if (ViewBag.Error != null)
+{
+    <div class="alert-err">⚠️ @ViewBag.Error</div>
+}
+
+<!-- Form tạo mới -->
+<div class="form-card">
+    <div class="section-title">➕ Tạo Phiếu Đề Xuất Mới</div>
+    @using (Html.BeginForm("GuiDeXuat", "TruongKhoa", FormMethod.Post, new { id = "formDeXuat" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <!-- Bảng danh sách thiết bị -->
+        <table class="tb-table" id="tbThietBi">
+            <thead>
+                <tr>
+                    <th style="width:35%">Tên thiết bị *</th>
+                    <th style="width:12%">Số lượng *</th>
+                    <th style="width:12%">Đơn vị tính</th>
+                    <th style="width:20%">Giá dự kiến (VNĐ) *</th>
+                    <th style="width:15%">Thành tiền</th>
+                    <th style="width:6%"></th>
+                </tr>
+            </thead>
+            <tbody id="tbBody">
+                <tr class="tb-row">
+                    <td><input type="text"   name="tenTB[]"   class="form-control" required placeholder="Ví dụ: Máy chiếu Sony" /></td>
+                    <td><input type="number" name="soluong[]" class="form-control sl-input" required min="1" value="1" /></td>
+                    <td><input type="text"   name="donvi[]"   class="form-control" placeholder="Cái, bộ..." /></td>
+                    <td><input type="number" name="gia[]"     class="form-control gia-input" required min="0" value="0" /></td>
+                    <td class="thanh-tien" style="font-weight:600;color:#1a237e;font-size:13px;">0 đ</td>
+                    <td><button type="button" class="btn-del-row" onclick="xoaDong(this)" title="Xóa dòng">✕</button></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <button type="button" class="btn-add-row" onclick="themDong()">
+                ＋ Thêm thiết bị
+            </button>
+            <div class="tong-gia" style="margin:0;">
+                Tổng dự kiến: <span id="tongGia">0</span> đ
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Lý do / Mô tả chung</label>
+            <textarea name="mota" class="form-control" rows="3" placeholder="Mô tả lý do cần mua sắm thiết bị..."></textarea>
+        </div>
+
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn-submit">📤 Gửi đề xuất</button>
+        </div>
+    }
+</div>
+
+<!-- Lịch sử đề xuất -->
+<div class="history-card">
+    <div class="history-header">
+        <h4>📂 Lịch Sử Đề Xuất Của Bạn</h4>
+        <span style="font-size:12px;color:#888;">@(Model != null ? Model.Rows.Count : 0) đề xuất</span>
+    </div>
+
+    @if (Model == null || Model.Rows.Count == 0)
+    {
+        <div class="empty-state">
+            <span>📭</span>
+            Bạn chưa có đề xuất nào. Hãy tạo đề xuất đầu tiên ở trên.
+        </div>
+    }
+    else
+    {
+        // Nhóm theo ID_DeXuat
+        var groups = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Data.DataRow>>();
+        foreach (System.Data.DataRow r in Model.Rows)
+        {
+            string key = r["ID_DeXuat"].ToString();
+            if (!groups.ContainsKey(key))
+            {
+                groups[key] = new System.Collections.Generic.List<System.Data.DataRow>();
+            }
+            groups[key].Add(r);
+        }
+
+        foreach (var kv in groups)
+        {
+            var rows   = kv.Value;
+            var first  = rows[0];
+            string tt  = first["TrangThai"].ToString();
+
+            string badgeClass;
+            string step1 = "done", step2 = "", step3 = "", step4 = "";
+            if (tt == "Chờ CSVC duyệt") {
+                badgeClass = "badge-csvc"; step1 = "active";
+            } else if (tt == "Chờ KHTC duyệt") {
+                badgeClass = "badge-khtc"; step2 = "active";
+            } else if (tt == "Chờ BGH duyệt") {
+                badgeClass = "badge-bgh"; step2 = "done"; step3 = "active";
+            } else if (tt == "Đã duyệt") {
+                badgeClass = "badge-done"; step2 = "done"; step3 = "done"; step4 = "done";
+            } else if (tt.Contains("Từ chối")) {
+                badgeClass = "badge-reject";
+                if (tt.Contains("CSVC")) { step1 = "reject"; }
+                else if (tt.Contains("KHTC")) { step2 = "reject"; }
+                else { step2 = "done"; step3 = "done"; step4 = "reject"; }
+            } else {
+                badgeClass = "badge-default";
+            }
+
+            string moTa      = first["MoTa"]         == DBNull.Value ? "" : first["MoTa"].ToString();
+            string lyDo      = first["LyDoTuChoi"]    == DBNull.Value ? "" : first["LyDoTuChoi"].ToString();
+            string ngayDuyet = first["NgayDuyetCuoi"] == DBNull.Value ? "" : Convert.ToDateTime(first["NgayDuyetCuoi"]).ToString("dd/MM/yyyy");
+
+            decimal tongGia = 0;
+            foreach (var r in rows)
+            {
+                if (r["GiaDuKien"] != DBNull.Value && r["SoLuong"] != DBNull.Value)
+                {
+                    tongGia += Convert.ToDecimal(r["GiaDuKien"]) * Convert.ToInt32(r["SoLuong"]);
+                }
+            }
+
+            <div class="dx-card">
+                <div class="dx-card-head">
+                    <div>
+                        <div class="dx-id">Mã: @first["ID_DeXuat"] &nbsp;|&nbsp; Ngày gửi: @Convert.ToDateTime(first["NgayDeXuat"]).ToString("dd/MM/yyyy")</div>
+                        <div class="dx-name">Phiếu đề xuất — @rows.Count thiết bị</div>
+                        <div class="dx-meta">
+                            <span>💰 Tổng: @string.Format("{0:N0}", tongGia) đ</span>
+                            @if (!string.IsNullOrEmpty(ngayDuyet)) {
+                                <span>✅ Duyệt: @ngayDuyet</span>
+                            }
+                        </div>
+                    </div>
+                    <span class="badge-status @badgeClass">@tt</span>
+                </div>
+
+                <!-- Timeline -->
+                <div class="timeline">
+                    <div class="tl-step done">
+                        <div class="tl-dot">✓</div>
+                        <div class="tl-label">Đã gửi</div>
+                    </div>
+                    <div class="tl-step @step1">
+                        <div class="tl-dot">@(step1=="done"?"✓":step1=="reject"?"✕":"1")</div>
+                        <div class="tl-label">CSVC</div>
+                    </div>
+                    <div class="tl-step @step2">
+                        <div class="tl-dot">@(step2=="done"?"✓":step2=="reject"?"✕":"2")</div>
+                        <div class="tl-label">KHTC</div>
+                    </div>
+                    <div class="tl-step @step3">
+                        <div class="tl-dot">@(step3=="done"?"✓":step3=="reject"?"✕":"3")</div>
+                        <div class="tl-label">BGH</div>
+                    </div>
+                    <div class="tl-step @step4">
+                        <div class="tl-dot">@(step4=="done"?"✓":step4=="reject"?"✕":"✓")</div>
+                        <div class="tl-label">Hoàn tất</div>
+                    </div>
+                </div>
+
+                <!-- Danh sách thiết bị -->
+                <div class="dx-items">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tên thiết bị</th>
+                                <th style="text-align:center">SL</th>
+                                <th style="text-align:right">Đơn giá</th>
+                                <th style="text-align:right">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in rows)
+                            {
+                                decimal sl  = r["SoLuong"]   == DBNull.Value ? 0 : Convert.ToDecimal(r["SoLuong"]);
+                                decimal gia = r["GiaDuKien"] == DBNull.Value ? 0 : Convert.ToDecimal(r["GiaDuKien"]);
+                                <tr>
+                                    <td style="font-weight:600;">@r["TenThietBiDeXuat"]</td>
+                                    <td style="text-align:center;">@r["SoLuong"]</td>
+                                    <td style="text-align:right;">@string.Format("{0:N0}", gia) đ</td>
+                                    <td style="text-align:right;font-weight:600;color:#1a237e;">@string.Format("{0:N0}", sl * gia) đ</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr style="background:#f5f6ff;">
+                                <td colspan="3" style="text-align:right;font-weight:700;color:#1a237e;">Tổng cộng:</td>
+                                <td style="text-align:right;font-weight:700;color:#1a237e;">@string.Format("{0:N0}", tongGia) đ</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                @if (!string.IsNullOrEmpty(moTa) || !string.IsNullOrEmpty(lyDo))
+                {
+                    <div class="dx-mota">
+                        @if (!string.IsNullOrEmpty(moTa)) {
+                            <b>💬 Mô tả:</b> @moTa <br />
+                        }
+                        @if (!string.IsNullOrEmpty(lyDo)) {
+                            <b style="color:#c62828;">❌ Lý do từ chối:</b> <span style="color:#c62828;">@lyDo</span>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+<script>
+    // Thêm dòng thiết bị mới
+    function themDong() {
+        var tbody = document.getElementById('tbBody');
+        var row = document.createElement('tr');
+        row.className = 'tb-row';
+        row.innerHTML = `
+            <td><input type="text"   name="tenTB[]"   class="form-control" required placeholder="Tên thiết bị" /></td>
+            <td><input type="number" name="soluong[]" class="form-control sl-input" required min="1" value="1" /></td>
+            <td><input type="text"   name="donvi[]"   class="form-control" placeholder="Cái, bộ..." /></td>
+            <td><input type="number" name="gia[]"     class="form-control gia-input" required min="0" value="0" /></td>
+            <td class="thanh-tien" style="font-weight:600;color:#1a237e;font-size:13px;">0 đ</td>
+            <td><button type="button" class="btn-del-row" onclick="xoaDong(this)" title="Xóa dòng">✕</button></td>`;
+        tbody.appendChild(row);
+        bindRowEvents(row);
+    }
+
+    // Xóa dòng (giữ ít nhất 1 dòng)
+    function xoaDong(btn) {
+        var rows = document.querySelectorAll('#tbBody .tb-row');
+        if (rows.length <= 1) { alert('Phiếu đề xuất cần ít nhất 1 thiết bị.'); return; }
+        btn.closest('tr').remove();
+        tinhTong();
+    }
+
+    // Tính thành tiền từng dòng và tổng
+    function tinhTong() {
+        var tong = 0;
+        document.querySelectorAll('#tbBody .tb-row').forEach(function(row) {
+            var sl  = parseFloat(row.querySelector('.sl-input').value)  || 0;
+            var gia = parseFloat(row.querySelector('.gia-input').value) || 0;
+            var tt  = sl * gia;
+            tong += tt;
+            row.querySelector('.thanh-tien').textContent = tt.toLocaleString('vi-VN') + ' đ';
+        });
+        document.getElementById('tongGia').textContent = tong.toLocaleString('vi-VN');
+    }
+
+    function bindRowEvents(row) {
+        row.querySelector('.sl-input').addEventListener('input', tinhTong);
+        row.querySelector('.gia-input').addEventListener('input', tinhTong);
+    }
+
+    // Bind sự kiện cho dòng đầu tiên
+    document.querySelectorAll('#tbBody .tb-row').forEach(bindRowEvents);
+</script>

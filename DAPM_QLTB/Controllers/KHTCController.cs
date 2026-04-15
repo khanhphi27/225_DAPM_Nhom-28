@@ -153,13 +153,69 @@ namespace QLTB.Controllers
                 using (var conn = DbHelper.GetConnection())
                 {
                     conn.Open();
-                    const string sql = @"UPDATE DEXUAT_MUASAM SET TrangThai=@TrangThai, LyDoTuChoi=@GhiChu, NgayDuyetCuoi=GETDATE() WHERE ID_DeXuat=@Id";
-                    using (var cmd = new SqlCommand(sql, conn))
+                    using (var tran = conn.BeginTransaction())
                     {
-                        cmd.Parameters.AddWithValue("@TrangThai", trangThai);
-                        cmd.Parameters.AddWithValue("@GhiChu",    (object)ghiChu ?? DBNull.Value);
-                        cmd.Parameters.AddWithValue("@Id",        id);
-                        cmd.ExecuteNonQuery();
+                        const string sqlUpdate = @"UPDATE DEXUAT_MUASAM
+                            SET TrangThai  = @TrangThai,
+                                LyDoTuChoi = CASE WHEN @Action='tuchoi' THEN @GhiChu ELSE LyDoTuChoi END,
+                                NgayDuyetCuoi = GETDATE()
+                            WHERE ID_DeXuat = @Id";
+                        using (var cmd = new SqlCommand(sqlUpdate, conn, tran))
+                        {
+                            cmd.Parameters.AddWithValue("@TrangThai", trangThai);
+                            cmd.Parameters.AddWithValue("@Action",    action ?? "");
+                            cmd.Parameters.AddWithValue("@GhiChu",    (object)ghiChu ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@Id",        id);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        string nguoiDeXuatId = null;
+                        using (var cmd = new SqlCommand("SELECT NguoiDeXuatNo FROM DEXUAT_MUASAM WHERE ID_DeXuat=@Id", conn, tran))
+                        {
+                            cmd.Parameters.AddWithValue("@Id", id);
+                            var val = cmd.ExecuteScalar();
+                            if (val != null) nguoiDeXuatId = val.ToString();
+                        }
+
+                        const string sqlTB = @"INSERT INTO THONGBAO (ID_ThongBao, NguoiNhanNo, TieuDe, NoiDung, NgayTao, LoaiThongBao, DaDoc)
+                            SELECT NEWID(), vn.NguoiDungNo, @TieuDe, @NoiDung, GETDATE(), @Loai, 0
+                            FROM VAITRO_NGUOIDUNG vn WHERE vn.VaiTroNo = @VaiTro";
+                        const string sqlTBUser = @"INSERT INTO THONGBAO (ID_ThongBao, NguoiNhanNo, TieuDe, NoiDung, NgayTao, LoaiThongBao, DaDoc)
+                            VALUES (NEWID(), @NguoiDung, @TieuDe, @NoiDung, GETDATE(), @Loai, 0)";
+
+                        if (action == "duyet")
+                        {
+                            using (var cmd = new SqlCommand(sqlTB, conn, tran))
+                            {
+                                cmd.Parameters.AddWithValue("@VaiTro",  "VT_BGH");
+                                cmd.Parameters.AddWithValue("@TieuDe",  "📋 Đề xuất mua sắm chờ BGH phê duyệt");
+                                cmd.Parameters.AddWithValue("@NoiDung", "Phòng KHTC đã duyệt ngân sách cho đề xuất (Mã: " + id + "). Vui lòng phê duyệt cuối.");
+                                cmd.Parameters.AddWithValue("@Loai",    "pending");
+                                cmd.ExecuteNonQuery();
+                            }
+                            if (nguoiDeXuatId != null)
+                                using (var cmd = new SqlCommand(sqlTBUser, conn, tran))
+                                {
+                                    cmd.Parameters.AddWithValue("@NguoiDung", nguoiDeXuatId);
+                                    cmd.Parameters.AddWithValue("@TieuDe",    "✅ Đề xuất đã được Phòng KHTC duyệt ngân sách");
+                                    cmd.Parameters.AddWithValue("@NoiDung",   "Đề xuất (Mã: " + id + ") đã được KHTC duyệt, chuyển lên BGH phê duyệt cuối.");
+                                    cmd.Parameters.AddWithValue("@Loai",      "approved");
+                                    cmd.ExecuteNonQuery();
+                                }
+                        }
+                        else
+                        {
+                            if (nguoiDeXuatId != null)
+                                using (var cmd = new SqlCommand(sqlTBUser, conn, tran))
+                                {
+                                    cmd.Parameters.AddWithValue("@NguoiDung", nguoiDeXuatId);
+                                    cmd.Parameters.AddWithValue("@TieuDe",    "❌ Đề xuất bị Phòng KHTC từ chối");
+                                    cmd.Parameters.AddWithValue("@NoiDung",   "Đề xuất (Mã: " + id + ") bị KHTC từ chối. Lý do: " + ghiChu);
+                                    cmd.Parameters.AddWithValue("@Loai",      "rejected");
+                                    cmd.ExecuteNonQuery();
+                                }
+                        }
+                        tran.Commit();
                     }
                 }
                 return Json(new { ok = true });

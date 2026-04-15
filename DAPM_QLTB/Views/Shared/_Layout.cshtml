@@ -31,13 +31,15 @@
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Index", "Home")">🏠 Trang chủ</a>
                     </li>
-                    @if (role == 1 || role == 2)
+                    @if (role == 1)
                     {
-                        <li class="nav-item"><a class="nav-link" href="@Url.Action("QuanLyThietBi", "CSVC")">📦 Thiết bị</a></li>
-                        <li class="nav-item"><a class="nav-link" href="@Url.Action("PheDuyetDeXuat", "CSVC")">📋 Đề xuất</a></li>
+                        <li class="nav-item"><a class="nav-link" href="@Url.Action("DanhSachThietBi", "TruongKhoa")">📦 Thiết bị</a></li>
+                        <li class="nav-item"><a class="nav-link" href="@Url.Action("DeXuatMuaSam", "TruongKhoa")">📋 Đề xuất</a></li>
                     }
                     @if (role == 2)
                     {
+                        <li class="nav-item"><a class="nav-link" href="@Url.Action("QuanLyThietBi", "CSVC")">📦 Thiết bị</a></li>
+                        <li class="nav-item"><a class="nav-link" href="@Url.Action("PheDuyetDeXuat", "CSVC")">📋 Phê duyệt</a></li>
                         <li class="nav-item"><a class="nav-link" href="@Url.Action("LapKeHoachBaoTri", "CSVC")">🔧 Bảo trì</a></li>
                     }
                     @if (role == 3)
@@ -104,13 +106,15 @@
                 <div class="col-md-2 d-none d-md-block sidebar p-0">
                     <nav class="nav flex-column pt-2">
                         <a class="nav-link" href="@Url.Action("Index", "Home")">🏠 Trang chủ</a>
-                        @if (role == 1 || role == 2)
+                        @if (role == 1)
                         {
-                            <a class="nav-link" href="@Url.Action("QuanLyThietBi", "CSVC")">📦 Quản lý thiết bị</a>
-                            <a class="nav-link" href="@Url.Action("PheDuyetDeXuat", "CSVC")">📋 Đề xuất mua sắm</a>
+                            <a class="nav-link" href="@Url.Action("DanhSachThietBi", "TruongKhoa")">📦 Quản lý thiết bị</a>
+                            <a class="nav-link" href="@Url.Action("DeXuatMuaSam", "TruongKhoa")">📋 Đề xuất mua sắm</a>
                         }
                         @if (role == 2)
                         {
+                            <a class="nav-link" href="@Url.Action("QuanLyThietBi", "CSVC")">📦 Quản lý thiết bị</a>
+                            <a class="nav-link" href="@Url.Action("PheDuyetDeXuat", "CSVC")">📋 Phê duyệt đề xuất</a>
                             <a class="nav-link" href="@Url.Action("LapKeHoachBaoTri", "CSVC")">🔧 Bảo trì / Sửa chữa</a>
                             <a class="nav-link" href="@Url.Action("GhiNhanSuaChua", "CSVC")">📤 Ghi nhận sửa chữa</a>
                             <a class="nav-link" href="@Url.Action("KiemKeTaiSan", "CSVC")">📋 Kiểm kê tài sản</a>

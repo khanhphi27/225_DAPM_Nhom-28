@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Configuration;
@@ -11,133 +10,197 @@ namespace QLTB.Controllers
     {
         private string connStr = ConfigurationManager.ConnectionStrings["QuanLyThietBi"].ConnectionString;
 
-        // Dashboard
-        public ActionResult Index()
-        {
-            return View();
-        }
+        public ActionResult Index() => View();
 
-        // G?I ?? XU?T - GET
         [HttpGet]
-        public ActionResult GuiDeXuat() => View();
-
-        // G?I ?? XU?T - POST (S? d?ng Transaction)
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult GuiDeXuat(string tenTB, int soluong, decimal gia, string mota)
+        public ActionResult DeXuatMuaSam()
         {
-            using (SqlConnection conn = new SqlConnection(connStr))
-            {
-                conn.Open();
-                SqlTransaction transaction = conn.BeginTransaction();
-
-                try
-                {
-                    string idDX = Guid.NewGuid().ToString().Substring(0, 10);
-                    string idCT = Guid.NewGuid().ToString().Substring(0, 10);
-                    string user = Session["UserId"]?.ToString() ?? "TK001";
-
-                    // 1. Insert v�o b?ng DEXUAT_MUASAM
-                    string sql1 = @"INSERT INTO DEXUAT_MUASAM (ID_DeXuat, NguoiDeXuat, NgayDeXuat, TrangThai, TrangThaiXoa, GhiChu) 
-                                    VALUES (@id, @user, GETDATE(), N'Ch? duy?t', 1, @mota)";
-                    SqlCommand cmd1 = new SqlCommand(sql1, conn, transaction);
-                    cmd1.Parameters.AddWithValue("@id", idDX);
-                    cmd1.Parameters.AddWithValue("@user", user);
-                    cmd1.Parameters.AddWithValue("@mota", mota ?? (object)DBNull.Value);
-                    cmd1.ExecuteNonQuery();
-
-                    // 2. Insert v�o b?ng CHITIET_DEXUAT
-                    string sql2 = @"INSERT INTO CHITIET_DEXUAT (ID_CTDeXuat, DeXuatNo, TenThietBiDeXuat, SoLuong, GiaDeXuat) 
-                                    VALUES (@ct, @dx, @ten, @sl, @gia)";
-                    SqlCommand cmd2 = new SqlCommand(sql2, conn, transaction);
-                    cmd2.Parameters.AddWithValue("@ct", idCT);
-                    cmd2.Parameters.AddWithValue("@dx", idDX);
-                    cmd2.Parameters.AddWithValue("@ten", tenTB);
-                    cmd2.Parameters.AddWithValue("@sl", soluong);
-                    cmd2.Parameters.AddWithValue("@gia", gia);
-                    cmd2.ExecuteNonQuery();
-
-                    transaction.Commit();
-                    TempData["Success"] = "G?i ?? xu?t th�nh c�ng!";
-                }
-                catch (Exception)
-                {
-                    transaction.Rollback();
-                    ViewBag.Error = "?� x?y ra l?i khi g?i ?? xu?t.";
-                    return View();
-                }
-            }
-            return RedirectToAction("XemDeXuat");
-        }
-        // ================= XEM ?? XU?T =================
-        public ActionResult XemDeXuat()
-        {
-            DataTable dt = new DataTable();
-            using (SqlConnection conn = new SqlConnection(connStr))
-            {
-                conn.Open();
-                // S?a l?i t�n c?t cho ?�ng v?i file SQL:
-                // ID_DeXuat, NgayDeXuat, TrangThai thu?c b?ng DEXUAT_MUASAM
-                // TenThietBiDeXuat, SoLuong, GiaDuKien thu?c b?ng CHITIET_DEXUAT
-                string sql = @"SELECT 
-                        d.NgayDeXuat, 
-                        c.TenThietBiDeXuat, 
-                        c.SoLuong, 
-                        c.GiaDuKien, 
-                        d.TrangThai
-                       FROM DEXUAT_MUASAM d
-                       JOIN CHITIET_DEXUAT c ON d.ID_DeXuat = c.DeXuatNo
-                       ORDER BY d.NgayDeXuat DESC";
-
-                SqlDataAdapter da = new SqlDataAdapter(sql, conn);
-                da.Fill(dt);
-            }
-            return View(dt);
-        }
-
-        // ================= DANH S�CH THI?T B? =================
-        public ActionResult DanhSachThietBi()
-        {
-            DataTable dt = new DataTable();
+            var dt = new DataTable();
             try
             {
-                using (SqlConnection conn = new SqlConnection(connStr))
+                using (var conn = new SqlConnection(connStr))
                 {
                     conn.Open();
-                    // L?y ?�ng c�c c?t c?n thi?t, tr�nh d�ng * n?u kh�ng ch?c ch?n
-                    string sql = "SELECT ID_ThietBi, TenTB, Gia, ThongSoKT, TrangThaiTB FROM THIETBI";
-                    SqlDataAdapter da = new SqlDataAdapter(sql, conn);
+
+                    // Kiểm tra cột DonViTinh có tồn tại không
+                    bool hasDonViTinh = false;
+                    using (var chk = new SqlCommand(
+                        "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='CHITIET_DEXUAT' AND COLUMN_NAME='DonViTinh'", conn))
+                    {
+                        hasDonViTinh = (int)chk.ExecuteScalar() > 0;
+                    }
+
+                    string colDVT = hasDonViTinh ? "c.DonViTinh," : "N'' AS DonViTinh,";
+                    string sql = @"SELECT d.ID_DeXuat, d.NgayDeXuat, d.TrangThai, d.MoTa, d.LyDoTuChoi, d.NgayDuyetCuoi,
+                                          c.TenThietBiDeXuat, c.SoLuong, c.GiaDuKien, " + colDVT + @"
+                                          c.DeXuatNo
+                                   FROM DEXUAT_MUASAM d
+                                   JOIN CHITIET_DEXUAT c ON d.ID_DeXuat = c.DeXuatNo
+                                   WHERE d.NguoiDeXuatNo = @UserId
+                                   ORDER BY d.NgayDeXuat DESC";
+                    var da = new SqlDataAdapter(sql, conn);
+                    da.SelectCommand.Parameters.AddWithValue("@UserId", Session["UserId"]?.ToString() ?? "");
                     da.Fill(dt);
                 }
             }
             catch (Exception ex)
             {
-                ViewBag.Error = "L?i truy v?n: " + ex.Message;
+                ViewBag.Error = "Lỗi tải dữ liệu: " + ex.Message;
             }
             return View(dt);
         }
 
-        // B�O H?NG
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult GuiDeXuat(string[] tenTB, int[] soluong, decimal[] gia, string[] donvi, string mota)
+        {
+            if (tenTB == null || tenTB.Length == 0)
+            {
+                ViewBag.Error = "Vui lòng nhập ít nhất 1 thiết bị.";
+                return View("DeXuatMuaSam", LoadDeXuatCuaUser());
+            }
+
+            using (var conn = new SqlConnection(connStr))
+            {
+                conn.Open();
+                var tran = conn.BeginTransaction();
+                try
+                {
+                    string idDX = Guid.NewGuid().ToString().Substring(0, 10);
+                    string user = Session["UserId"]?.ToString() ?? "";
+
+                    // 1 phiếu đề xuất
+                    var cmd1 = new SqlCommand(
+                        "INSERT INTO DEXUAT_MUASAM (ID_DeXuat, NguoiDeXuatNo, NgayDeXuat, TrangThai, MoTa) VALUES (@id,@user,GETDATE(),N'Chờ CSVC duyệt',@mota)",
+                        conn, tran);
+                    cmd1.Parameters.AddWithValue("@id",   idDX);
+                    cmd1.Parameters.AddWithValue("@user", user);
+                    cmd1.Parameters.AddWithValue("@mota", (object)mota ?? DBNull.Value);
+                    cmd1.ExecuteNonQuery();
+
+                    // Nhiều dòng chi tiết
+                    int soThietBi = 0;
+
+                    // Kiểm tra cột DonViTinh
+                    bool hasDVT = false;
+                    using (var chk = new SqlCommand(
+                        "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='CHITIET_DEXUAT' AND COLUMN_NAME='DonViTinh'", conn, tran))
+                    {
+                        hasDVT = (int)chk.ExecuteScalar() > 0;
+                    }
+
+                    // Kiểm tra tên PK của CHITIET_DEXUAT
+                    string pkCol = "ID_CTDeXuat"; // default
+                    using (var chkPK = new SqlCommand(
+                        @"SELECT TOP 1 COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+                          WHERE TABLE_NAME='CHITIET_DEXUAT' AND ORDINAL_POSITION=1", conn, tran))
+                    {
+                        var val = chkPK.ExecuteScalar();
+                        if (val != null) pkCol = val.ToString();
+                    }
+
+                    for (int i = 0; i < tenTB.Length; i++)
+                    {
+                        if (string.IsNullOrWhiteSpace(tenTB[i])) continue;
+                        string insertCT = hasDVT
+                            ? "INSERT INTO CHITIET_DEXUAT (" + pkCol + ",DeXuatNo,TenThietBiDeXuat,SoLuong,GiaDuKien,DonViTinh) VALUES (@ct,@dx,@ten,@sl,@gia,@dvt)"
+                            : "INSERT INTO CHITIET_DEXUAT (" + pkCol + ",DeXuatNo,TenThietBiDeXuat,SoLuong,GiaDuKien) VALUES (@ct,@dx,@ten,@sl,@gia)";
+                        var cmd2 = new SqlCommand(insertCT, conn, tran);
+                        cmd2.Parameters.AddWithValue("@ct",  Guid.NewGuid().ToString().Substring(0, 10));
+                        cmd2.Parameters.AddWithValue("@dx",  idDX);
+                        cmd2.Parameters.AddWithValue("@ten", tenTB[i]);
+                        cmd2.Parameters.AddWithValue("@sl",  soluong != null && i < soluong.Length ? soluong[i] : 1);
+                        cmd2.Parameters.AddWithValue("@gia", gia     != null && i < gia.Length     ? gia[i]     : 0m);
+                        if (hasDVT)
+                            cmd2.Parameters.AddWithValue("@dvt", donvi != null && i < donvi.Length && !string.IsNullOrEmpty(donvi[i]) ? (object)donvi[i] : DBNull.Value);
+                        cmd2.ExecuteNonQuery();
+                        soThietBi++;
+                    }
+
+                    // Thông báo cho CSVC
+                    var cmdTB = new SqlCommand(
+                        @"INSERT INTO THONGBAO (ID_ThongBao,NguoiNhanNo,TieuDe,NoiDung,NgayTao,LoaiThongBao,DaDoc)
+                          SELECT NEWID(),vn.NguoiDungNo,@TieuDe,@NoiDung,GETDATE(),N'pending',0
+                          FROM VAITRO_NGUOIDUNG vn WHERE vn.VaiTroNo=N'VT_CSVC'",
+                        conn, tran);
+                    cmdTB.Parameters.AddWithValue("@TieuDe",  "📋 Đề xuất mua sắm mới cần xét duyệt");
+                    cmdTB.Parameters.AddWithValue("@NoiDung", "Trưởng khoa đã gửi đề xuất " + soThietBi + " thiết bị (Mã: " + idDX + "). Vui lòng xem xét và phê duyệt.");
+                    cmdTB.ExecuteNonQuery();
+
+                    tran.Commit();
+                    TempData["Success"] = "Gửi đề xuất thành công! " + soThietBi + " thiết bị đang chờ Phòng CSVC xét duyệt.";
+                }
+                catch (Exception ex)
+                {
+                    tran.Rollback();
+                    ViewBag.Error = "Lỗi: " + ex.Message;
+                    return View("DeXuatMuaSam", LoadDeXuatCuaUser());
+                }
+            }
+            return RedirectToAction("DeXuatMuaSam");
+        }
+
+        private DataTable LoadDeXuatCuaUser()
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var conn = new SqlConnection(connStr))
+                {
+                    conn.Open();
+                    string sql = @"SELECT d.ID_DeXuat, d.NgayDeXuat, d.TrangThai, d.MoTa, d.LyDoTuChoi, d.NgayDuyetCuoi,
+                                          c.TenThietBiDeXuat, c.SoLuong, c.GiaDuKien, c.DonViTinh
+                                   FROM DEXUAT_MUASAM d
+                                   JOIN CHITIET_DEXUAT c ON d.ID_DeXuat = c.DeXuatNo
+                                   WHERE d.NguoiDeXuatNo = @UserId
+                                   ORDER BY d.NgayDeXuat DESC";
+                    var da = new SqlDataAdapter(sql, conn);
+                    da.SelectCommand.Parameters.AddWithValue("@UserId", Session["UserId"]?.ToString() ?? "");
+                    da.Fill(dt);
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        public ActionResult GuiDeXuat()  => RedirectToAction("DeXuatMuaSam");
+        public ActionResult XemDeXuat()  => RedirectToAction("DeXuatMuaSam");
+
+        public ActionResult DanhSachThietBi()
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var conn = new SqlConnection(connStr))
+                {
+                    conn.Open();
+                    new SqlDataAdapter("SELECT ID_ThietBi, TenTB, Gia, ThongSoKT, TrangThaiTB FROM THIETBI", conn).Fill(dt);
+                }
+            }
+            catch (Exception ex) { ViewBag.Error = "Lỗi: " + ex.Message; }
+            return View(dt);
+        }
+
         [HttpPost]
         public ActionResult BaoHong(string id, string mota)
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(connStr))
+                using (var conn = new SqlConnection(connStr))
                 {
                     conn.Open();
-                    string sql = @"INSERT INTO BAOHONG_THIETBI (ID_BaoHong, ThietBiID, NguoiBao, MoTa, NgayBao, MucDo, TrangThai) 
-                                    VALUES (@idbh, @tb, @user, @mota, GETDATE(), N'Cao', N'Ch? x? l�')";
-                    SqlCommand cmd = new SqlCommand(sql, conn);
-                    cmd.Parameters.AddWithValue("@idbh", Guid.NewGuid().ToString().Substring(0, 10));
-                    cmd.Parameters.AddWithValue("@tb", id);
-                    cmd.Parameters.AddWithValue("@user", Session["UserId"]?.ToString() ?? "TK001");
-                    cmd.Parameters.AddWithValue("@mota", mota);
+                    var cmd = new SqlCommand(
+                        "INSERT INTO BAOHONG_THIETBI (ID_BaoHong,ThietBiNo,NguoiBaoHongNo,MoTaHong,NgayBao,MucDo,TrangThai) VALUES (@id,@tb,@user,@mota,GETDATE(),N'Cao',N'Chờ xử lý')",
+                        conn);
+                    cmd.Parameters.AddWithValue("@id",   Guid.NewGuid().ToString().Substring(0, 10));
+                    cmd.Parameters.AddWithValue("@tb",   id);
+                    cmd.Parameters.AddWithValue("@user", Session["UserId"]?.ToString() ?? "");
+                    cmd.Parameters.AddWithValue("@mota", mota ?? "");
                     cmd.ExecuteNonQuery();
                 }
-                TempData["Success"] = "?� g?i b�o c�o h?ng!";
+                TempData["Success"] = "Đã gửi báo cáo hỏng!";
             }
-            catch { /* Log error */ }
+            catch { }
             return RedirectToAction("DanhSachThietBi");
         }
     }
