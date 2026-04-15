@@ -36,7 +36,7 @@
         <div class="col-md-3">
             <div class="card border-0 shadow-sm text-center p-3">
                 <p class="text-muted small mb-1">❌ Từ chối</p>
-                <h3 class="text-danger fw-bold">@lichSu.FindAll(x => x.TrangThai == "Từ chối").Count</h3>
+                <h3 class="text-danger fw-bold">@lichSu.FindAll(x => x.TrangThai.Contains("Từ chối")).Count</h3>
             </div>
         </div>
         <div class="col-md-3">

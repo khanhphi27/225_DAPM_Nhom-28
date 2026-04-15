@@ -44,7 +44,6 @@ namespace QLTB.Models
         public string   KhoaPhongBan    { get; set; }
         public DateTime NgayDeXuat      { get; set; }
         public string   TrangThai       { get; set; }
-        public int?     CapDuyetHienTai { get; set; }
         public string   MoTa            { get; set; }
         public string   LyDoTuChoi      { get; set; }
         public decimal  TongGiaDuKien   { get; set; }
