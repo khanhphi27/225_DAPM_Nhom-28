@@ -76,3 +76,4 @@ D:\PROJECT\DAPM_QLTB\DAPM_QLTB\bin\Microsoft.CodeDom.Providers.DotNetCompilerPla
 D:\PROJECT\DAPM_QLTB\DAPM_QLTB\obj\Debug\DAPM_QLTB.csproj.CopyComplete
 D:\PROJECT\DAPM_QLTB\DAPM_QLTB\obj\Debug\DAPM_QLTB.dll
 D:\PROJECT\DAPM_QLTB\DAPM_QLTB\obj\Debug\DAPM_QLTB.pdb
+D:\PROJECT\DAPM_QLTB\DAPM_QLTB\obj\Debug\DAPM_QLTB.csproj.AssemblyReference.cache

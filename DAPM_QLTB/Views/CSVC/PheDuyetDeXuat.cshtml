@@ -421,7 +421,6 @@
             <div class="action-group">
                 <button class="btn-view">📄 Xem chi tiết</button>
                 <button class="btn-reject" onclick="openReject()">❌ Từ chối</button>
-                <button class="btn-forward" onclick="openForward()">📤 Chuyển BGH duyệt</button>
                 <button class="btn-approve" onclick="openApprove()">✅ Xác nhận đề xuất</button>
             </div>
         </div>
@@ -454,7 +453,7 @@
             <div class="action-group">
                 <button class="btn-view">📄 Xem chi tiết</button>
                 <button class="btn-reject" onclick="openReject()">❌ Từ chối</button>
-                <button class="btn-forward" onclick="openForward()">📤 Chuyển BGH duyệt</button>
+                <button class="btn-forward" onclick="openForward()">✅ Xác nhận đề xuất</button>
             </div>
         </div>
     </div>
@@ -518,19 +517,7 @@
     </div>
 </div>
 
-<!-- Modal Chuyển BGH -->
-<div class="modal-overlay" id="forwardModal">
-    <div class="modal-box">
-        <div class="modal-title">📤 Chuyển Ban Giám Hiệu duyệt</div>
-        <div class="modal-body">Đề xuất <strong>DX-2024-018</strong> sẽ được chuyển tới Ban Giám Hiệu để xét duyệt lần cuối.</div>
-        <label class="form-lbl">Ý kiến đề xuất của Phòng CSVC</label>
-        <textarea class="form-inp" rows="3" placeholder="Nhận xét và kiến nghị của Phòng CSVC..."></textarea>
-        <div class="modal-footer">
-            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
-            <button class="btn-ok" style="background:#1e88e5" onclick="closeAll()">📤 Chuyển lên BGH</button>
-        </div>
-    </div>
-</div>
+
 
 <script>
 function setTab(el, tab) {
