@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="41c729d9af5c46a5a9a499191607aacb" Name="Diagram1" ZoomLevel="63">
+        <EntityTypeShape EntityType="QuanLyThietBiModel.BAOHONG_THIETBI" Width="1.5" PointX="8.25" PointY="15.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.CHITIET_DEXUAT" Width="1.5" PointX="7.5" PointY="10.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.CHITIET_KEHOACH" Width="1.5" PointX="10.5" PointY="13.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.CHITIET_KIEMKE" Width="1.5" PointX="7.5" PointY="21.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.COSO" Width="1.5" PointX="1.5" PointY="2.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.DANHMUC" Width="1.5" PointX="0.75" PointY="9.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.DEXUAT_MUASAM" Width="1.5" PointX="5.25" PointY="13.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.GHINHAN_SUA_CHUA" Width="1.5" PointX="12.75" PointY="16" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.KEHOACH_BAOTRI" Width="1.5" PointX="5.25" PointY="17.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.KHOA_PHONGBAN" Width="1.5" PointX="0.75" PointY="15.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.KHUVUC" Width="1.5" PointX="0.75" PointY="5.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.KIEMKE" Width="1.5" PointX="5.25" PointY="21.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.NGUOIDUNG" Width="1.5" PointX="3" PointY="14.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.NGUOIDUNG_THONGBAO" Width="1.5" PointX="10.5" PointY="21.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.NHACUNGCAP" Width="1.5" PointX="0.75" PointY="11.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.PHONG" Width="1.5" PointX="3" PointY="5.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.PHONG_THIETBI" Width="1.5" PointX="5.25" PointY="7.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.sysdiagram" Width="1.5" PointX="3.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.THIETBI" Width="1.5" PointX="3" PointY="9.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.THONGBAO" Width="1.5" PointX="5.25" PointY="27.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.VAITRO" Width="1.5" PointX="3" PointY="19.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.VAITRO_NGUOIDUNG" Width="1.5" PointX="5.25" PointY="10.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.View_BaoCaoTaiChinh" Width="1.5" PointX="5.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.View_BaoHong_TrangThai" Width="1.5" PointX="7.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.View_KeHoach_ChiTiet" Width="1.5" PointX="7.75" PointY="4.75" IsExpanded="true" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_BH_NGUOI" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_BH_THIETBI" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_CTKH_BAOHONG" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_CTDX_DANHMUC" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_CTDX_DEXUAT" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_CTKH_KEHOACH" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_CTKH_THIETBI" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_GN_CHITIET" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_CTKK_KIEMKE" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_CTKK_THIETBI" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_KHUVUC_COSO" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_TB_DANHMUC" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_DX_NGUOIDEXUAT" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_DX_NGUOIDUYET" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_GN_KEHOACH" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_KH_NGUOILAP" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_NGUOIDUNG_KHOA" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_TB_KHOA" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_PHONG_KHUVUC" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_KK_NGUOI" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_NTB_NGUOIDUNG" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_THONGBAO_NGUOITAO" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_VTN_NGUOIDUNG" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_NTB_THONGBAO" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_TB_NCC" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_PTB_PHONG" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_PTB_THIETBI" ManuallyRouted="false" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_VTN_VAITRO" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>
