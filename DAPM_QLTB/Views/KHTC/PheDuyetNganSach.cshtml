@@ -4,171 +4,254 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
 <style>
-    .modern-card {
-        border-radius: 16px;
-        border: 1px solid #e2e8f0;
-    }
-
-    .custom-table th {
+    /* Tổng thể và Font */
+    body {
         background-color: #f8fafc;
-        color: #64748b;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.8rem;
-        letter-spacing: 0.5px;
-        border-bottom: 2px solid #e2e8f0;
-        padding: 15px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    .custom-table td {
-        vertical-align: middle;
-        padding: 15px;
+    /* Tiêu đề và Badge số lượng */
+    .page-title {
+        color: #1a202c;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .count-badge {
+        background-color: #e0e7ff;
+        color: #4338ca;
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 6px 16px;
+        border-radius: 50px;
+        border: 1px solid #c7d2fe;
+    }
+
+    /* Card chứa bảng */
+    .modern-card {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        background: #fff;
+    }
+
+    /* Định dạng bảng chuẩn ảnh mẫu */
+    .custom-table thead th {
+        background-color: #ffffff;
+        color: #94a3b8;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 16px;
         border-bottom: 1px solid #f1f5f9;
     }
 
-    .data-row {
-        transition: all 0.2s ease;
+    .custom-table tbody td {
+        padding: 16px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        color: #475569;
+    }
+
+    .data-row:hover {
+        background-color: #f8faff !important;
+    }
+
+    /* Badge ID */
+    .badge-id {
+        background-color: #f1f5f9;
+        color: #64748b;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    /* Nút Thao tác (Giống ảnh mẫu 100%) */
+    .btn-action-group {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+    }
+
+    .btn-act {
+        width: 36px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all 0.2s;
+        border: none;
         cursor: pointer;
     }
 
-        .data-row:hover {
-            background-color: #f0f7ff !important;
-            transform: translateY(-2px);
+    /* Nút Xem (Mắt xanh dương) */
+    .btn-act-view {
+        background-color: #ffffff;
+        border: 1.5px solid #3b82f6;
+        color: #3b82f6;
+    }
+
+        .btn-act-view:hover {
+            background-color: #eff6ff;
         }
 
-    .btn-modern {
-        border-radius: 8px;
-        font-weight: 500;
-        padding: 6px 14px;
-        transition: all 0.2s;
+    /* Nút Duyệt (Xanh lá) */
+    .btn-act-approve {
+        background-color: #10b981;
+        color: white;
+    }
+
+        .btn-act-approve:hover {
+            background-color: #059669;
+        }
+
+    /* Nút Từ chối (Đỏ) */
+    .btn-act-reject {
+        background-color: #ef4444;
+        color: white;
+    }
+
+        .btn-act-reject:hover {
+            background-color: #dc2626;
+        }
+
+    .btn-act i {
+        font-size: 1rem;
+    }
+
+    /* Modal Styling */
+    .modal-content {
+        border-radius: 16px;
+        border: none;
     }
 
     .inner-table {
         background: #f8fafc;
-        border-radius: 12px;
+        border-radius: 10px;
         overflow: hidden;
+        border: 1px solid #e2e8f0;
     }
-
-        .inner-table th {
-            background: #e2e8f0;
-            color: #475569;
-            font-size: 0.85rem;
-        }
 </style>
 
-<div class="d-flex justify-content-between align-items-center mt-3 mb-4">
-    <h2 class="fw-bold text-dark" style="font-size: 1.5rem;">
-        <i class="bi bi-clipboard-check-fill text-primary me-2"></i>Phê Duyệt Đề Xuất Mua Sắm
-    </h2>
-    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 rounded-pill">
-        @Model.Count đơn đang chờ
-    </span>
-</div>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-4">
+        <h2 class="page-title fw-bold m-0">
+            <i class="bi bi-patch-check-fill text-primary me-2"></i>
+            Phê Duyệt Đề Xuất Mua Sắm
+        </h2>
+        <span class="count-badge">
+            @Model.Count đơn đang chờ
+        </span>
+    </div>
 
-<div class="card shadow-sm modern-card bg-white overflow-hidden">
-    <div class="card-body p-0">
-        @if (Model == null || Model.Count == 0)
-        {
-            <div class="text-center py-5">
-                <i class="bi bi-patch-check text-success display-1"></i>
-                <h4 class="mt-3 fw-bold">Hoàn tất công việc!</h4>
-                <p class="text-muted">Không còn đề xuất nào cần phê duyệt lúc này.</p>
-            </div>
-        }
-        else
-        {
-            <div class="table-responsive">
-                <table class="table custom-table mb-0">
-                    <thead>
-                        <tr>
-                            <th class="ps-4">Mã Đơn</th>
-                            <th>Người Đề Xuất</th>
-                            <th>Ngày Gửi</th>
-                            <th>Nội Dung Tóm Tắt</th>
-                            <th class="text-center pe-4">Thao Tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            <tr class="data-row"
-                                data-id="@item.ID_DeXuat"
-                                data-nguoi="@item.NguoiDeXuat"
-                                data-ngay="@item.NgayDeXuat.ToString("dd/MM/yyyy")"
-                                data-mota="@item.MoTa">
-                                <td class="ps-4">
-                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2 py-1">
-                                        @item.ID_DeXuat
-                                    </span>
-                                </td>
-                                <td class="fw-bold text-dark">@item.NguoiDeXuat</td>
-                                <td class="text-muted">@item.NgayDeXuat.ToString("dd/MM/yyyy")</td>
-                                <td class="text-truncate" style="max-width: 300px;">@item.MoTa</td>
-                                <td class="text-center pe-4">
-                                    <button class="btn btn-outline-primary btn-modern btn-sm me-1 btn-view-detail" title="Xem chi tiết">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                    <button class="btn btn-success btn-modern btn-sm me-1" onclick="event.stopPropagation(); xuLy('@item.ID_DeXuat', 'duyet')">
-                                        <i class="bi bi-check-lg"></i>
-                                    </button>
-                                    <button class="btn btn-danger btn-modern btn-sm" onclick="event.stopPropagation(); xuLy('@item.ID_DeXuat', 'tuchoi')">
-                                        <i class="bi bi-x-lg"></i>
-                                    </button>
-                                </td>
+    <div class="card modern-card overflow-hidden">
+        <div class="card-body p-0">
+            @if (Model == null || Model.Count == 0)
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-check2-circle text-success display-1"></i>
+                    <h4 class="mt-3 fw-bold">Tuyệt vời!</h4>
+                    <p class="text-muted">Đã xử lý sạch sẽ các đề xuất hiện có.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table custom-table mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Mã Đơn</th>
+                                <th>Người Đề Xuất</th>
+                                <th>Ngày Gửi</th>
+                                <th>Nội Dung Tóm Tắt</th>
+                                <th class="text-center pe-4">Thao Tác</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr class="data-row"
+                                    data-id="@item.ID_DeXuat"
+                                    data-nguoi="@item.NguoiDeXuat"
+                                    data-ngay="@item.NgayDeXuat.ToString("dd/MM/yyyy")"
+                                    data-mota="@item.MoTa">
+                                    <td class="ps-4">
+                                        <span class="badge-id">@item.ID_DeXuat</span>
+                                    </td>
+                                    <td><span class="fw-bold text-dark">@item.NguoiDeXuat</span></td>
+                                    <td>@item.NgayDeXuat.ToString("dd/MM/yyyy")</td>
+                                    <td class="text-truncate" style="max-width: 400px;">@item.MoTa</td>
+                                    <td class="text-center pe-4">
+                                        <div class="btn-action-group">
+                                            <button class="btn-act btn-act-view btn-view-detail" title="Xem chi tiết">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn-act btn-act-approve" onclick="event.stopPropagation(); xuLy('@item.ID_DeXuat', 'duyet')">
+                                                <i class="bi bi-check"></i>
+                                            </button>
+                                            <button class="btn-act btn-act-reject" onclick="event.stopPropagation(); xuLy('@item.ID_DeXuat', 'tuchoi')">
+                                                <i class="bi bi-x"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
     </div>
 </div>
 
 <div class="modal fade" id="modalDeXuat" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="fw-bold"><i class="bi bi-file-earmark-text text-primary me-2"></i>Chi tiết Đề xuất <span id="md-id" class="text-primary"></span></h5>
+        <div class="modal-content shadow-lg">
+            <div class="modal-header border-0 pb-0 pt-4 px-4">
+                <h5 class="fw-bold m-0">Chi tiết Đề xuất <span id="md-id" class="text-primary"></span></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <div class="row mb-4">
                     <div class="col-md-6">
-                        <small class="text-muted d-block">Người yêu cầu:</small>
-                        <strong id="md-nguoi" class="fs-5"></strong>
+                        <small class="text-muted d-block">NGƯỜI YÊU CẦU</small>
+                        <strong id="md-nguoi" class="fs-5 text-dark"></strong>
                     </div>
                     <div class="col-md-6 text-md-end">
-                        <small class="text-muted d-block">Ngày lập đơn:</small>
+                        <small class="text-muted d-block">NGÀY GỬI</small>
                         <strong id="md-ngay"></strong>
                     </div>
                 </div>
                 <div class="mb-4">
-                    <small class="text-muted d-block mb-1">Lý do/Mô tả chung:</small>
-                    <div id="md-mota" class="p-3 bg-light rounded-3 border fw-medium"></div>
+                    <small class="text-muted d-block mb-1">MÔ TẢ CHUNG</small>
+                    <div id="md-mota" class="p-3 rounded-3" style="background-color: #f1f5f9;"></div>
                 </div>
-                <h6 class="fw-bold mb-3"><i class="bi bi-list-ul me-2"></i>Danh sách thiết bị yêu cầu:</h6>
-                <div class="inner-table border">
+                <h6 class="fw-bold mb-2">DANH SÁCH THIẾT BỊ</h6>
+                <div class="inner-table">
                     <table class="table table-sm mb-0">
-                        <thead>
+                        <thead class="bg-light">
                             <tr>
-                                <th class="ps-3">Tên thiết bị</th>
-                                <th>Danh mục</th>
-                                <th class="text-center">SL</th>
-                                <th class="text-end pe-3">Đơn giá dự kiến</th>
+                                <th class="ps-3 border-0">Tên</th>
+                                <th class="border-0">Loại</th>
+                                <th class="text-center border-0">SL</th>
+                                <th class="text-end pe-3 border-0">Đơn giá</th>
                             </tr>
                         </thead>
                         <tbody id="listItems"></tbody>
                     </table>
                 </div>
             </div>
-            <div class="modal-footer bg-light border-0 py-3" style="border-radius: 0 0 20px 20px;">
-                <button class="btn btn-danger btn-modern px-4" id="btnReject">
-                    <i class="bi bi-x-circle me-1"></i> Từ chối
-                </button>
-                <button class="btn btn-success btn-modern px-4" id="btnApprove">
-                    <i class="bi bi-check-circle me-1"></i> Duyệt đề xuất
-                </button>
+            <div class="modal-footer border-0 px-4 pb-4">
+                <button class="btn btn-outline-danger px-4" id="btnReject">Từ chối</button>
+                <button class="btn btn-success px-4" id="btnApprove">Duyệt ngay</button>
             </div>
         </div>
     </div>
@@ -177,30 +260,25 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function () {
-        // Bắt sự kiện click vào dòng
-        $(".data-row").click(function () {
-            // Lấy dữ liệu từ thẻ tr thông qua data-attributes
-            const id = $(this).data("id");
-            const nguoi = $(this).data("nguoi");
-            const ngay = $(this).data("ngay");
-            const mota = $(this).data("mota");
+        // Mở chi tiết khi bấm vào dòng hoặc nút xem
+        $(".data-row, .btn-view-detail").click(function (e) {
+            e.stopPropagation();
+            const row = $(this).closest('tr');
+            const id = row.data("id");
 
-            // Đổ vào Modal
             $('#md-id').text(id);
-            $('#md-nguoi').text(nguoi);
-            $('#md-ngay').text(ngay);
-            $('#md-mota').text(mota);
+            $('#md-nguoi').text(row.data("nguoi"));
+            $('#md-ngay').text(row.data("ngay"));
+            $('#md-mota').text(row.data("mota"));
 
-            // Gán sự kiện cho nút Duyệt/Từ chối trong Modal
             $('#btnApprove').off().on('click', () => xuLy(id, 'duyet'));
             $('#btnReject').off().on('click', () => xuLy(id, 'tuchoi'));
 
-            // Load chi tiết qua Ajax
-            $('#listItems').html('<tr><td colspan="4" class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary"></div> Đang tải...</td></tr>');
+            // Load Ajax chi tiết thiết bị
+            $('#listItems').html('<tr><td colspan="4" class="text-center py-3">Đang tải dữ liệu...</td></tr>');
             $.get('@Url.Action("GetDeXuatDetail", "KHTC")', { id: id }, function (res) {
                 if (res.ok) {
                     let html = "";
-                    if (res.data.length === 0) html = '<tr><td colspan="4" class="text-center text-muted py-3">Không có chi tiết hàng hóa</td></tr>';
                     res.data.forEach(item => {
                         html += `<tr>
                             <td class="ps-3 fw-bold">${item.Ten}</td>
@@ -209,28 +287,26 @@
                             <td class="text-end pe-3 text-primary fw-bold">${Number(item.Gia).toLocaleString('vi-VN')} đ</td>
                         </tr>`;
                     });
-                    $('#listItems').html(html);
+                    $('#listItems').html(html || '<tr><td colspan="4" class="text-center">Trống</td></tr>');
                 }
             });
 
-            // Hiện Modal (Dùng lệnh chuẩn Bootstrap 5)
-            const myModal = new bootstrap.Modal(document.getElementById('modalDeXuat'));
-            myModal.show();
+            new bootstrap.Modal(document.getElementById('modalDeXuat')).show();
         });
     });
 
+    // Hàm xử lý Duyệt / Từ chối
     function xuLy(id, action) {
         let ghiChu = "";
         if (action === 'tuchoi') {
-            ghiChu = prompt("Vui lòng nhập lý do từ chối đơn " + id + ":");
-            if (!ghiChu) return;
+            ghiChu = prompt("Lý do từ chối đơn " + id + ":");
+            if (ghiChu === null) return;
         } else {
-            if (!confirm("Duyệt đề xuất " + id + " và chuyển tiếp lên Ban Giám Hiệu?")) return;
+            if (!confirm("Xác nhận duyệt đề xuất " + id + "?")) return;
         }
 
         $.post('@Url.Action("XuLyNganSach", "KHTC")', { id: id, action: action, ghiChu: ghiChu }, function (res) {
             if (res.ok) {
-                alert("Đã xử lý thành công!");
                 location.reload();
             } else {
                 alert("Lỗi: " + res.msg);
