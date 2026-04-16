@@ -13,156 +13,251 @@ namespace QLTB.Controllers
             if (Session["UserId"] == null) return RedirectToAction("Login", "Account");
             return null;
         }
+        private string CurrentUser => Session["UserId"]?.ToString() ?? "csvc";
 
-        public ActionResult QuanLyThietBi()   { var r = CheckAuth(); return r ?? View(); }
-        public ActionResult LapKeHoachBaoTri() { var r = CheckAuth(); return r ?? View(); }
-        public ActionResult GhiNhanSuaChua()   { var r = CheckAuth(); return r ?? View(); }
-        public ActionResult KiemKeTaiSan()     { var r = CheckAuth(); return r ?? View(); }
+        public ActionResult QuanLyThietBi() { var r = CheckAuth(); return r ?? View(); }
+        public ActionResult KiemKeTaiSan() { var r = CheckAuth(); return r ?? View(); }
 
-        // Ajax: lấy chi tiết thiết bị của 1 phiếu đề xuất
-        [HttpGet]
-        public JsonResult GetChiTiet(string id)
-        {
-            try
-            {
-                using (var conn = DbHelper.GetConnection())
-                {
-                    conn.Open();
-                    const string sql = @"SELECT TenThietBiDeXuat, SoLuong, GiaDuKien, DonViTinh
-                                         FROM CHITIET_DEXUAT WHERE DeXuatNo = @Id";
-                    var list = new System.Collections.Generic.List<object>();
-                    using (var cmd = new SqlCommand(sql, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@Id", id);
-                        using (var rd = cmd.ExecuteReader())
-                            while (rd.Read())
-                                list.Add(new {
-                                    TenThietBiDeXuat = rd["TenThietBiDeXuat"].ToString(),
-                                    SoLuong   = rd["SoLuong"]   == DBNull.Value ? 0 : Convert.ToInt32(rd["SoLuong"]),
-                                    GiaDuKien = rd["GiaDuKien"] == DBNull.Value ? 0m : Convert.ToDecimal(rd["GiaDuKien"]),
-                                    DonViTinh = rd["DonViTinh"] == DBNull.Value ? "" : rd["DonViTinh"].ToString()
-                                });
-                    }
-                    return Json(new { ok = true, data = list }, JsonRequestBehavior.AllowGet);
-                }
-            }
-            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
-        }
-
-        // ===================== PHÊ DUYỆT ĐỀ XUẤT =====================
-        public ActionResult PheDuyetDeXuat()
+        // ══ LẬP KẾ HOẠCH BẢO TRÌ ══════════════════════════════
+        public ActionResult LapKeHoachBaoTri()
         {
             var r = CheckAuth(); if (r != null) return r;
-
-            var choDuyet = new List<DeXuatViewModel>();
-            var lichSu   = new List<DeXuatViewModel>();
+            var vm = new LapKeHoachPageViewModel();
             try
             {
                 using (var conn = DbHelper.GetConnection())
                 {
                     conn.Open();
-                    const string sql = @"
-                        SELECT dx.ID_DeXuat, dx.NgayDeXuat, dx.TrangThai, dx.MoTa, dx.LyDoTuChoi,
-                               nd.HoTen AS NguoiDeXuat,
-                               ISNULL(kp.TenPhongBanKhoa, N'') AS KhoaPhongBan,
-                               ISNULL((SELECT SUM(ct.SoLuong * ISNULL(ct.GiaDuKien,0))
-                                       FROM CHITIET_DEXUAT ct WHERE ct.DeXuatNo = dx.ID_DeXuat), 0) AS TongGia
-                        FROM   DEXUAT_MUASAM dx
-                        JOIN   NGUOIDUNG nd ON nd.ID_NguoiDung = dx.NguoiDeXuatNo
-                        LEFT JOIN KHOA_PHONGBAN kp ON kp.ID_KhoaPhongBan = nd.Khoa_BanNo
-                        ORDER  BY dx.NgayDeXuat DESC";
+                    // 1. Báo hỏng đang chờ xử lý
+                    const string sqlBH = @"
+                        SELECT bh.ID_BaoHong, bh.ThietBiNo, tb.TenTB,
+                               ISNULL(dm.TenDanhMuc,'') AS TenDanhMuc,
+                               ISNULL(kp.TenPhongBanKhoa,'') AS TenPhongBanKhoa,
+                               bh.NguoiBaoHongNo, nd.HoTen AS HoTenNguoiBao,
+                               ISNULL(bh.MoTaHong,'') AS MoTaHong,
+                               bh.NgayBao,
+                               ISNULL(bh.MucDoUuTien,'') AS MucDoUuTien,
+                               ISNULL(bh.TrangThai,'') AS TrangThai,
+                               (SELECT TOP 1 ckh.KeHoachNo FROM CHITIET_KEHOACH ckh WHERE ckh.BaoHongNo=bh.ID_BaoHong) AS KeHoachNo
+                        FROM   BAOHONG_THIETBI bh
+                        JOIN   THIETBI tb ON tb.ID_ThietBi=bh.ThietBiNo
+                        LEFT JOIN DANHMUC dm ON dm.ID_DanhMuc=tb.DanhMucNo
+                        LEFT JOIN KHOA_PHONGBAN kp ON kp.ID_KhoaPhongBan=tb.KhoaPhongBan
+                        JOIN   NGUOIDUNG nd ON nd.ID_NguoiDung=bh.NguoiBaoHongNo
+                        WHERE  bh.TrangThai=N'Chờ xử lý'
+                        ORDER BY CASE bh.MucDoUuTien WHEN N'Khẩn cấp' THEN 1 WHEN N'Cao' THEN 2 WHEN N'Trung bình' THEN 3 ELSE 4 END, bh.NgayBao";
+                    using (var cmd = new SqlCommand(sqlBH, conn))
+                    using (var rd = cmd.ExecuteReader())
+                        while (rd.Read())
+                            vm.BaoHongChoCho.Add(new BaoHongViewModel
+                            {
+                                ID_BaoHong = rd["ID_BaoHong"].ToString(),
+                                ThietBiNo = rd["ThietBiNo"].ToString(),
+                                TenTB = rd["TenTB"].ToString(),
+                                TenDanhMuc = rd["TenDanhMuc"].ToString(),
+                                KhoaPhongBan = rd["TenPhongBanKhoa"].ToString(),
+                                NguoiBaoHongNo = rd["NguoiBaoHongNo"].ToString(),
+                                HoTenNguoiBao = rd["HoTenNguoiBao"].ToString(),
+                                MoTaHong = rd["MoTaHong"].ToString(),
+                                NgayBao = Convert.ToDateTime(rd["NgayBao"]),
+                                MucDoUuTien = rd["MucDoUuTien"].ToString(),
+                                TrangThai = rd["TrangThai"].ToString(),
+                                KeHoachNo = rd["KeHoachNo"] == DBNull.Value ? null : rd["KeHoachNo"].ToString()
+                            });
 
-                    using (var cmd = new SqlCommand(sql, conn))
+                    // 2. Danh sách kế hoạch
+                    const string sqlKH = @"
+                        SELECT kh.ID_KeHoach, kh.NguoiLapNo, nd.HoTen AS HoTen,
+                               kh.NgayLap, kh.NgayDuKienHT, ISNULL(kh.LoaiKeHoach,N'Định kỳ') AS LoaiKeHoach,
+                               ISNULL(kh.DonViThucHien,'') AS DonViThucHien,
+                               kh.ChiPhiDuKien, ISNULL(kh.TrangThai,'') AS TrangThai, ISNULL(kh.GhiChu,'') AS GhiChu
+                        FROM   KEHOACH_BAOTRI kh
+                        JOIN   NGUOIDUNG nd ON nd.ID_NguoiDung=kh.NguoiLapNo
+                        ORDER  BY kh.NgayLap DESC";
+                    var khList = new List<KeHoachViewModel>();
+                    using (var cmd = new SqlCommand(sqlKH, conn))
+                    using (var rd = cmd.ExecuteReader())
+                        while (rd.Read())
+                            khList.Add(new KeHoachViewModel
+                            {
+                                ID_KeHoach = rd["ID_KeHoach"].ToString(),
+                                NguoiLapNo = rd["NguoiLapNo"].ToString(),
+                                HoTenNguoiLap = rd["HoTen"].ToString(),
+                                NgayLap = Convert.ToDateTime(rd["NgayLap"]),
+                                NgayDuKienHT = rd["NgayDuKienHT"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(rd["NgayDuKienHT"]),
+                                LoaiKeHoach = rd["LoaiKeHoach"].ToString(),
+                                DonViThucHien = rd["DonViThucHien"].ToString(),
+                                ChiPhiDuKien = rd["ChiPhiDuKien"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(rd["ChiPhiDuKien"]),
+                                TrangThai = rd["TrangThai"].ToString(),
+                                GhiChu = rd["GhiChu"].ToString()
+                            });
+
+                    // 3. Chi tiết thiết bị cho từng kế hoạch
+                    const string sqlCT = @"
+                        SELECT ckh.ID_ChiTietKH, ckh.KeHoachNo, ckh.ThietBiNo,
+                               tb.TenTB, ISNULL(dm.TenDanhMuc,'') AS TenDanhMuc,
+                               ckh.BaoHongNo, ISNULL(bh.MoTaHong,'') AS MoTaHong,
+                               CASE WHEN ckh.BaoHongNo IS NULL THEN N'Định kỳ' ELSE N'Báo hỏng' END AS NguonGoc,
+                               ISNULL(ckh.GhiChuChiTiet,'') AS GhiChuChiTiet
+                        FROM   CHITIET_KEHOACH ckh
+                        JOIN   THIETBI tb ON tb.ID_ThietBi=ckh.ThietBiNo
+                        LEFT JOIN DANHMUC dm ON dm.ID_DanhMuc=tb.DanhMucNo
+                        LEFT JOIN BAOHONG_THIETBI bh ON bh.ID_BaoHong=ckh.BaoHongNo";
+                    var ctDict = new Dictionary<string, List<ChiTietKeHoachViewModel>>();
+                    using (var cmd = new SqlCommand(sqlCT, conn))
                     using (var rd = cmd.ExecuteReader())
                         while (rd.Read())
                         {
-                            var item = new DeXuatViewModel
+                            var khId = rd["KeHoachNo"].ToString();
+                            if (!ctDict.ContainsKey(khId)) ctDict[khId] = new List<ChiTietKeHoachViewModel>();
+                            ctDict[khId].Add(new ChiTietKeHoachViewModel
                             {
-                                ID_DeXuat     = rd["ID_DeXuat"].ToString(),
-                                NguoiDeXuat   = rd["NguoiDeXuat"].ToString(),
-                                KhoaPhongBan  = rd["KhoaPhongBan"].ToString(),
-                                NgayDeXuat    = Convert.ToDateTime(rd["NgayDeXuat"]),
-                                TrangThai     = rd["TrangThai"].ToString(),
-                                MoTa          = rd["MoTa"]       == DBNull.Value ? "" : rd["MoTa"].ToString(),
-                                LyDoTuChoi    = rd["LyDoTuChoi"] == DBNull.Value ? "" : rd["LyDoTuChoi"].ToString(),
-                                TongGiaDuKien = Convert.ToDecimal(rd["TongGia"])
-                            };
-                            if (item.TrangThai == "Chờ CSVC duyệt") choDuyet.Add(item);
-                            else lichSu.Add(item);
+                                ID_ChiTietKH = rd["ID_ChiTietKH"].ToString(),
+                                KeHoachNo = khId,
+                                ThietBiNo = rd["ThietBiNo"].ToString(),
+                                TenTB = rd["TenTB"].ToString(),
+                                TenDanhMuc = rd["TenDanhMuc"].ToString(),
+                                BaoHongNo = rd["BaoHongNo"] == DBNull.Value ? null : rd["BaoHongNo"].ToString(),
+                                MoTaBaoHong = rd["MoTaHong"].ToString(),
+                                NguonGoc = rd["NguonGoc"].ToString(),
+                                GhiChuChiTiet = rd["GhiChuChiTiet"].ToString()
+                            });
+                        }
+                    foreach (var kh in khList)
+                        if (ctDict.ContainsKey(kh.ID_KeHoach)) kh.ChiTiet = ctDict[kh.ID_KeHoach];
+                    vm.DanhSachKeHoach = khList;
+
+                    // 4. Dropdown thiết bị
+                    const string sqlTB = @"
+                        SELECT tb.ID_ThietBi, tb.TenTB, ISNULL(tb.TrangThaiTB,'') AS TrangThaiTB,
+                               ISNULL(dm.TenDanhMuc,'') AS TenDanhMuc,
+                               bhp.ID_BaoHong,
+                               ISNULL(bhp.MoTaHong,'') AS MoTaHong,
+                               ISNULL(bhp.MucDoUuTien,'') AS MucDoUuTien
+                        FROM THIETBI tb
+                        LEFT JOIN DANHMUC dm ON dm.ID_DanhMuc=tb.DanhMucNo
+                        LEFT JOIN (
+                            SELECT src.ThietBiNo, src.ID_BaoHong, src.MoTaHong, src.MucDoUuTien,
+                                   ROW_NUMBER() OVER (
+                                       PARTITION BY src.ThietBiNo
+                                       ORDER BY CASE src.MucDoUuTien WHEN N'Khẩn cấp' THEN 1 WHEN N'Cao' THEN 2 WHEN N'Trung bình' THEN 3 ELSE 4 END,
+                                                src.NgayBao DESC
+                                   ) AS RN
+                            FROM BAOHONG_THIETBI src
+                            WHERE src.TrangThai = N'Chờ xử lý'
+                        ) bhp ON bhp.ThietBiNo=tb.ID_ThietBi AND bhp.RN=1
+                        ORDER BY CASE WHEN bhp.ID_BaoHong IS NULL THEN 1 ELSE 0 END,
+                                 CASE bhp.MucDoUuTien WHEN N'Khẩn cấp' THEN 1 WHEN N'Cao' THEN 2 WHEN N'Trung bình' THEN 3 ELSE 4 END,
+                                 tb.TenTB";
+                    using (var cmd = new SqlCommand(sqlTB, conn))
+                    using (var rd = cmd.ExecuteReader())
+                        while (rd.Read())
+                        {
+                            var bhNo = rd["ID_BaoHong"] == DBNull.Value ? null : rd["ID_BaoHong"].ToString();
+                            vm.DanhSachThietBi.Add(new ThietBiDropdownViewModel
+                            {
+                                ID_ThietBi = rd["ID_ThietBi"].ToString(),
+                                TenTB = rd["TenTB"].ToString(),
+                                TrangThai = rd["TrangThaiTB"].ToString(),
+                                DanhMuc = rd["TenDanhMuc"].ToString(),
+                                DangBaoHong = !string.IsNullOrEmpty(bhNo),
+                                BaoHongNo = bhNo,
+                                MoTaBaoHong = rd["MoTaHong"].ToString(),
+                                MucDoUuTienBaoHong = rd["MucDoUuTien"].ToString()
+                            });
                         }
                 }
             }
             catch (Exception ex) { ViewBag.Error = ex.Message; }
-
-            ViewBag.ChoDuyet = choDuyet;
-            ViewBag.LichSu   = lichSu;
-            return View();
+            return View(vm);
         }
 
-        // POST: CSVC duyệt hoặc từ chối → cập nhật trạng thái + gửi thông báo
         [HttpPost]
-        public ActionResult XuLyDeXuat(string id, string action, string ghiChu)
+        public ActionResult LuuKeHoach(string idKeHoach, string loaiKeHoach, string ngayLap,
+            string ngayDuKienHT, string donViThucHien, string chiPhiDuKien, string ghiChu,
+            string[] thietBiIds, string[] baoHongIds, string[] ghiChuChiTiets)
         {
             var r = CheckAuth(); if (r != null) return Json(new { ok = false, msg = "Chưa đăng nhập." });
-
-            string trangThaiMoi = action == "duyet" ? "Chờ KHTC duyệt" : "CSVC Từ chối";
+            if (string.IsNullOrWhiteSpace(idKeHoach))
+                return Json(new { ok = false, msg = "Vui lòng nhập ID kế hoạch." });
+            if (thietBiIds == null || thietBiIds.Length == 0)
+                return Json(new { ok = false, msg = "Vui lòng chọn ít nhất 1 thiết bị." });
             try
             {
+                decimal? chiPhi = null;
+                if (!string.IsNullOrWhiteSpace(chiPhiDuKien))
+                    chiPhi = decimal.Parse(chiPhiDuKien.Replace(",", "").Replace(".", ""));
+
                 using (var conn = DbHelper.GetConnection())
                 {
                     conn.Open();
                     using (var tran = conn.BeginTransaction())
                     {
-                        // Cập nhật trạng thái
-                        using (var cmd = new SqlCommand(
-                            @"UPDATE DEXUAT_MUASAM
-                              SET TrangThai    = @TrangThai,
-                                  LyDoTuChoi   = CASE WHEN @Action='tuchoi' THEN @GhiChu ELSE LyDoTuChoi END,
-                                  NgayDuyetCuoi = GETDATE()
-                              WHERE ID_DeXuat = @Id", conn, tran))
+                        // Insert KEHOACH_BAOTRI
+                        using (var cmd = new SqlCommand(@"
+                            INSERT INTO KEHOACH_BAOTRI
+                              (ID_KeHoach,NguoiLapNo,NgayLap,NgayDuKienHT,LoaiKeHoach,DonViThucHien,ChiPhiDuKien,TrangThai,GhiChu)
+                            VALUES(@ID,@NL,@NL2,@NH,@Loai,@DV,@CP,N'Chờ thực hiện',@GC)", conn, tran))
                         {
-                            cmd.Parameters.AddWithValue("@TrangThai", trangThaiMoi);
-                            cmd.Parameters.AddWithValue("@Action",    action ?? "");
-                            cmd.Parameters.AddWithValue("@GhiChu",    (object)ghiChu ?? DBNull.Value);
-                            cmd.Parameters.AddWithValue("@Id",        id);
+                            cmd.Parameters.AddWithValue("@ID", idKeHoach);
+                            cmd.Parameters.AddWithValue("@NL", CurrentUser);
+                            cmd.Parameters.AddWithValue("@NL2", DateTime.Parse(ngayLap));
+                            cmd.Parameters.AddWithValue("@NH", string.IsNullOrWhiteSpace(ngayDuKienHT) ? (object)DBNull.Value : DateTime.Parse(ngayDuKienHT));
+                            cmd.Parameters.AddWithValue("@Loai", loaiKeHoach ?? "Định kỳ");
+                            cmd.Parameters.AddWithValue("@DV", (object)donViThucHien ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@CP", chiPhi.HasValue ? (object)chiPhi.Value : DBNull.Value);
+                            cmd.Parameters.AddWithValue("@GC", (object)ghiChu ?? DBNull.Value);
                             cmd.ExecuteNonQuery();
                         }
-
-                        // Lấy người đề xuất
-                        string nguoiDX = LayNguoiDeXuat(conn, tran, id);
-
-                        if (action == "duyet")
+                        // Insert CHITIET_KEHOACH
+                        for (int i = 0; i < thietBiIds.Length; i++)
                         {
-                            try
+                            var tbId = thietBiIds[i];
+                            var bhId = (baoHongIds != null && i < baoHongIds.Length && !string.IsNullOrEmpty(baoHongIds[i])) ? baoHongIds[i] : null;
+                            var gc = (ghiChuChiTiets != null && i < ghiChuChiTiets.Length) ? ghiChuChiTiets[i] : null;
+                            var ctId = "CT" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpperInvariant();
+                            using (var cmd = new SqlCommand(@"
+                                INSERT INTO CHITIET_KEHOACH(ID_ChiTietKH,KeHoachNo,ThietBiNo,BaoHongNo,GhiChuChiTiet)
+                                VALUES(@ID,@KH,@TB,@BH,@GC)", conn, tran))
                             {
-                                // Báo KHTC có việc mới
-                                GuiThongBaoVaiTro(conn, tran, "VT_KHTC",
-                                    "📋 Đề xuất mua sắm chờ duyệt ngân sách",
-                                    "Phòng CSVC đã xác nhận đề xuất (Mã: " + id + "). Vui lòng phê duyệt ngân sách.",
-                                    "pending");
-                                // Báo Trưởng Khoa biết CSVC đã duyệt
-                                if (nguoiDX != null)
-                                    GuiThongBaoNguoiDung(conn, tran, nguoiDX,
-                                        "✅ Đề xuất đã được Phòng CSVC xác nhận",
-                                        "Đề xuất (Mã: " + id + ") đã qua CSVC, đang chờ Phòng KHTC duyệt ngân sách.",
-                                        "approved");
+                                cmd.Parameters.AddWithValue("@ID", ctId);
+                                cmd.Parameters.AddWithValue("@KH", idKeHoach);
+                                cmd.Parameters.AddWithValue("@TB", tbId);
+                                cmd.Parameters.AddWithValue("@BH", (object)bhId ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@GC", (object)gc ?? DBNull.Value);
+                                cmd.ExecuteNonQuery();
                             }
-                            catch { /* bảng THONGBAO chưa tạo thì bỏ qua */ }
+                            if (bhId != null)
+                                using (var cmd = new SqlCommand("UPDATE BAOHONG_THIETBI SET TrangThai=N'Đang xử lý' WHERE ID_BaoHong=@BH", conn, tran))
+                                { cmd.Parameters.AddWithValue("@BH", bhId); cmd.ExecuteNonQuery(); }
                         }
-                        else
-                        {
-                            try
-                            {
-                                // Báo Trưởng Khoa bị từ chối
-                                if (nguoiDX != null)
-                                    GuiThongBaoNguoiDung(conn, tran, nguoiDX,
-                                        "❌ Đề xuất bị Phòng CSVC từ chối",
-                                        "Đề xuất (Mã: " + id + ") bị CSVC từ chối. Lý do: " + ghiChu,
-                                        "rejected");
-                            }
-                            catch { }
-                        }
+                        tran.Commit();
+                    }
+                }
+                return Json(new { ok = true, msg = "Đã lưu kế hoạch " + idKeHoach });
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
+        }
 
+        [HttpPost]
+        public ActionResult XoaKeHoach(string id)
+        {
+            var r = CheckAuth(); if (r != null) return Json(new { ok = false, msg = "Chưa đăng nhập." });
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT COUNT(*) FROM GHINHAN_SUA_CHUA WHERE KeHoachNo=@Id", conn))
+                    { cmd.Parameters.AddWithValue("@Id", id); if (Convert.ToInt32(cmd.ExecuteScalar()) > 0) return Json(new { ok = false, msg = "Kế hoạch đã có ghi nhận, không thể xóa." }); }
+                    using (var tran = conn.BeginTransaction())
+                    {
+                        using (var cmd = new SqlCommand("UPDATE bh SET bh.TrangThai=N'Chờ xử lý' FROM BAOHONG_THIETBI bh JOIN CHITIET_KEHOACH ckh ON ckh.BaoHongNo=bh.ID_BaoHong WHERE ckh.KeHoachNo=@Id", conn, tran))
+                        { cmd.Parameters.AddWithValue("@Id", id); cmd.ExecuteNonQuery(); }
+                        using (var cmd = new SqlCommand("DELETE FROM CHITIET_KEHOACH WHERE KeHoachNo=@Id", conn, tran))
+                        { cmd.Parameters.AddWithValue("@Id", id); cmd.ExecuteNonQuery(); }
+                        using (var cmd = new SqlCommand("DELETE FROM KEHOACH_BAOTRI WHERE ID_KeHoach=@Id", conn, tran))
+                        { cmd.Parameters.AddWithValue("@Id", id); cmd.ExecuteNonQuery(); }
                         tran.Commit();
                     }
                 }
@@ -171,44 +266,369 @@ namespace QLTB.Controllers
             catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
         }
 
-        // ===================== HELPER =====================
-        private string LayNguoiDeXuat(SqlConnection conn, SqlTransaction tran, string idDX)
+        [HttpGet]
+        public JsonResult GetKeHoachDetail(string id)
         {
-            using (var cmd = new SqlCommand("SELECT NguoiDeXuatNo FROM DEXUAT_MUASAM WHERE ID_DeXuat=@Id", conn, tran))
+            try
             {
-                cmd.Parameters.AddWithValue("@Id", idDX);
-                var v = cmd.ExecuteScalar();
-                return v == null ? null : v.ToString();
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    object khData = null;
+                    using (var cmd = new SqlCommand("SELECT kh.*,nd.HoTen FROM KEHOACH_BAOTRI kh JOIN NGUOIDUNG nd ON nd.ID_NguoiDung=kh.NguoiLapNo WHERE kh.ID_KeHoach=@Id", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Id", id);
+                        using (var rd = cmd.ExecuteReader())
+                            if (rd.Read())
+                                khData = new
+                                {
+                                    ID_KeHoach = rd["ID_KeHoach"].ToString(),
+                                    HoTen = rd["HoTen"].ToString(),
+                                    NgayLap = Convert.ToDateTime(rd["NgayLap"]).ToString("dd/MM/yyyy"),
+                                    NgayDuKienHT = rd["NgayDuKienHT"] == DBNull.Value ? "" : Convert.ToDateTime(rd["NgayDuKienHT"]).ToString("dd/MM/yyyy"),
+                                    LoaiKeHoach = rd["LoaiKeHoach"].ToString(),
+                                    DonViThucHien = rd["DonViThucHien"]?.ToString() ?? "",
+                                    ChiPhiDuKien = rd["ChiPhiDuKien"] == DBNull.Value ? 0m : Convert.ToDecimal(rd["ChiPhiDuKien"]),
+                                    TrangThai = rd["TrangThai"].ToString(),
+                                    GhiChu = rd["GhiChu"]?.ToString() ?? ""
+                                };
+                    }
+                    var ctList = new List<object>();
+                    using (var cmd = new SqlCommand(@"
+                        SELECT ckh.ID_ChiTietKH,ckh.ThietBiNo,tb.TenTB,ISNULL(dm.TenDanhMuc,'') AS TenDanhMuc,
+                               ckh.BaoHongNo,ISNULL(bh.MoTaHong,'') AS MoTaHong,
+                               CASE WHEN ckh.BaoHongNo IS NULL THEN N'Định kỳ' ELSE N'Báo hỏng' END AS NguonGoc,
+                               ISNULL(ckh.GhiChuChiTiet,'') AS GhiChuChiTiet
+                        FROM CHITIET_KEHOACH ckh
+                        JOIN THIETBI tb ON tb.ID_ThietBi=ckh.ThietBiNo
+                        LEFT JOIN DANHMUC dm ON dm.ID_DanhMuc=tb.DanhMucNo
+                        LEFT JOIN BAOHONG_THIETBI bh ON bh.ID_BaoHong=ckh.BaoHongNo
+                        WHERE ckh.KeHoachNo=@Id", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Id", id);
+                        using (var rd = cmd.ExecuteReader())
+                            while (rd.Read())
+                                ctList.Add(new
+                                {
+                                    ID_ChiTietKH = rd["ID_ChiTietKH"].ToString(),
+                                    ThietBiNo = rd["ThietBiNo"].ToString(),
+                                    TenTB = rd["TenTB"].ToString(),
+                                    TenDanhMuc = rd["TenDanhMuc"].ToString(),
+                                    BaoHongNo = rd["BaoHongNo"] == DBNull.Value ? "" : rd["BaoHongNo"].ToString(),
+                                    MoTaBaoHong = rd["MoTaHong"].ToString(),
+                                    NguonGoc = rd["NguonGoc"].ToString(),
+                                    GhiChuChiTiet = rd["GhiChuChiTiet"].ToString()
+                                });
+                    }
+                    var lsList = new List<object>();
+                    using (var cmd = new SqlCommand(@"
+                        SELECT gn.ID_GhiNhan, gn.NgayThucHien, ISNULL(gn.KetQua,'') AS KetQua,
+                               gn.ChiPhiThucTe, ISNULL(gn.TrangThaiSauSua,'') AS TrangThaiSauSua,
+                               ISNULL(gn.ChiTietKeHoachNo,'') AS ChiTietKeHoachNo,
+                               ckh.ThietBiNo, ISNULL(tb.TenTB,'') AS TenTB,
+                               ISNULL(ckh.BaoHongNo,'') AS BaoHongNo
+                        FROM GHINHAN_SUA_CHUA gn
+                        LEFT JOIN CHITIET_KEHOACH ckh ON ckh.ID_ChiTietKH = gn.ChiTietKeHoachNo
+                        LEFT JOIN THIETBI tb ON tb.ID_ThietBi = ckh.ThietBiNo
+                        WHERE gn.KeHoachNo = @Id
+                        ORDER BY gn.NgayThucHien DESC, gn.ID_GhiNhan DESC", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Id", id);
+                        using (var rd = cmd.ExecuteReader())
+                            while (rd.Read())
+                                lsList.Add(new
+                                {
+                                    ID_GhiNhan = rd["ID_GhiNhan"].ToString(),
+                                    NgayThucHien = Convert.ToDateTime(rd["NgayThucHien"]).ToString("dd/MM/yyyy"),
+                                    KetQua = rd["KetQua"].ToString(),
+                                    ChiPhiThucTe = rd["ChiPhiThucTe"] == DBNull.Value ? 0m : Convert.ToDecimal(rd["ChiPhiThucTe"]),
+                                    TrangThaiSauSua = rd["TrangThaiSauSua"].ToString(),
+                                    ChiTietKeHoachNo = rd["ChiTietKeHoachNo"].ToString(),
+                                    ThietBiNo = rd["ThietBiNo"].ToString(),
+                                    TenTB = rd["TenTB"].ToString(),
+                                    BaoHongNo = rd["BaoHongNo"].ToString()
+                                });
+                    }
+                    return Json(new { ok = true, keHoach = khData, chiTiet = ctList, lichSu = lsList }, JsonRequestBehavior.AllowGet);
+                }
             }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
         }
 
-        private void GuiThongBaoVaiTro(SqlConnection conn, SqlTransaction tran, string vaiTro, string tieuDe, string noiDung, string loai)
+        // ══ GHI NHẬN SỬA CHỮA ══════════════════════════════════
+        public ActionResult GhiNhanSuaChua()
         {
-            using (var cmd = new SqlCommand(
-                @"INSERT INTO THONGBAO (ID_ThongBao, NguoiNhanNo, TieuDe, NoiDung, NgayTao, LoaiThongBao, DaDoc)
-                  SELECT NEWID(), vn.NguoiDungNo, @TieuDe, @NoiDung, GETDATE(), @Loai, 0
-                  FROM   VAITRO_NGUOIDUNG vn WHERE vn.VaiTroNo = @VaiTro", conn, tran))
+            var r = CheckAuth(); if (r != null) return r;
+            var vm = new GhiNhanPageViewModel();
+            try
             {
-                cmd.Parameters.AddWithValue("@VaiTro",  vaiTro);
-                cmd.Parameters.AddWithValue("@TieuDe",  tieuDe);
-                cmd.Parameters.AddWithValue("@NoiDung", noiDung);
-                cmd.Parameters.AddWithValue("@Loai",    loai);
-                cmd.ExecuteNonQuery();
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    // Kế hoạch chờ/đang thực hiện
+                    const string sqlKH = @"
+                        SELECT kh.ID_KeHoach, ISNULL(kh.LoaiKeHoach,N'Định kỳ') AS LoaiKeHoach,
+                               ISNULL(kh.TrangThai,'') AS TrangThai,
+                               ISNULL(kh.DonViThucHien,'') AS DonViThucHien,
+                               kh.NgayLap, kh.NgayDuKienHT, kh.ChiPhiDuKien,
+                               ISNULL(kh.GhiChu,'') AS GhiChu, nd.HoTen
+                        FROM KEHOACH_BAOTRI kh JOIN NGUOIDUNG nd ON nd.ID_NguoiDung=kh.NguoiLapNo
+                        WHERE kh.TrangThai IN (N'Chờ thực hiện',N'Đang thực hiện')
+                        ORDER BY kh.NgayLap DESC";
+                    var khList = new List<KeHoachViewModel>();
+                    using (var cmd = new SqlCommand(sqlKH, conn))
+                    using (var rd = cmd.ExecuteReader())
+                        while (rd.Read())
+                            khList.Add(new KeHoachViewModel
+                            {
+                                ID_KeHoach = rd["ID_KeHoach"].ToString(),
+                                LoaiKeHoach = rd["LoaiKeHoach"].ToString(),
+                                TrangThai = rd["TrangThai"].ToString(),
+                                DonViThucHien = rd["DonViThucHien"].ToString(),
+                                NgayLap = Convert.ToDateTime(rd["NgayLap"]),
+                                NgayDuKienHT = rd["NgayDuKienHT"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(rd["NgayDuKienHT"]),
+                                ChiPhiDuKien = rd["ChiPhiDuKien"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(rd["ChiPhiDuKien"]),
+                                GhiChu = rd["GhiChu"].ToString(),
+                                HoTenNguoiLap = rd["HoTen"].ToString()
+                            });
+                    // Chi tiết thiết bị
+                    const string sqlCT = @"
+                        SELECT ckh.ID_ChiTietKH,ckh.KeHoachNo,ckh.ThietBiNo,
+                               tb.TenTB,ISNULL(dm.TenDanhMuc,'') AS TenDanhMuc,
+                               ckh.BaoHongNo,ISNULL(bh.MoTaHong,'') AS MoTaHong,
+                               CASE WHEN ckh.BaoHongNo IS NULL THEN N'Định kỳ' ELSE N'Báo hỏng' END AS NguonGoc,
+                               ISNULL(ckh.GhiChuChiTiet,'') AS GhiChuChiTiet
+                        FROM CHITIET_KEHOACH ckh
+                        JOIN THIETBI tb ON tb.ID_ThietBi=ckh.ThietBiNo
+                        LEFT JOIN DANHMUC dm ON dm.ID_DanhMuc=tb.DanhMucNo
+                        LEFT JOIN BAOHONG_THIETBI bh ON bh.ID_BaoHong=ckh.BaoHongNo
+                        WHERE ckh.KeHoachNo IN (SELECT ID_KeHoach FROM KEHOACH_BAOTRI WHERE TrangThai IN (N'Chờ thực hiện',N'Đang thực hiện'))
+                          AND NOT EXISTS (
+                              SELECT 1
+                              FROM GHINHAN_SUA_CHUA gn
+                              WHERE gn.ChiTietKeHoachNo = ckh.ID_ChiTietKH
+                          )";
+                    var ctDict = new Dictionary<string, List<ChiTietKeHoachViewModel>>();
+                    using (var cmd = new SqlCommand(sqlCT, conn))
+                    using (var rd = cmd.ExecuteReader())
+                        while (rd.Read())
+                        {
+                            var khId = rd["KeHoachNo"].ToString();
+                            if (!ctDict.ContainsKey(khId)) ctDict[khId] = new List<ChiTietKeHoachViewModel>();
+                            ctDict[khId].Add(new ChiTietKeHoachViewModel
+                            {
+                                ID_ChiTietKH = rd["ID_ChiTietKH"].ToString(),
+                                KeHoachNo = khId,
+                                ThietBiNo = rd["ThietBiNo"].ToString(),
+                                TenTB = rd["TenTB"].ToString(),
+                                TenDanhMuc = rd["TenDanhMuc"].ToString(),
+                                BaoHongNo = rd["BaoHongNo"] == DBNull.Value ? null : rd["BaoHongNo"].ToString(),
+                                MoTaBaoHong = rd["MoTaHong"].ToString(),
+                                NguonGoc = rd["NguonGoc"].ToString(),
+                                GhiChuChiTiet = rd["GhiChuChiTiet"].ToString()
+                            });
+                        }
+                    foreach (var kh in khList)
+                        if (ctDict.ContainsKey(kh.ID_KeHoach)) kh.ChiTiet = ctDict[kh.ID_KeHoach];
+
+                    var khConThietBiCho = new List<KeHoachViewModel>();
+                    foreach (var kh in khList)
+                        if (kh.ChiTiet != null && kh.ChiTiet.Count > 0) khConThietBiCho.Add(kh);
+                    vm.KeHoachChoCho = khConThietBiCho;
+
+                    // Lịch sử ghi nhận
+                    const string sqlGN = @"
+                        SELECT TOP 20 gn.ID_GhiNhan, gn.KeHoachNo, ISNULL(kh.LoaiKeHoach,'') AS LoaiKeHoach,
+                               gn.ChiTietKeHoachNo, ckh.ThietBiNo, ISNULL(tb.TenTB,'—') AS TenTB,
+                               ckh.BaoHongNo, ISNULL(bh.MoTaHong,'') AS MoTaHong,
+                               ISNULL(kh.DonViThucHien,'') AS DonViThucHien,
+                               gn.NgayThucHien, ISNULL(gn.KetQua,'') AS KetQua,
+                               gn.ChiPhiThucTe, ISNULL(gn.TrangThaiSauSua,'') AS TrangThaiSauSua
+                        FROM GHINHAN_SUA_CHUA gn
+                        JOIN KEHOACH_BAOTRI kh ON kh.ID_KeHoach=gn.KeHoachNo
+                        LEFT JOIN CHITIET_KEHOACH ckh ON ckh.ID_ChiTietKH=gn.ChiTietKeHoachNo
+                        LEFT JOIN THIETBI tb ON tb.ID_ThietBi=ckh.ThietBiNo
+                        LEFT JOIN BAOHONG_THIETBI bh ON bh.ID_BaoHong=ckh.BaoHongNo
+                        ORDER BY gn.NgayThucHien DESC";
+                    using (var cmd = new SqlCommand(sqlGN, conn))
+                    using (var rd = cmd.ExecuteReader())
+                        while (rd.Read())
+                            vm.LichSuGhiNhan.Add(new GhiNhanViewModel
+                            {
+                                ID_GhiNhan = rd["ID_GhiNhan"].ToString(),
+                                KeHoachNo = rd["KeHoachNo"].ToString(),
+                                LoaiKeHoach = rd["LoaiKeHoach"].ToString(),
+                                ChiTietKeHoachNo = rd["ChiTietKeHoachNo"] == DBNull.Value ? null : rd["ChiTietKeHoachNo"].ToString(),
+                                ThietBiNo = rd["ThietBiNo"] == DBNull.Value ? null : rd["ThietBiNo"].ToString(),
+                                TenTB = rd["TenTB"].ToString(),
+                                BaoHongNo = rd["BaoHongNo"] == DBNull.Value ? null : rd["BaoHongNo"].ToString(),
+                                MoTaBaoHong = rd["MoTaHong"].ToString(),
+                                DonViThucHien = rd["DonViThucHien"].ToString(),
+                                NgayThucHien = Convert.ToDateTime(rd["NgayThucHien"]),
+                                KetQua = rd["KetQua"].ToString(),
+                                ChiPhiThucTe = rd["ChiPhiThucTe"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(rd["ChiPhiThucTe"]),
+                                TrangThaiSauSua = rd["TrangThaiSauSua"].ToString()
+                            });
+                }
             }
+            catch (Exception ex) { ViewBag.Error = ex.Message; }
+            return View(vm);
         }
 
-        private void GuiThongBaoNguoiDung(SqlConnection conn, SqlTransaction tran, string nguoiDungId, string tieuDe, string noiDung, string loai)
+        [HttpPost]
+        public ActionResult LuuGhiNhan(string idGhiNhan, string keHoachNo, string chiTietKeHoachNo,
+            string ngayThucHien, string ketQua, string chiPhiThucTe, string trangThaiSauSua)
         {
-            using (var cmd = new SqlCommand(
-                @"INSERT INTO THONGBAO (ID_ThongBao, NguoiNhanNo, TieuDe, NoiDung, NgayTao, LoaiThongBao, DaDoc)
-                  VALUES (NEWID(), @NguoiDung, @TieuDe, @NoiDung, GETDATE(), @Loai, 0)", conn, tran))
+            var r = CheckAuth(); if (r != null) return Json(new { ok = false, msg = "Chưa đăng nhập." });
+            if (string.IsNullOrWhiteSpace(idGhiNhan) || string.IsNullOrWhiteSpace(keHoachNo))
+                return Json(new { ok = false, msg = "Thiếu thông tin bắt buộc." });
+            try
             {
-                cmd.Parameters.AddWithValue("@NguoiDung", nguoiDungId);
-                cmd.Parameters.AddWithValue("@TieuDe",    tieuDe);
-                cmd.Parameters.AddWithValue("@NoiDung",   noiDung);
-                cmd.Parameters.AddWithValue("@Loai",      loai);
-                cmd.ExecuteNonQuery();
+                decimal? chiPhi = null;
+                if (!string.IsNullOrWhiteSpace(chiPhiThucTe))
+                    chiPhi = decimal.Parse(chiPhiThucTe.Replace(",", "").Replace(".", ""));
+
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    using (var tran = conn.BeginTransaction())
+                    {
+                        // 1. Insert GHINHAN_SUA_CHUA
+                        using (var cmd = new SqlCommand(@"
+                            INSERT INTO GHINHAN_SUA_CHUA(ID_GhiNhan,KeHoachNo,ChiTietKeHoachNo,NgayThucHien,KetQua,ChiPhiThucTe,TrangThaiSauSua)
+                            VALUES(@ID,@KH,@CTKH,@Ngay,@KQ,@CP,@TT)", conn, tran))
+                        {
+                            cmd.Parameters.AddWithValue("@ID", idGhiNhan);
+                            cmd.Parameters.AddWithValue("@KH", keHoachNo);
+                            cmd.Parameters.AddWithValue("@CTKH", string.IsNullOrWhiteSpace(chiTietKeHoachNo) ? (object)DBNull.Value : chiTietKeHoachNo);
+                            cmd.Parameters.AddWithValue("@Ngay", DateTime.Parse(ngayThucHien));
+                            cmd.Parameters.AddWithValue("@KQ", (object)ketQua ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@CP", chiPhi.HasValue ? (object)chiPhi.Value : DBNull.Value);
+                            cmd.Parameters.AddWithValue("@TT", (object)trangThaiSauSua ?? DBNull.Value);
+                            cmd.ExecuteNonQuery();
+                        }
+                        // 2. Cập nhật trạng thái thiết bị
+                        if (!string.IsNullOrWhiteSpace(chiTietKeHoachNo) && !string.IsNullOrWhiteSpace(trangThaiSauSua))
+                        {
+                            string tbStatus = trangThaiSauSua.Contains("Hoạt động tốt") ? "Đang sử dụng"
+                                            : trangThaiSauSua.Contains("Tạm thời") ? "Cần bảo trì"
+                                            : "Báo hỏng";
+                            using (var cmd = new SqlCommand("UPDATE tb SET tb.TrangThaiTB=@S FROM THIETBI tb JOIN CHITIET_KEHOACH ckh ON ckh.ThietBiNo=tb.ID_ThietBi WHERE ckh.ID_ChiTietKH=@CTKH", conn, tran))
+                            { cmd.Parameters.AddWithValue("@S", tbStatus); cmd.Parameters.AddWithValue("@CTKH", chiTietKeHoachNo); cmd.ExecuteNonQuery(); }
+                            // 3. Đánh dấu báo hỏng → Đã xử lý
+                            using (var cmd = new SqlCommand("UPDATE bh SET bh.TrangThai=N'Đã xử lý' FROM BAOHONG_THIETBI bh JOIN CHITIET_KEHOACH ckh ON ckh.BaoHongNo=bh.ID_BaoHong WHERE ckh.ID_ChiTietKH=@CTKH AND bh.TrangThai=N'Đang xử lý'", conn, tran))
+                            { cmd.Parameters.AddWithValue("@CTKH", chiTietKeHoachNo); cmd.ExecuteNonQuery(); }
+                        }
+                        // 4. Tự động cập nhật trạng thái kế hoạch
+                        int tongCT = 0, daGN = 0;
+                        using (var cmd = new SqlCommand("SELECT COUNT(*) FROM CHITIET_KEHOACH WHERE KeHoachNo=@KH", conn, tran))
+                        { cmd.Parameters.AddWithValue("@KH", keHoachNo); tongCT = Convert.ToInt32(cmd.ExecuteScalar()); }
+                        using (var cmd = new SqlCommand("SELECT COUNT(DISTINCT ChiTietKeHoachNo) FROM GHINHAN_SUA_CHUA WHERE KeHoachNo=@KH AND ChiTietKeHoachNo IS NOT NULL", conn, tran))
+                        { cmd.Parameters.AddWithValue("@KH", keHoachNo); daGN = Convert.ToInt32(cmd.ExecuteScalar()); }
+                        string ttKH = (daGN >= tongCT && tongCT > 0) ? "Đã hoàn thành" : "Đang thực hiện";
+                        using (var cmd = new SqlCommand("UPDATE KEHOACH_BAOTRI SET TrangThai=@TT WHERE ID_KeHoach=@KH", conn, tran))
+                        { cmd.Parameters.AddWithValue("@TT", ttKH); cmd.Parameters.AddWithValue("@KH", keHoachNo); cmd.ExecuteNonQuery(); }
+
+                        tran.Commit();
+                        return Json(new { ok = true, trangThaiKH = ttKH, msg = "Đã lưu ghi nhận " + idGhiNhan });
+                    }
+                }
             }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
+        }
+
+        // ══ PHÊ DUYỆT ĐỀ XUẤT ══════════════════════════════════
+        public ActionResult PheDuyetDeXuat()
+        {
+            var r = CheckAuth(); if (r != null) return r;
+            var choDuyet = new List<DeXuatViewModel>();
+            var lichSu = new List<DeXuatViewModel>();
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    const string sql = @"
+                        SELECT dx.ID_DeXuat,dx.NgayDeXuat,dx.TrangThai,dx.MoTa,dx.LyDoTuChoi,
+                               nd.HoTen AS NguoiDeXuat,ISNULL(kp.TenPhongBanKhoa,N'') AS KhoaPhongBan,
+                               ISNULL((SELECT SUM(ct.SoLuong*ISNULL(ct.GiaDuKien,0)) FROM CHITIET_DEXUAT ct WHERE ct.DeXuatNo=dx.ID_DeXuat),0) AS TongGia
+                        FROM DEXUAT_MUASAM dx JOIN NGUOIDUNG nd ON nd.ID_NguoiDung=dx.NguoiDeXuatNo
+                        LEFT JOIN KHOA_PHONGBAN kp ON kp.ID_KhoaPhongBan=nd.Khoa_BanNo
+                        ORDER BY dx.NgayDeXuat DESC";
+                    using (var cmd = new SqlCommand(sql, conn))
+                    using (var rd = cmd.ExecuteReader())
+                        while (rd.Read())
+                        {
+                            var item = new DeXuatViewModel
+                            {
+                                ID_DeXuat = rd["ID_DeXuat"].ToString(),
+                                NguoiDeXuat = rd["NguoiDeXuat"].ToString(),
+                                KhoaPhongBan = rd["KhoaPhongBan"].ToString(),
+                                NgayDeXuat = Convert.ToDateTime(rd["NgayDeXuat"]),
+                                TrangThai = rd["TrangThai"].ToString(),
+                                MoTa = rd["MoTa"] == DBNull.Value ? "" : rd["MoTa"].ToString(),
+                                LyDoTuChoi = rd["LyDoTuChoi"] == DBNull.Value ? "" : rd["LyDoTuChoi"].ToString(),
+                                TongGiaDuKien = Convert.ToDecimal(rd["TongGia"])
+                            };
+                            if (item.TrangThai == "Chờ CSVC duyệt") choDuyet.Add(item);
+                            else lichSu.Add(item);
+                        }
+                }
+            }
+            catch (Exception ex) { ViewBag.Error = ex.Message; }
+            ViewBag.ChoDuyet = choDuyet;
+            ViewBag.LichSu = lichSu;
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult XuLyDeXuat(string id, string action, string ghiChu)
+        {
+            var r = CheckAuth(); if (r != null) return Json(new { ok = false, msg = "Chưa đăng nhập." });
+            string trangThaiMoi = action == "duyet" ? "Chờ KHTC duyệt" : "CSVC Từ chối";
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    using (var tran = conn.BeginTransaction())
+                    {
+                        using (var cmd = new SqlCommand(@"UPDATE DEXUAT_MUASAM SET TrangThai=@TT, LyDoTuChoi=CASE WHEN @Act='tuchoi' THEN @GC ELSE LyDoTuChoi END, NgayDuyetCuoi=GETDATE() WHERE ID_DeXuat=@Id", conn, tran))
+                        { cmd.Parameters.AddWithValue("@TT", trangThaiMoi); cmd.Parameters.AddWithValue("@Act", action ?? ""); cmd.Parameters.AddWithValue("@GC", (object)ghiChu ?? DBNull.Value); cmd.Parameters.AddWithValue("@Id", id); cmd.ExecuteNonQuery(); }
+                        tran.Commit();
+                    }
+                }
+                return Json(new { ok = true });
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
+        }
+
+        [HttpGet]
+        public JsonResult GetChiTiet(string id)
+        {
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    var list = new List<object>();
+                    using (var cmd = new SqlCommand("SELECT TenThietBiDeXuat,SoLuong,GiaDuKien,DonViTinh FROM CHITIET_DEXUAT WHERE DeXuatNo=@Id", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Id", id);
+                        using (var rd = cmd.ExecuteReader())
+                            while (rd.Read())
+                                list.Add(new
+                                {
+                                    TenThietBiDeXuat = rd["TenThietBiDeXuat"].ToString(),
+                                    SoLuong = rd["SoLuong"] == DBNull.Value ? 0 : Convert.ToInt32(rd["SoLuong"]),
+                                    GiaDuKien = rd["GiaDuKien"] == DBNull.Value ? 0m : Convert.ToDecimal(rd["GiaDuKien"]),
+                                    DonViTinh = rd["DonViTinh"] == DBNull.Value ? "" : rd["DonViTinh"].ToString()
+                                });
+                    }
+                    return Json(new { ok = true, data = list }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
         }
     }
 }
