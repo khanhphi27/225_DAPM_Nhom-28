@@ -98,5 +98,90 @@ namespace QLTB.Controllers
             Session.Clear();
             return RedirectToAction("Login");
         }
+
+        // GET: Account/Notifications
+        public ActionResult Notifications()
+        {
+            if (Session["UserId"] == null) return RedirectToAction("Login");
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    const string sql = @"
+                        SELECT ID_ThongBao, TieuDe, NoiDung, NgayTao, LoaiThongBao, DaDoc
+                        FROM   THONGBAO
+                        WHERE  NguoiNhanNo = @UserId
+                        ORDER  BY NgayTao DESC";
+                    var list = new System.Collections.Generic.List<ThongBaoViewModel>();
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@UserId", Session["UserId"].ToString());
+                        using (var r = cmd.ExecuteReader())
+                            while (r.Read())
+                                list.Add(new ThongBaoViewModel
+                                {
+                                    ID_ThongBao  = r["ID_ThongBao"].ToString(),
+                                    TieuDe       = r["TieuDe"].ToString(),
+                                    NoiDung      = r["NoiDung"] == DBNull.Value ? "" : r["NoiDung"].ToString(),
+                                    NgayTao      = Convert.ToDateTime(r["NgayTao"]),
+                                    LoaiThongBao = r["LoaiThongBao"] == DBNull.Value ? "system" : r["LoaiThongBao"].ToString(),
+                                    DaDoc        = Convert.ToBoolean(r["DaDoc"])
+                                });
+                    }
+                    ViewBag.ThongBaoList = list;
+                }
+            }
+            catch { /* bảng chưa tạo - hiện view rỗng */ }
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult MarkAllRead()
+        {
+            if (Session["UserId"] == null) return Json(new { ok = false });
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("UPDATE THONGBAO SET DaDoc=1 WHERE NguoiNhanNo=@UserId", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@UserId", Session["UserId"].ToString());
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                return Json(new { ok = true });
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
+        }
+
+        [HttpPost]
+        public ActionResult DeleteNotification(string id)
+        {
+            if (Session["UserId"] == null) return Json(new { ok = false });
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("DELETE FROM THONGBAO WHERE ID_ThongBao=@Id AND NguoiNhanNo=@UserId", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Id",     id);
+                        cmd.Parameters.AddWithValue("@UserId", Session["UserId"].ToString());
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                return Json(new { ok = true });
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
+        }
+
+        // GET: Account/Profile
+        public ActionResult Profile()
+        {
+            if (Session["UserId"] == null) return RedirectToAction("Login");
+            return View();
+        }
     }
 }

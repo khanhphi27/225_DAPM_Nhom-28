@@ -93,6 +93,10 @@
 {
     <div class="alert-ok">✅ @TempData["Success"]</div>
 }
+@if (TempData["Error"] != null)
+{
+    <div class="alert-err">⚠️ @TempData["Error"]</div>
+}
 @if (ViewBag.Error != null)
 {
     <div class="alert-err">⚠️ @ViewBag.Error</div>
