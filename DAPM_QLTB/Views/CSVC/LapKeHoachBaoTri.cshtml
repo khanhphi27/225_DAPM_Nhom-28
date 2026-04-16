@@ -1,44 +1,40 @@
-﻿@{ ViewBag.Title = "Lập Kế Hoạch Bảo Trì - Phòng CSVC"; }
+﻿@model QLTB.Models.LapKeHoachPageViewModel
+@{ ViewBag.Title = "Lập Kế Hoạch Bảo Trì - Phòng CSVC"; }
 
 <style>
-    .page-hdr {
-        margin-bottom: 20px;
+    .page-hdr h2 {
+        color: #1a237e;
+        font-weight: 700;
+        font-size: 22px;
+        margin: 0 0 4px
     }
 
-        .page-hdr h2 {
-            color: #1a237e;
-            font-weight: 700;
-            font-size: 22px;
-            margin: 0 0 4px;
-        }
-
-        .page-hdr p {
-            color: #666;
-            font-size: 13px;
-            margin: 0;
-        }
+    .page-hdr p {
+        color: #666;
+        font-size: 13px;
+        margin: 0 0 16px
+    }
 
     .layout-2col {
         display: grid;
-        grid-template-columns: 340px 1fr;
+        grid-template-columns: 360px 1fr;
         gap: 18px;
-        align-items: start;
+        align-items: start
     }
 
-    /* Alert báo hỏng chờ */
     .alert-box {
         background: #fff8e1;
         border: 1px solid #ffe082;
         border-radius: 10px;
         padding: 14px 16px;
-        margin-bottom: 18px;
+        margin-bottom: 18px
     }
 
         .alert-box h4 {
             color: #e65100;
             font-size: 13px;
             font-weight: 700;
-            margin: 0 0 8px;
+            margin: 0 0 8px
         }
 
     .alert-item {
@@ -47,15 +43,39 @@
         align-items: center;
         padding: 8px 0;
         border-bottom: 1px solid #fff3e0;
-        font-size: 12px;
+        font-size: 12px
     }
 
         .alert-item:last-child {
-            border: none;
+            border: none
         }
 
-        .alert-item strong {
-            color: #333;
+    .badge-mucdo {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 700
+    }
+
+        .badge-mucdo.khan {
+            background: #fce4ec;
+            color: #c62828
+        }
+
+        .badge-mucdo.cao {
+            background: #ffe0b2;
+            color: #e65100
+        }
+
+        .badge-mucdo.tb {
+            background: #fff9c4;
+            color: #f57f17
+        }
+
+        .badge-mucdo.thap {
+            background: #e8f5e9;
+            color: #2e7d32
         }
 
     .btn-tao-kh {
@@ -66,21 +86,19 @@
         padding: 4px 10px;
         font-size: 11px;
         font-weight: 700;
-        cursor: pointer;
-        white-space: nowrap;
+        cursor: pointer
     }
 
         .btn-tao-kh:hover {
-            background: #bf360c;
+            background: #bf360c
         }
 
-    /* Panel chung */
     .panel {
         background: #fff;
         border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
         overflow: hidden;
-        margin-bottom: 18px;
+        margin-bottom: 18px
     }
 
     .panel-header {
@@ -88,22 +106,21 @@
         border-bottom: 1px solid #f0f2f8;
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: center
     }
 
         .panel-header h3 {
             font-size: 14px;
             font-weight: 700;
             color: #1a237e;
-            margin: 0;
+            margin: 0
         }
 
-    /* Tabs lọc */
     .tab-bar {
         display: flex;
         gap: 4px;
         padding: 12px 18px 0;
-        border-bottom: 1px solid #f0f2f8;
+        border-bottom: 1px solid #f0f2f8
     }
 
     .tab-btn {
@@ -115,179 +132,124 @@
         color: #888;
         cursor: pointer;
         border-bottom: 2px solid transparent;
-        margin-bottom: -1px;
+        margin-bottom: -1px
     }
 
         .tab-btn.active {
             color: #1a237e;
-            border-color: #1a237e;
+            border-color: #1a237e
         }
 
-    /* Danh sách kế hoạch */
     .plan-item {
         display: flex;
         align-items: center;
-        gap: 14px;
-        padding: 13px 18px;
+        gap: 12px;
+        padding: 12px 18px;
         border-bottom: 1px solid #f0f2f8;
         cursor: pointer;
-        transition: background .15s;
+        transition: background .15s
     }
 
         .plan-item:hover {
-            background: #f8f9ff;
+            background: #f8f9ff
         }
 
         .plan-item.selected {
-            background: #eef0fb;
-        }
-
-        .plan-item:last-child {
-            border: none;
+            background: #eef0fb
         }
 
     .plan-date {
         text-align: center;
-        min-width: 38px;
+        min-width: 36px
     }
 
         .plan-date .day {
             font-size: 20px;
             font-weight: 800;
             color: #1a237e;
-            line-height: 1;
+            line-height: 1
         }
 
         .plan-date .month {
             font-size: 10px;
-            color: #888;
+            color: #888
         }
 
     .plan-info {
-        flex: 1;
+        flex: 1
     }
 
     .plan-name {
         font-size: 13px;
         font-weight: 600;
         color: #222;
-        margin-bottom: 4px;
+        margin-bottom: 3px
     }
 
     .plan-sub {
         display: flex;
-        gap: 10px;
+        gap: 8px;
         flex-wrap: wrap;
         font-size: 11px;
-        color: #888;
+        color: #888
     }
 
-        .plan-sub span {
-            display: flex;
-            align-items: center;
-            gap: 3px;
-        }
-
-    .badge-type {
+    .badge-loai {
         display: inline-block;
         padding: 2px 8px;
         border-radius: 10px;
         font-size: 10px;
-        font-weight: 700;
+        font-weight: 700
     }
 
-        .badge-type.routine {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .badge-type.urgent {
+        .badge-loai.suachua {
             background: #fce4ec;
-            color: #c62828;
+            color: #c62828
         }
 
-        .badge-type.inspect {
-            background: #e3f2fd;
-            color: #1565c0;
-        }
-
-        .badge-type.overhaul {
-            background: #f3e5f5;
-            color: #6a1b9a;
+        .badge-loai.dinky {
+            background: #e8f5e9;
+            color: #2e7d32
         }
 
     .plan-status {
         font-size: 11px;
         font-weight: 700;
-        min-width: 70px;
-        text-align: center;
+        min-width: 80px;
+        text-align: right
     }
 
-        .plan-status.pending {
-            color: #fb8c00;
+        .plan-status.cho {
+            color: #fb8c00
         }
 
-        .plan-status.todo {
-            color: #1a237e;
+        .plan-status.dang {
+            color: #1a237e
         }
 
-        .plan-status.done {
-            color: #43a047;
+        .plan-status.hoan {
+            color: #43a047
         }
 
-        .plan-status.urgent-s {
-            color: #e53935;
-        }
-
-    .btn-sm {
-        border: none;
-        border-radius: 6px;
-        padding: 5px 10px;
-        font-size: 11px;
-        font-weight: 700;
-        cursor: pointer;
-    }
-
-        .btn-sm.start {
-            background: #1a237e;
-            color: #fff;
-        }
-
-        .btn-sm.edit {
-            background: #e8eaf6;
-            color: #1a237e;
-        }
-
-        .btn-sm.done {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .btn-sm.urgent {
-            background: #fce4ec;
-            color: #c62828;
-        }
-
-    /* Detail panel */
     .detail-panel {
         background: #fff;
         border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        padding: 20px
     }
 
         .detail-panel h3 {
             font-size: 14px;
             font-weight: 700;
             color: #1a237e;
-            margin: 0 0 16px;
+            margin: 0 0 16px
         }
 
     .detail-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 10px;
-        margin-bottom: 16px;
+        margin-bottom: 14px
     }
 
     .detail-item label {
@@ -295,18 +257,18 @@
         color: #888;
         font-weight: 600;
         display: block;
-        margin-bottom: 2px;
+        margin-bottom: 2px
     }
 
     .detail-item p {
         font-size: 13px;
         color: #333;
         font-weight: 600;
-        margin: 0;
+        margin: 0
     }
 
     .detail-item.full {
-        grid-column: 1/-1;
+        grid-column: 1/-1
     }
 
     .section-sep {
@@ -314,34 +276,30 @@
         font-weight: 700;
         color: #1a237e;
         text-transform: uppercase;
-        letter-spacing: .5px;
-        padding: 10px 0 6px;
+        padding: 8px 0 5px;
         border-bottom: 1px solid #e8eaf6;
-        margin: 14px 0 10px;
-        grid-column: 1/-1;
+        margin: 12px 0 8px;
+        grid-column: 1/-1
     }
 
-    .device-list-sm {
-        font-size: 12px;
+    .device-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 0;
+        border-bottom: 1px solid #f0f2f8;
+        font-size: 12px
     }
 
-        .device-list-sm li {
-            padding: 5px 0;
-            border-bottom: 1px solid #f0f2f8;
-            display: flex;
-            gap: 8px;
-            align-items: center;
+        .device-row:last-child {
+            border: none
         }
-
-            .device-list-sm li:last-child {
-                border: none;
-            }
 
     .action-row {
         display: flex;
         gap: 8px;
         margin-top: 16px;
-        justify-content: flex-end;
+        justify-content: flex-end
     }
 
     .btn-primary {
@@ -352,7 +310,7 @@
         padding: 9px 20px;
         font-size: 13px;
         font-weight: 600;
-        cursor: pointer;
+        cursor: pointer
     }
 
     .btn-secondary {
@@ -363,67 +321,66 @@
         padding: 9px 16px;
         font-size: 13px;
         font-weight: 600;
-        cursor: pointer;
+        cursor: pointer
     }
 
-    .btn-success {
-        background: #43a047;
-        color: #fff;
+    .btn-danger {
+        background: #fce4ec;
+        color: #c62828;
         border: none;
         border-radius: 8px;
         padding: 9px 16px;
         font-size: 13px;
         font-weight: 600;
-        cursor: pointer;
+        cursor: pointer
     }
 
-    /* Modal */
     .modal-overlay {
         display: none;
         position: fixed;
         inset: 0;
-        background: rgba(0,0,0,0.45);
+        background: rgba(0,0,0,.45);
         z-index: 1000;
         align-items: center;
-        justify-content: center;
+        justify-content: center
     }
 
         .modal-overlay.active {
-            display: flex;
+            display: flex
         }
 
     .modal-box {
         background: #fff;
         border-radius: 14px;
-        padding: 28px 32px;
-        width: 640px;
+        padding: 26px 30px;
+        width: 660px;
         max-width: 95vw;
         max-height: 90vh;
         overflow-y: auto;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+        box-shadow: 0 20px 60px rgba(0,0,0,.25)
     }
 
     .modal-title {
-        font-size: 18px;
+        font-size: 17px;
         font-weight: 700;
         color: #1a237e;
-        margin-bottom: 4px;
+        margin-bottom: 4px
     }
 
     .modal-sub {
         font-size: 12px;
         color: #888;
-        margin-bottom: 18px;
+        margin-bottom: 16px
     }
 
     .modal-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 14px;
+        gap: 14px
     }
 
         .modal-grid .full {
-            grid-column: 1/-1;
+            grid-column: 1/-1
         }
 
     .form-lbl {
@@ -431,7 +388,7 @@
         font-weight: 600;
         color: #555;
         margin-bottom: 4px;
-        display: block;
+        display: block
     }
 
     .form-inp {
@@ -441,20 +398,67 @@
         border-radius: 8px;
         font-size: 13px;
         background: #f8f9fe;
-        box-sizing: border-box;
+        box-sizing: border-box
     }
 
         .form-inp:focus {
             border-color: #3949ab;
             outline: none;
-            box-shadow: 0 0 0 3px rgba(57,73,171,0.1);
+            box-shadow: 0 0 0 3px rgba(57,73,171,.1)
+        }
+
+    .field-sep {
+        font-size: 11px;
+        font-weight: 700;
+        color: #1a237e;
+        text-transform: uppercase;
+        padding-top: 6px;
+        border-top: 1px solid #e8eaf6;
+        grid-column: 1/-1;
+        margin-top: 6px
+    }
+
+    .highlight-bh {
+        background: #fff8e1;
+        border: 1px solid #ffe082;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 12px;
+        color: #795548;
+        grid-column: 1/-1
+    }
+
+        .highlight-bh strong {
+            color: #e65100
+        }
+
+    .tb-select-list {
+        border: 1px solid #d0d5e8;
+        border-radius: 8px;
+        padding: 8px;
+        background: #f8f9fe;
+        max-height: 180px;
+        overflow-y: auto
+    }
+
+    .tb-check-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 4px;
+        font-size: 12px;
+        border-bottom: 1px solid #f0f2f8
+    }
+
+        .tb-check-item:last-child {
+            border: none
         }
 
     .modal-footer {
         display: flex;
         gap: 10px;
         justify-content: flex-end;
-        margin-top: 22px;
+        margin-top: 20px
     }
 
     .btn-cancel {
@@ -465,7 +469,7 @@
         padding: 9px 20px;
         font-size: 13px;
         font-weight: 600;
-        cursor: pointer;
+        cursor: pointer
     }
 
     .btn-save {
@@ -476,294 +480,458 @@
         padding: 9px 24px;
         font-size: 13px;
         font-weight: 600;
-        cursor: pointer;
+        cursor: pointer
     }
 
-        .btn-save.urgent {
-            background: #e53935;
+        .btn-save.sc {
+            background: #e53935
         }
 
-    .highlight-box {
-        background: #fff8e1;
-        border: 1px solid #ffe082;
-        border-radius: 8px;
-        padding: 12px 14px;
-        font-size: 12px;
-        color: #795548;
-        margin-bottom: 14px;
-        grid-column: 1/-1;
+    .empty-state {
+        padding: 32px;
+        text-align: center;
+        color: #aaa;
+        font-size: 13px
     }
 
-        .highlight-box strong {
-            color: #e65100;
+    .toast {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        background: #333;
+        color: #fff;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-size: 13px;
+        z-index: 9999;
+        display: none
+    }
+
+        .toast.ok {
+            background: #2e7d32
         }
 
-    .field-section {
-        font-size: 11px;
-        font-weight: 700;
-        color: #1a237e;
-        text-transform: uppercase;
-        letter-spacing: .5px;
-        padding-top: 6px;
-        border-top: 1px solid #e8eaf6;
-        grid-column: 1/-1;
-        margin-top: 6px;
-    }
+        .toast.err {
+            background: #c62828
+        }
 </style>
 
-<!-- Header -->
 <div class="page-hdr">
     <h2>📅 Lập Kế Hoạch Bảo Trì</h2>
+    <p>Quản lý kế hoạch bảo trì định kỳ và sửa chữa từ báo hỏng theo cấu trúc <strong>KEHOACH_BAOTRI → CHITIET_KEHOACH → THIETBI / BAOHONG_THIETBI</strong></p>
 </div>
 
-<!-- Alert: báo hỏng chờ lập kế hoạch -->
+@if (ViewBag.Error != null)
+{
+<div style="background:#fce4ec;border:1px solid #e57373;border-radius:8px;padding:12px 16px;margin-bottom:16px;color:#c62828;font-size:13px">
+    ⚠️ Lỗi: @ViewBag.Error
+</div> } @* ══ Alert: báo hỏng chờ lập kế hoạch ══ *@
+@if (Model.BaoHongChoCho.Count > 0)
+{
 <div class="alert-box">
-    <h4>⚠️ Có 3 thiết bị báo hỏng </h4>
-    @{ var pendingBH = new[] {
-            new { id="BH-2024-041", tb="TB005 - Oscilloscope Rigol DS1054Z", ngay="08/04/2024", mucdo="🔴 Khẩn" },
-            new { id="BH-2024-039", tb="TB002 - Máy chiếu Epson EB-X51",    ngay="06/04/2024", mucdo="🟡 Vừa"  },
-            new { id="BH-2024-037", tb="TB003 - Máy tính B201-PC05",         ngay="05/04/2024", mucdo="🟡 Vừa"  },
-        }; }
-    @foreach (var bh in pendingBH)
+    <h4>⚠️ Có @Model.BaoHongChoCho.Count báo hỏng đang chờ xử lý — cần lập kế hoạch sửa chữa</h4>
+    @foreach (var bh in Model.BaoHongChoCho)
     {
+        var mdCls = bh.MucDoUuTien == "Khẩn cấp" ? "khan" : bh.MucDoUuTien == "Cao" ? "cao" : bh.MucDoUuTien == "Trung bình" ? "tb" : "thap";
+        var mdIcon = bh.MucDoUuTien == "Khẩn cấp" ? "🔴" : bh.MucDoUuTien == "Cao" ? "🟠" : bh.MucDoUuTien == "Trung bình" ? "🟡" : "🟢";
 <div class="alert-item">
     <div>
-        <strong>@bh.id</strong> — @bh.tb
-        <span style="color:#888;margin-left:8px">📅 @bh.ngay &nbsp; @bh.mucdo</span>
+        <strong>@bh.ID_BaoHong</strong> — @bh.TenTB
+        <span class="badge-mucdo @mdCls" style="margin-left:6px">@mdIcon @bh.MucDoUuTien</span>
+        <span style="color:#888;margin-left:8px;font-size:11px">📅 @bh.NgayBao.ToString("dd/MM/yyyy") &nbsp;|&nbsp; 👤 @bh.HoTenNguoiBao</span>
+        <div style="color:#795548;font-size:11px;margin-top:2px">💬 @bh.MoTaHong</div>
     </div>
-    <button class="btn-tao-kh" onclick="openUrgentModal('@bh.id', '@bh.tb')">+ Lập KH sửa chữa đột xuất</button>
+    <button class="btn-tao-kh" onclick="openSuaChuaModal('@bh.ID_BaoHong','@Html.Raw(bh.TenTB.Replace("'","\\\'"))','@bh.ThietBiNo','@Html.Raw(bh.MoTaHong.Replace("'","\\\'"))')">
+        ⚡ Lập KH sửa chữa
+    </button>
 </div>}
-</div>
+</div> }
+            else
+            {
+<div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:13px;color:#2e7d32">
+    ✅ Không có báo hỏng nào đang chờ xử lý
+</div>}
 
 <div class="layout-2col">
-    <!-- Cột trái: Danh sách kế hoạch -->
+    @* ── Cột trái: Danh sách kế hoạch ── *@
     <div>
         <div class="panel">
             <div class="panel-header">
-                <h3>📋 Danh sách kế hoạch </h3>
-                <button class="btn-sm start" onclick="openCreateModal()">+ Tạo mới</button>
+                <h3>📋 Danh sách kế hoạch (@Model.DanhSachKeHoach.Count)</h3>
+                <button class="btn-primary" style="padding:6px 14px;font-size:12px" onclick="openDinhKyModal()">+ Định kỳ mới</button>
             </div>
             <div class="tab-bar">
-                <button class="tab-btn active">Tất cả</button>
-                <button class="tab-btn">Chờ thực hiện</button>
-                <button class="tab-btn">Đang thực hiện</button>
-                <button class="tab-btn">Hoàn thành</button>
+                <button class="tab-btn active" onclick="filterKH(this,'tat-ca')">Tất cả</button>
+                <button class="tab-btn" onclick="filterKH(this,'cho')">Chờ TH</button>
+                <button class="tab-btn" onclick="filterKH(this,'dang')">Đang TH</button>
+                <button class="tab-btn" onclick="filterKH(this,'hoan')">Hoàn thành</button>
             </div>
-            @{ var plans = new[] {
-                    new { id="KH-2024-018", day="08", month="Th.4", name="Sửa chữa đột xuất — Oscilloscope Rigol DS1054Z", unit="Khoa Công nghệ thông tin", loai="urgent",  trangThai="urgent-s", trangThaiTxt="🔴 Đột xuất", chiPhi="2,500,000", btnCls="urgent", btnTxt="▶ Bắt đầu" },
-                    new { id="KH-2024-017", day="11", month="Th.4", name="Bảo trì định kỳ máy tính phòng B201",           unit="Khoa Công nghệ thông tin", loai="routine", trangThai="todo",     trangThaiTxt="📅 Sắp tới",  chiPhi="1,800,000", btnCls="edit",   btnTxt="✏️ Sửa"    },
-                    new { id="KH-2024-016", day="15", month="Th.4", name="Kiểm tra máy chiếu 8 phòng học",                unit="Toàn trường",              loai="inspect", trangThai="todo",     trangThaiTxt="📅 Sắp tới",  chiPhi="500,000",   btnCls="edit",   btnTxt="✏️ Sửa"    },
-                    new { id="KH-2024-015", day="19", month="Th.4", name="Sửa chữa đột xuất — Máy chiếu Epson EB-X51",   unit="Khoa Công nghệ thông tin", loai="urgent",  trangThai="todo",     trangThaiTxt="📅 Sắp tới",  chiPhi="3,000,000", btnCls="edit",   btnTxt="✏️ Sửa"    },
-                    new { id="KH-2024-014", day="22", month="Th.4", name="Vệ sinh và kiểm tra UPS phòng Server",          unit="Trung tâm CNTT",           loai="routine", trangThai="done",     trangThaiTxt="✅ Hoàn thành", chiPhi="800,000",  btnCls="done",   btnTxt="📋 Xem BC"  },
-                }; }
-            @foreach (var p in plans)
-            {
-                var badgeType = p.loai == "urgent" ? "urgent" : p.loai == "routine" ? "routine" : p.loai == "inspect" ? "inspect" : "overhaul";
-                var badgeTxt2 = p.loai == "urgent" ? "Đột xuất" : p.loai == "routine" ? "Định kỳ" : p.loai == "inspect" ? "Kiểm tra" : "Đại tu";
-<div class="plan-item" onclick="selectPlan(this, '@p.id')">
-    <div class="plan-date">
-        <div class="day">@p.day</div>
-        <div class="month">@p.month</div>
-    </div>
-    <div class="plan-info">
-        <div class="plan-name">@p.name</div>
-        <div class="plan-sub">
-            <span>🏢 @p.unit</span>
-            <span class="badge-type @badgeType">@badgeTxt2</span>
-            <span>💰 @p.chiPhi đ</span>
+            <div id="khList">
+                @if (Model.DanhSachKeHoach.Count == 0)
+                {
+    <div class="empty-state">Chưa có kế hoạch nào</div>            }
+                @foreach (var kh in Model.DanhSachKeHoach)
+                {
+                    var loaiCls = kh.LoaiKeHoach == "Sửa chữa" ? "suachua" : "dinky";
+                    var loaiTxt = kh.LoaiKeHoach == "Sửa chữa" ? "🔧 Sửa chữa" : "📅 Định kỳ";
+                    var stCls = kh.TrangThai.Contains("Chờ") ? "cho" : kh.TrangThai.Contains("Đang") ? "dang" : "hoan";
+                    var stFilter = kh.TrangThai.Contains("Chờ") ? "cho" : kh.TrangThai.Contains("Đang") ? "dang" : "hoan";
+                    var soTB = kh.ChiTiet.Count;
+    <div class="plan-item" data-tt="@stFilter" onclick="selectKH(this,'@kh.ID_KeHoach')">
+        <div class="plan-date">
+            <div class="day">@kh.NgayLap.ToString("dd")</div>
+            <div class="month">Th.@kh.NgayLap.ToString("M")</div>
         </div>
-    </div>
-    <div class="plan-status @p.trangThai">@p.trangThaiTxt</div>
-    <button class="btn-sm @p.btnCls">@p.btnTxt</button>
-</div>            }
+        <div class="plan-info">
+            <div class="plan-name">@kh.ID_KeHoach — @(kh.GhiChu.Length>50 ? kh.GhiChu.Substring(0,50)+"…" : kh.GhiChu)</div>
+            <div class="plan-sub">
+                <span>🏢 @kh.DonViThucHien</span>
+                <span class="badge-loai @loaiCls">@loaiTxt</span>
+                <span>📦 @soTB thiết bị</span>
+                @if (kh.ChiPhiDuKien.HasValue)
+                {<span>💰 @kh.ChiPhiDuKien.Value.ToString("N0") đ</span>}
+            </div>
+        </div>
+        <div class="plan-status @stCls">@kh.TrangThai</div>
+    </div>            }
+            </div>
         </div>
     </div>
 
-    <!-- Cột phải: Chi tiết kế hoạch đang chọn -->
-    <div class="detail-panel">
-        <h3>🔍 Chi tiết kế hoạch: KH-2024-018</h3>
-        <div class="detail-grid">
-            <div class="detail-item">
-                <label>ID Kế hoạch</label>
-                <p>KH-2024-018</p>
-            </div>
-            <div class="detail-item">
-                <label>Loại bảo trì</label>
-                <p><span class="badge-type urgent">Sửa chữa đột xuất</span></p>
-            </div>
-            <div class="detail-item">
-                <label>Ngày lập </label>
-                <p>08/04/2024</p>
-            </div>
-            <div class="detail-item">
-                <label>Ngày dự kiến HT</label>
-                <p>12/04/2024</p>
-            </div>
-            <div class="detail-item">
-                <label>Người lập </label>
-                <p>csvc — Quản lý CSVC</p>
-            </div>
-            <div class="detail-item">
-                <label>Đơn vị thực hiện </label>
-                <p>Khoa Công nghệ thông tin</p>
-            </div>
-            <div class="detail-item">
-                <label>Chi phí dự kiến </label>
-                <p>2,500,000 VNĐ</p>
-            </div>
-            <div class="detail-item">
-                <label>Trạng thái </label>
-                <p style="color:#e53935;font-weight:700">Chờ thực hiện</p>
-            </div>
-            <div class="detail-item full">
-                <p style="color:#e65100">BH-2024-041 — TB005 Oscilloscope Rigol DS1054Z, Khoa Điện - Điện tử</p>
-            </div>
-            <div class="detail-item full">
-                <label>Ghi chú </label>
-                <p>Kênh 1 không hiển thị tín hiệu, cần thay IC khuếch đại OPA2134 và probe đầu đo.</p>
-            </div>
-
-            <div class="section-sep">Thiết bị trong kế hoạch</div>
-            <div class="detail-item full">
-                <ul class="device-list-sm" style="padding-left:0;list-style:none;margin:0">
-                    <li>📦 <strong>TB005</strong> — Oscilloscope Rigol DS1054Z <span class="badge-type urgent">Hư hỏng kênh 1</span></li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="action-row">
-            <button class="btn-secondary" onclick="openCreateModal()">✏️ Chỉnh sửa kế hoạch</button>
-            <button class="btn-success" onclick="alert('Chuyển sang Ghi Nhận Sửa Chữa để ghi kết quả!')">📝 Ghi nhận kết quả</button>
-            <button class="btn-primary" style="background:#e53935" onclick="alert('Bắt đầu thực hiện kế hoạch!')">▶ Bắt đầu</button>
+    @* ── Cột phải: Chi tiết kế hoạch ── *@
+    <div class="detail-panel" id="detailPanel">
+        <h3>🔍 Chi tiết kế hoạch</h3>
+        <div id="detailContent" style="color:#aaa;font-size:13px;text-align:center;padding:40px 0">
+            Chọn một kế hoạch ở danh sách bên trái để xem chi tiết
         </div>
     </div>
 </div>
 
-<!-- Modal Tạo KH Bảo Trì Thông Thường -->
-<div class="modal-overlay" id="createModal">
+@* ── Modal Lập KH sửa chữa (từ báo hỏng) ── *@
+<div class="modal-overlay" id="scModal">
     <div class="modal-box">
-        <div class="modal-title">🔧 Tạo Kế Hoạch Bảo Trì Mới</div>
-        <div class="modal-sub">Tạo bản ghi vào bảng <strong>KEHOACH_BAOTRI</strong></div>
+        <div class="modal-title" style="color:#e53935">⚡ Lập Kế Hoạch Sửa Chữa</div>
+        <div class="modal-sub">Tạo kế hoạch từ phiếu báo hỏng → bản ghi <strong>KEHOACH_BAOTRI</strong> + <strong>CHITIET_KEHOACH</strong></div>
         <div class="modal-grid">
+            <div class="highlight-bh full">
+                <strong>📎 Nguồn báo hỏng (BAOHONG_THIETBI):</strong>
+                <span id="scBHInfo">—</span>
+                <div id="scMoTa" style="color:#795548;margin-top:4px"></div>
+            </div>
+            <input type="hidden" id="scBHId" />
+            <input type="hidden" id="scTBId" />
             <div>
-                <label class="form-lbl">ID Kế hoạch </label>
-                <input type="text" class="form-inp" placeholder="VD: KH-2024-019" />
+                <label class="form-lbl">ID Kế hoạch *</label>
+                <input type="text" class="form-inp" id="scKHId" placeholder="VD: KH_019" />
             </div>
             <div>
-                <label class="form-lbl">Loại bảo trì </label>
-                <select class="form-inp">
-                    <option value="Bảo trì định kỳ">Bảo trì định kỳ</option>
-                    <option value="Kiểm tra tình trạng">Kiểm tra tình trạng</option>
-                    <option value="Đại tu">Đại tu</option>
-                </select>
+                <label class="form-lbl">Loại</label>
+                <input type="text" class="form-inp" value="Sửa chữa" readonly style="background:#fce4ec;color:#c62828;font-weight:700" />
             </div>
             <div>
-                <label class="form-lbl">Ngày lập </label>
-                <input type="date" class="form-inp" />
+                <label class="form-lbl">Ngày lập *</label>
+                <input type="date" class="form-inp" id="scNgayLap" />
             </div>
             <div>
-                <label class="form-lbl">Ngày dự kiến HT </label>
-                <input type="date" class="form-inp" />
+                <label class="form-lbl">Ngày dự kiến HT</label>
+                <input type="date" class="form-inp" id="scNgayHT" />
             </div>
-            <div>
+            <div class="full">
                 <label class="form-lbl">Đơn vị thực hiện</label>
-                <select class="form-inp">
-                    <option>Khoa Công nghệ thông tin</option>
-                    <option>Phòng Cơ sở vật chất</option>
-                    <option>Toàn trường</option>
-                    <option>Đơn vị bên ngoài</option>
-                </select>
+                <input type="text" class="form-inp" id="scDonVi" placeholder="VD: Công ty CP Máy tính AMC" />
             </div>
             <div>
-                <label class="form-lbl">Chi phí dự kiến </label>
-                <input type="text" class="form-inp" placeholder="VD: 2,500,000" />
+                <label class="form-lbl">Chi phí dự kiến (VNĐ)</label>
+                <input type="text" class="form-inp" id="scChiPhi" placeholder="VD: 2500000" />
             </div>
             <div class="full">
-                <label class="form-lbl">Thiết bị cần bảo trì </label>
-                <select class="form-inp">
-                    <option>-- Chọn thiết bị --</option>
-                    <option>TB001 — Macbook Pro M3</option>
-                    <option>TB002 — Máy chiếu Epson EB-X51</option>
-                    <option>TB003 — Bộ thực hành PLC Siemens S7</option>
-                    <option>TB004 — Máy in HP LaserJet Pro M404n</option>
-                    <option>TB007 — Màn hình Samsung 27" 4K</option>
-                </select>
+                <label class="form-lbl">Ghi chú / Mô tả công việc</label>
+                <textarea class="form-inp" id="scGhiChu" rows="2" placeholder="Mô tả công việc dự kiến..."></textarea>
             </div>
             <div class="full">
-                <label class="form-lbl">Ghi chú (GhiChu)</label>
-                <textarea class="form-inp" rows="3" placeholder="Mô tả công việc cần thực hiện, vật tư dự kiến..."></textarea>
+                <label class="form-lbl">Thêm thiết bị khác vào cùng kế hoạch (tùy chọn)</label>
+                <div class="tb-select-list" id="scTBExtra">
+                    @foreach (var tb in Model.DanhSachThietBi)
+                    {
+                        var mdIcon = tb.MucDoUuTienBaoHong == "Khẩn cấp" ? "🔴" : tb.MucDoUuTienBaoHong == "Cao" ? "🟠" : tb.MucDoUuTienBaoHong == "Trung bình" ? "🟡" : "🟢";
+        <div class="tb-check-item">
+            <input type="checkbox" class="sc-extra-tb" value="@tb.ID_ThietBi" id="sctb_@tb.ID_ThietBi" data-bh-id="@tb.BaoHongNo" />
+            <label for="sctb_@tb.ID_ThietBi" style="cursor:pointer">
+                <strong>@tb.ID_ThietBi</strong> — @tb.TenTB
+                <span style="color:#888;font-size:11px">[@tb.DanhMuc]</span>
+                @if (tb.DangBaoHong)
+                {<span style="background:#fff3e0;color:#e65100;padding:1px 6px;border-radius:4px;font-size:10px;margin-left:4px">📎 @tb.BaoHongNo @mdIcon @tb.MucDoUuTienBaoHong</span>}
+            </label>
+            <textarea class="form-inp" id="scnote_@tb.ID_ThietBi" rows="2" style="margin-top:6px" placeholder="Ghi chú chi tiết cho thiết bị này (tùy chọn)"></textarea>
+        </div>}
+                </div>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn-cancel" onclick="closeModal('createModal')">Hủy</button>
-            <button class="btn-save" onclick="closeModal('createModal')">💾 Lưu kế hoạch</button>
+            <button class="btn-cancel" onclick="closeModal('scModal')">Hủy</button>
+            <button class="btn-save sc" onclick="luuKHSuaChua()">⚡ Tạo kế hoạch sửa chữa</button>
         </div>
     </div>
 </div>
 
-<!-- Modal Tạo KH Sửa Chữa Đột Xuất (từ BAOHONG_THIETBI) -->
-<div class="modal-overlay" id="urgentModal">
+@* ── Modal Lập KH Định Kỳ ── *@
+<div class="modal-overlay" id="dkModal">
     <div class="modal-box">
-        <div class="modal-title" style="color:#e53935">⚡ Lập Kế Hoạch Sửa Chữa Đột Xuất</div>
-        <div class="modal-sub">Tạo bản ghi <strong>KEHOACH_BAOTRI</strong> với loại "Sửa chữa đột xuất" từ phiếu báo hỏng</div>
+        <div class="modal-title">📅 Lập Kế Hoạch Bảo Trì Định Kỳ</div>
+        <div class="modal-sub">Tạo kế hoạch không cần báo hỏng → <strong>CHITIET_KEHOACH.BaoHongNo = NULL</strong></div>
         <div class="modal-grid">
-            <div class="highlight-box">
-                <strong>Nguồn báo hỏng (BAOHONG_THIETBI):</strong>
-                <span id="urgentBHInfo">BH-2024-041 — TB005 Oscilloscope Rigol DS1054Z</span>
+            <div>
+                <label class="form-lbl">ID Kế hoạch *</label>
+                <input type="text" class="form-inp" id="dkKHId" placeholder="VD: KH_020" />
             </div>
             <div>
-                <label class="form-lbl">ID Kế hoạch mới</label>
-                <input type="text" class="form-inp" id="urgentKHId" placeholder="VD: KH-2024-019" />
+                <label class="form-lbl">Loại</label>
+                <input type="text" class="form-inp" value="Định kỳ" readonly style="background:#e8f5e9;color:#2e7d32;font-weight:700" />
             </div>
             <div>
-                <label class="form-lbl">Loại (TrangThai)</label>
-                <input type="text" class="form-inp" value="Sửa chữa đột xuất" readonly style="background:#fce4ec;color:#c62828;font-weight:700" />
+                <label class="form-lbl">Ngày lập *</label>
+                <input type="date" class="form-inp" id="dkNgayLap" />
             </div>
             <div>
-                <label class="form-lbl">Ngày lập (NgayLap)</label>
-                <input type="date" class="form-inp" id="urgentNgayLap" />
-            </div>
-            <div>
-                <label class="form-lbl">Ngày dự kiến HT (NgayDuKienHT)</label>
-                <input type="date" class="form-inp" />
-            </div>
-            <div>
-                <label class="form-lbl">Đơn vị thực hiện (DonViThucHien)</label>
-                <select class="form-inp">
-                    <option>Phòng Cơ sở vật chất</option>
-                    <option>Đơn vị bên ngoài</option>
-                    <option>Nhà sản xuất bảo hành</option>
-                </select>
-            </div>
-            <div>
-                <label class="form-lbl">Chi phí dự kiến (ChiPhiDuKien — VNĐ)</label>
-                <input type="text" class="form-inp" placeholder="VD: 2,500,000" />
+                <label class="form-lbl">Ngày dự kiến HT</label>
+                <input type="date" class="form-inp" id="dkNgayHT" />
             </div>
             <div class="full">
-                <label class="form-lbl">Ghi chú (GhiChu)</label>
-                <textarea class="form-inp" rows="3" placeholder="Nguyên nhân sơ bộ, công việc dự kiến..."></textarea>
+                <label class="form-lbl">Đơn vị thực hiện</label>
+                <input type="text" class="form-inp" id="dkDonVi" placeholder="VD: Đội Kỹ thuật Trường" />
+            </div>
+            <div>
+                <label class="form-lbl">Chi phí dự kiến (VNĐ)</label>
+                <input type="text" class="form-inp" id="dkChiPhi" placeholder="VD: 5000000" />
+            </div>
+            <div class="full">
+                <label class="form-lbl">Ghi chú</label>
+                <textarea class="form-inp" id="dkGhiChu" rows="2" placeholder="Mô tả nội dung bảo trì định kỳ..."></textarea>
+            </div>
+            <div class="field-sep">Chọn thiết bị cần bảo trì *</div>
+            <div class="full">
+                <div class="tb-select-list" id="dkTBList">
+                    @foreach (var tb in Model.DanhSachThietBi)
+                    {
+                        var mdIcon = tb.MucDoUuTienBaoHong == "Khẩn cấp" ? "🔴" : tb.MucDoUuTienBaoHong == "Cao" ? "🟠" : tb.MucDoUuTienBaoHong == "Trung bình" ? "🟡" : "🟢";
+        <div class="tb-check-item">
+            <input type="checkbox" class="dk-tb" value="@tb.ID_ThietBi" id="dktb_@tb.ID_ThietBi" />
+            <label for="dktb_@tb.ID_ThietBi" style="cursor:pointer">
+                <strong>@tb.ID_ThietBi</strong> — @tb.TenTB
+                <span style="color:#888;font-size:11px">[@tb.DanhMuc | @tb.TrangThai]</span>
+                @if (tb.DangBaoHong)
+                {<span style="background:#fff3e0;color:#e65100;padding:1px 6px;border-radius:4px;font-size:10px;margin-left:4px">📎 @tb.BaoHongNo @mdIcon @tb.MucDoUuTienBaoHong</span>}
+            </label>
+            <textarea class="form-inp" id="dknote_@tb.ID_ThietBi" rows="2" style="margin-top:6px" placeholder="Ghi chú chi tiết cho thiết bị này (tùy chọn)"></textarea>
+        </div>}
+                </div>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn-cancel" onclick="closeModal('urgentModal')">Hủy</button>
-            <button class="btn-save urgent" onclick="closeModal('urgentModal')">⚡ Tạo kế hoạch đột xuất</button>
+            <button class="btn-cancel" onclick="closeModal('dkModal')">Hủy</button>
+            <button class="btn-save" onclick="luuKHDinhKy()">💾 Lưu kế hoạch định kỳ</button>
         </div>
     </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script>
-    function openCreateModal() { document.getElementById('createModal').classList.add('active'); }
-    function openUrgentModal(bhId, bhTb) {
-        document.getElementById('urgentBHInfo').textContent = bhId + ' — ' + bhTb;
-        document.getElementById('urgentKHId').value = 'KH-2024-0' + Math.floor(Math.random() * 90 + 10);
-        document.getElementById('urgentNgayLap').value = new Date().toISOString().split('T')[0];
-        document.getElementById('urgentModal').classList.add('active');
+    var currentKHId = null;
+
+    // ── Tab filter ──
+    function filterKH(btn, type) {
+        document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        document.querySelectorAll('.plan-item').forEach(function (item) {
+            item.style.display = (type === 'tat-ca' || item.dataset.tt === type) ? '' : 'none';
+        });
     }
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-    function selectPlan(el, id) {
+
+    // ── Chọn kế hoạch → load chi tiết ──
+    function selectKH(el, id) {
         document.querySelectorAll('.plan-item').forEach(function (i) { i.classList.remove('selected'); });
         el.classList.add('selected');
+        currentKHId = id;
+        document.getElementById('detailContent').innerHTML = '<div style="padding:20px;text-align:center;color:#888">Đang tải...</div>';
+        fetch('/CSVC/GetKeHoachDetail?id=' + encodeURIComponent(id))
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data.ok) { showToast('Lỗi: ' + data.msg, false); return; }
+                var kh = data.keHoach;
+                var ct = data.chiTiet;
+                var ls = data.lichSu || [];
+                var loaiCls = kh.LoaiKeHoach === 'Sửa chữa' ? 'suachua' : 'dinky';
+                var ctHtml = ct.length === 0 ? '<div style="color:#aaa;font-size:12px;padding:8px 0">Chưa có thiết bị</div>' :
+                    ct.map(function (c) {
+                        var src = c.BaoHongNo
+                            ? '<span style="background:#fff3e0;color:#e65100;padding:2px 6px;border-radius:6px;font-size:10px">📎 ' + c.BaoHongNo + '</span>'
+                            : '<span style="background:#e8f5e9;color:#2e7d32;padding:2px 6px;border-radius:6px;font-size:10px">📅 Định kỳ</span>';
+                        return '<div class="device-row">📦 <strong>' + c.ThietBiNo + '</strong> — ' + c.TenTB +
+                            ' <span style="color:#888;font-size:11px">[' + c.TenDanhMuc + ']</span> ' + src +
+                            (c.GhiChuChiTiet ? '<span style="color:#888;font-size:11px"> — ' + c.GhiChuChiTiet + '</span>' : '') + '</div>';
+                    }).join('');
+                var lsHtml = ls.length === 0 ? '<div style="color:#aaa;font-size:12px;padding:8px 0">Chưa có ghi nhận sửa chữa</div>' :
+                    ls.map(function (g) {
+                        var ttCls = (g.TrangThaiSauSua || '').indexOf('Hoạt động tốt') >= 0 ? 'ok' : (g.TrangThaiSauSua || '').indexOf('Tạm thời') >= 0 ? 'warn' : 'bad';
+                        var tien = g.ChiPhiThucTe > 0 ? Number(g.ChiPhiThucTe).toLocaleString('vi-VN') + ' đ' : '—';
+                        return '<div class="history-item" style="padding:10px 0">' +
+                            '<div class="hi-head"><span class="hi-name">' + g.ID_GhiNhan + '</span><span class="hi-date">' + g.NgayThucHien + '</span></div>' +
+                            '<div class="hi-detail"><span>📦 ' + (g.TenTB || g.ThietBiNo || '—') + '</span>' +
+                            (g.BaoHongNo ? '<span style="color:#e65100">📎 ' + g.BaoHongNo + '</span>' : '') +
+                            '</div>' +
+                            '<div class="hi-detail" style="margin-top:3px"><span class="badge-tt ' + ttCls + '">' + (g.TrangThaiSauSua || '—') + '</span>' +
+                            '<span style="margin-left:8px">💰 ' + tien + '</span></div>' +
+                            (g.KetQua ? '<div style="font-size:12px;color:#666;margin-top:4px">' + g.KetQua + '</div>' : '') +
+                            '</div>';
+                    }).join('');
+                document.getElementById('detailContent').innerHTML =
+                    '<div class="detail-grid">' +
+                    '<div class="detail-item"><label>ID Kế hoạch</label><p>' + kh.ID_KeHoach + '</p></div>' +
+                    '<div class="detail-item"><label>Loại bảo trì</label><p><span class="badge-loai ' + loaiCls + '">' + kh.LoaiKeHoach + '</span></p></div>' +
+                    '<div class="detail-item"><label>Ngày lập</label><p>' + kh.NgayLap + '</p></div>' +
+                    '<div class="detail-item"><label>Ngày dự kiến HT</label><p>' + (kh.NgayDuKienHT || '—') + '</p></div>' +
+                    '<div class="detail-item"><label>Người lập</label><p>' + kh.HoTen + '</p></div>' +
+                    '<div class="detail-item"><label>Đơn vị thực hiện</label><p>' + (kh.DonViThucHien || '—') + '</p></div>' +
+                    '<div class="detail-item"><label>Chi phí dự kiến</label><p>' + (kh.ChiPhiDuKien > 0 ? Number(kh.ChiPhiDuKien).toLocaleString('vi-VN') + ' đ' : '—') + '</p></div>' +
+                    '<div class="detail-item"><label>Trạng thái</label><p style="color:#1a237e;font-weight:700">' + kh.TrangThai + '</p></div>' +
+                    (kh.GhiChu ? '<div class="detail-item full"><label>Ghi chú</label><p>' + kh.GhiChu + '</p></div>' : '') +
+                    '<div class="section-sep">Thiết bị trong kế hoạch (' + ct.length + ')</div>' +
+                    '<div class="full">' + ctHtml + '</div>' +
+                    '<div class="section-sep">Lịch sử ghi nhận (' + ls.length + ')</div>' +
+                    '<div class="full">' + lsHtml + '</div>' +
+                    '</div>' +
+                    '<div class="action-row">' +
+                    (kh.TrangThai === 'Chờ thực hiện' ? '<button class="btn-danger" onclick="xoaKH(\'' + kh.ID_KeHoach + '\')">🗑 Xóa</button>' : '') +
+                    '<a href="/CSVC/GhiNhanSuaChua" class="btn-primary" style="text-decoration:none;display:inline-block">📝 Ghi nhận kết quả</a>' +
+                    '</div>';
+            })
+            .catch(function (e) { showToast('Lỗi kết nối: ' + e.message, false); });
     }
+
+    // ── Modal sửa chữa (từ BH) ──
+    function openSuaChuaModal(bhId, tbName, tbId, moTa) {
+        document.getElementById('scBHId').value = bhId;
+        document.getElementById('scTBId').value = tbId;
+        document.getElementById('scBHInfo').textContent = bhId + ' — ' + tbName;
+        document.getElementById('scMoTa').textContent = '💬 ' + moTa;
+        document.getElementById('scKHId').value = 'KH_' + Date.now().toString().slice(-5);
+        document.getElementById('scNgayLap').value = new Date().toISOString().split('T')[0];
+        // Reset danh sách chọn và ưu tiên check sẵn thiết bị từ báo hỏng vừa bấm
+        document.querySelectorAll('.sc-extra-tb').forEach(function (cb) {
+            cb.checked = false;
+        });
+        document.querySelectorAll('[id^="scnote_"]').forEach(function (n) {
+            n.value = '';
+        });
+        var mainCb = document.getElementById('sctb_' + tbId);
+        if (mainCb) {
+            mainCb.checked = true;
+        }
+        document.getElementById('scModal').classList.add('active');
+    }
+
+    // ── Modal định kỳ ──
+    function openDinhKyModal() {
+        document.getElementById('dkKHId').value = 'KH_' + Date.now().toString().slice(-5);
+        document.getElementById('dkNgayLap').value = new Date().toISOString().split('T')[0];
+        document.querySelectorAll('.dk-tb').forEach(function (cb) { cb.checked = false; });
+        document.querySelectorAll('[id^="dknote_"]').forEach(function (n) { n.value = ''; });
+        document.getElementById('dkModal').classList.add('active');
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    // ── Lưu KH sửa chữa ──
+    function luuKHSuaChua() {
+        var id = document.getElementById('scKHId').value.trim();
+        if (!id) { showToast('Vui lòng nhập ID kế hoạch', false); return; }
+        var checked = document.querySelectorAll('.sc-extra-tb:checked');
+        if (checked.length === 0) { showToast('Vui lòng chọn ít nhất 1 thiết bị', false); return; }
+
+        var thietBiIds = [];
+        var baoHongIds = [];
+        var ghiChuCTs = [];
+        checked.forEach(function (cb) {
+            thietBiIds.push(cb.value);
+            baoHongIds.push(cb.getAttribute('data-bh-id') || '');
+            var note = document.getElementById('scnote_' + cb.value);
+            ghiChuCTs.push(note ? note.value : '');
+        });
+
+        var params = new URLSearchParams({
+            idKeHoach: id,
+            loaiKeHoach: 'Sửa chữa',
+            ngayLap: document.getElementById('scNgayLap').value,
+            ngayDuKienHT: document.getElementById('scNgayHT').value,
+            donViThucHien: document.getElementById('scDonVi').value,
+            chiPhiDuKien: document.getElementById('scChiPhi').value,
+            ghiChu: document.getElementById('scGhiChu').value
+        });
+        thietBiIds.forEach(function (v, i) { params.append('thietBiIds[' + i + ']', v); });
+        baoHongIds.forEach(function (v, i) { params.append('baoHongIds[' + i + ']', v); });
+        ghiChuCTs.forEach(function (v, i) { params.append('ghiChuChiTiets[' + i + ']', v); });
+
+        postAction('/CSVC/LuuKeHoach', params, function (data) {
+            if (data.ok) { showToast(data.msg, true); closeModal('scModal'); setTimeout(function () { location.reload(); }, 1200); }
+            else showToast(data.msg, false);
+        });
+    }
+
+    // ── Lưu KH định kỳ ──
+    function luuKHDinhKy() {
+        var id = document.getElementById('dkKHId').value.trim();
+        var checked = document.querySelectorAll('.dk-tb:checked');
+        if (!id) { showToast('Vui lòng nhập ID kế hoạch', false); return; }
+        if (checked.length === 0) { showToast('Vui lòng chọn ít nhất 1 thiết bị', false); return; }
+
+        var params = new URLSearchParams({
+            idKeHoach: id,
+            loaiKeHoach: 'Định kỳ',
+            ngayLap: document.getElementById('dkNgayLap').value,
+            ngayDuKienHT: document.getElementById('dkNgayHT').value,
+            donViThucHien: document.getElementById('dkDonVi').value,
+            chiPhiDuKien: document.getElementById('dkChiPhi').value,
+            ghiChu: document.getElementById('dkGhiChu').value
+        });
+        checked.forEach(function (cb, i) {
+            params.append('thietBiIds[' + i + ']', cb.value);
+            params.append('baoHongIds[' + i + ']', '');
+            var note = document.getElementById('dknote_' + cb.value);
+            params.append('ghiChuChiTiets[' + i + ']', note ? note.value : '');
+        });
+
+        postAction('/CSVC/LuuKeHoach', params, function (data) {
+            if (data.ok) { showToast(data.msg, true); closeModal('dkModal'); setTimeout(function () { location.reload(); }, 1200); }
+            else showToast(data.msg, false);
+        });
+    }
+
+    // ── Xóa kế hoạch ──
+    function xoaKH(id) {
+        if (!confirm('Xóa kế hoạch ' + id + '? Các báo hỏng liên quan sẽ trở lại Chờ xử lý.')) return;
+        var params = new URLSearchParams({ id: id });
+        postAction('/CSVC/XoaKeHoach', params, function (data) {
+            if (data.ok) { showToast('Đã xóa kế hoạch', true); setTimeout(function () { location.reload(); }, 1000); }
+            else showToast(data.msg, false);
+        });
+    }
+
+    // ── Helpers ──
+    function postAction(url, params, cb) {
+        fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() })
+            .then(function (r) { return r.json(); }).then(cb)
+            .catch(function (e) { showToast('Lỗi kết nối: ' + e.message, false); });
+    }
+
+    function showToast(msg, ok) {
+        var t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast ' + (ok ? 'ok' : 'err');
+        t.style.display = 'block';
+        setTimeout(function () { t.style.display = 'none'; }, 3000);
+    }
+
     document.querySelectorAll('.modal-overlay').forEach(function (m) {
         m.addEventListener('click', function (e) { if (e.target === m) m.classList.remove('active'); });
     });

@@ -9,6 +9,29 @@ namespace QLTB.Controllers
     public class TruongKhoaController : Controller
     {
         private string connStr = ConfigurationManager.ConnectionStrings["QuanLyThietBi"].ConnectionString;
+        private string CurrentUserId => Session["UserId"]?.ToString() ?? "";
+
+        private bool TryGetCurrentKhoaPhongBan(SqlConnection conn, out string khoaBanNo, out string tenKhoaPhongBan)
+        {
+            khoaBanNo = "";
+            tenKhoaPhongBan = "";
+
+            using (var cmd = new SqlCommand(@"
+                SELECT ISNULL(u.Khoa_BanNo, ''), ISNULL(kp.TenPhongBanKhoa, '')
+                FROM NGUOIDUNG u
+                LEFT JOIN KHOA_PHONGBAN kp ON kp.ID_KhoaPhongBan = u.Khoa_BanNo
+                WHERE u.ID_NguoiDung = @UserId", conn))
+            {
+                cmd.Parameters.AddWithValue("@UserId", CurrentUserId);
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (!reader.Read()) return false;
+                    khoaBanNo = reader[0]?.ToString() ?? "";
+                    tenKhoaPhongBan = reader[1]?.ToString() ?? "";
+                    return !string.IsNullOrWhiteSpace(khoaBanNo);
+                }
+            }
+        }
 
         public ActionResult Index() => View();
 
@@ -133,7 +156,37 @@ namespace QLTB.Controllers
                 using (var conn = new SqlConnection(connStr))
                 {
                     conn.Open();
-                    new SqlDataAdapter("SELECT ID_ThietBi, TenTB, Gia, ThongSoKT, TrangThaiTB FROM THIETBI", conn).Fill(dt);
+
+                    if (!TryGetCurrentKhoaPhongBan(conn, out var khoaBanNo, out var tenKhoaPhongBan))
+                    {
+                        ViewBag.Error = "Không xác định được khoa/phòng ban của người dùng hiện tại.";
+                        return View(dt);
+                    }
+
+                    ViewBag.TenKhoaPhongBan = tenKhoaPhongBan;
+
+                    const string sql = @"
+                        SELECT RTRIM(tb.ID_ThietBi) AS ID_ThietBi,
+                               tb.TenTB,
+                               tb.Gia,
+                               ISNULL(tb.ThongSoKT,'') AS ThongSoKT,
+                               ISNULL(tb.TrangThaiTB,'') AS TrangThaiTB,
+                               ISNULL(dm.TenDanhMuc,'') AS TenDanhMuc,
+                               ISNULL(kp.TenPhongBanKhoa,'') AS TenKhoaPhongBan,
+                               ISNULL(ncc.TenNhaCC,'') AS TenNhaCC,
+                               ISNULL(CONVERT(varchar(20), tb.SoSeri), '') AS SoSeri
+                        FROM THIETBI tb
+                        LEFT JOIN DANHMUC dm ON dm.ID_DanhMuc = tb.DanhMucNo
+                        LEFT JOIN KHOA_PHONGBAN kp ON kp.ID_KhoaPhongBan = tb.KhoaPhongBan
+                        LEFT JOIN NHACUNGCAP ncc ON ncc.ID_NhaCC = tb.NhaCCNo
+                        WHERE tb.KhoaPhongBan = @KhoaPhongBan
+                        ORDER BY tb.TenTB";
+
+                    using (var da = new SqlDataAdapter(sql, conn))
+                    {
+                        da.SelectCommand.Parameters.AddWithValue("@KhoaPhongBan", khoaBanNo);
+                        da.Fill(dt);
+                    }
                 }
             }
             catch (Exception ex) { ViewBag.Error = "Lỗi: " + ex.Message; }
@@ -148,12 +201,34 @@ namespace QLTB.Controllers
                 using (var conn = new SqlConnection(connStr))
                 {
                     conn.Open();
+
+                    if (!TryGetCurrentKhoaPhongBan(conn, out var khoaBanNo, out _))
+                    {
+                        TempData["Error"] = "Không xác định được khoa/phòng ban của người dùng hiện tại.";
+                        return RedirectToAction("DanhSachThietBi");
+                    }
+
+                    var tbId = (id ?? "").Trim();
+                    using (var checkCmd = new SqlCommand(@"
+                        SELECT COUNT(1)
+                        FROM THIETBI
+                        WHERE RTRIM(ID_ThietBi) = @tb AND KhoaPhongBan = @khoa", conn))
+                    {
+                        checkCmd.Parameters.AddWithValue("@tb", tbId);
+                        checkCmd.Parameters.AddWithValue("@khoa", khoaBanNo);
+                        if (Convert.ToInt32(checkCmd.ExecuteScalar()) == 0)
+                        {
+                            TempData["Error"] = "Bạn chỉ được báo hỏng thiết bị thuộc khoa/phòng ban của mình.";
+                            return RedirectToAction("DanhSachThietBi");
+                        }
+                    }
+
                     using (var cmd = new SqlCommand(
-                        @"INSERT INTO BAOHONG_THIETBI (ID_BaoHong, ThietBiNo, NguoiBaoHongNo, MoTaHong, NgayBao, MucDo, TrangThai)
+                        @"INSERT INTO BAOHONG_THIETBI (ID_BaoHong, ThietBiNo, NguoiBaoHongNo, MoTaHong, NgayBao, MucDoUuTien, TrangThai)
                           VALUES (@id, @tb, @user, @mota, GETDATE(), N'Cao', N'Chờ xử lý')", conn))
                     {
-                        cmd.Parameters.AddWithValue("@id",   "BH_" + DateTime.Now.ToString("yyMMddHHmmss"));
-                        cmd.Parameters.AddWithValue("@tb",   id);
+                        cmd.Parameters.AddWithValue("@id",   "BH" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpperInvariant());
+                        cmd.Parameters.AddWithValue("@tb",   tbId);
                         cmd.Parameters.AddWithValue("@user", Session["UserId"]?.ToString() ?? "");
                         cmd.Parameters.AddWithValue("@mota", mota ?? "");
                         cmd.ExecuteNonQuery();
@@ -161,7 +236,10 @@ namespace QLTB.Controllers
                 }
                 TempData["Success"] = "Đã gửi báo cáo hỏng!";
             }
-            catch { }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Lỗi báo hỏng: " + ex.Message;
+            }
             return RedirectToAction("DanhSachThietBi");
         }
 

@@ -2,45 +2,136 @@
 <div class="container mt-4">
     <h3 class="mb-4"><i class="fa fa-microscope text-secondary"></i> Danh Sách Thiết Bị Tại Khoa</h3>
 
+    @if (ViewBag.TenKhoaPhongBan != null)
+    {
+        <div class="alert alert-info py-2">Đơn vị: <strong>@ViewBag.TenKhoaPhongBan</strong></div>
+    }
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger py-2">@ViewBag.Error</div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger py-2">@TempData["Error"]</div>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success py-2">@TempData["Success"]</div>
+    }
+
+    @if (Model.Rows.Count == 0)
+    {
+        <div class="alert alert-warning py-2">Không có thiết bị nào thuộc khoa/phòng ban của bạn.</div>
+    }
+
     <table class="table table-hover shadow-sm bg-white">
         <thead class="table-dark">
             <tr>
-                <th>Thông Tin Thiết Bị</th>
-                <th>Giá Trị</th>
-                <th>Thông Số</th>
+                <th>Mã thiết bị</th>
+                <th>Tên thiết bị</th>
                 <th>Trạng Thái</th>
-                <th width="300">Hành Động</th>
+                <th width="170">Hành Động</th>
             </tr>
         </thead>
         <tbody>
             @foreach (System.Data.DataRow row in Model.Rows)
             {
                 <tr>
+                    <td><strong>@row["ID_ThietBi"]</strong></td>
+                    <td>@row["TenTB"]</td>
                     <td>
-                        <strong>@row["TenTB"]</strong><br />
-                        <small class="text-muted">Mã: @row["ID_ThietBi"]</small>
-                    </td>
-                    <td>@string.Format("{0:N0} đ", row["Gia"])</td>
-                    <td>@row["ThongSoKT"]</td>
-                    <td>
-                        <span class="badge @(row["TrangThaiTB"].ToString() == "Tốt" ? "bg-success" : "bg-warning")">
+                        <span class="badge @((row["TrangThaiTB"].ToString().Contains("Tốt") || row["TrangThaiTB"].ToString().Contains("Đang")) ? "bg-success" : "bg-warning")">
                             @row["TrangThaiTB"]
                         </span>
                     </td>
                     <td>
-                        @using (Html.BeginForm("BaoHong", "TruongKhoa", FormMethod.Post, new { @class = "row g-2" }))
-                        {
-                            <input type="hidden" name="id" value="@row["ID_ThietBi"]" />
-                            <div class="col-8">
-                                <input name="mota" class="form-control form-control-sm" placeholder="Mô tả lỗi..." required />
-                            </div>
-                            <div class="col-4">
-                                <button class="btn btn-danger btn-sm w-100">Báo Hỏng</button>
-                            </div>
-                        }
+                        <button type="button"
+                                class="btn btn-primary btn-sm"
+                                onclick="openDetail(this)"
+                                data-id="@row["ID_ThietBi"]"
+                                data-ten="@row["TenTB"]"
+                                data-gia="@string.Format("{0:N0} đ", row["Gia"])"
+                                data-trangthai="@row["TrangThaiTB"]"
+                                data-thongso="@row["ThongSoKT"]"
+                                data-danhmuc="@row["TenDanhMuc"]"
+                                data-khoa="@row["TenKhoaPhongBan"]"
+                                data-ncc="@row["TenNhaCC"]"
+                                data-soseri="@row["SoSeri"]">
+                            Xem chi tiết
+                        </button>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
 </div>
+
+<div class="modal fade" id="deviceDetailModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chi tiết thiết bị</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-2">
+                    <div class="col-md-6"><strong>Mã thiết bị:</strong> <span id="dId"></span></div>
+                    <div class="col-md-6"><strong>Tên thiết bị:</strong> <span id="dTen"></span></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6"><strong>Danh mục:</strong> <span id="dDanhMuc"></span></div>
+                    <div class="col-md-6"><strong>Trạng thái:</strong> <span id="dTrangThai"></span></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6"><strong>Giá trị:</strong> <span id="dGia"></span></div>
+                    <div class="col-md-6"><strong>Số seri:</strong> <span id="dSoSeri"></span></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6"><strong>Nhà cung cấp:</strong> <span id="dNcc"></span></div>
+                    <div class="col-md-6"><strong>Đơn vị:</strong> <span id="dKhoa"></span></div>
+                </div>
+                <div class="mb-3">
+                    <strong>Thông số kỹ thuật:</strong>
+                    <div id="dThongSo" class="border rounded p-2 bg-light mt-1"></div>
+                </div>
+
+                <hr />
+
+                @using (Html.BeginForm("BaoHong", "TruongKhoa", FormMethod.Post))
+                {
+                    <input type="hidden" name="id" id="bhId" />
+                    <div class="form-group">
+                        <label class="form-label"><strong>Mô tả hư hỏng</strong></label>
+                        <textarea name="mota" class="form-control" rows="3" placeholder="Nhập mô tả lỗi..." required></textarea>
+                    </div>
+                    <button class="btn btn-danger">Báo hỏng thiết bị</button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openDetail(btn) {
+        var d = btn.dataset;
+        document.getElementById('dId').textContent = d.id || '';
+        document.getElementById('dTen').textContent = d.ten || '';
+        document.getElementById('dGia').textContent = d.gia || '';
+        document.getElementById('dTrangThai').textContent = d.trangthai || '';
+        document.getElementById('dThongSo').textContent = d.thongso || '';
+        document.getElementById('dDanhMuc').textContent = d.danhmuc || '';
+        document.getElementById('dKhoa').textContent = d.khoa || '';
+        document.getElementById('dNcc').textContent = d.ncc || '';
+        document.getElementById('dSoSeri').textContent = d.soseri || '';
+        document.getElementById('bhId').value = d.id || '';
+
+        if (window.jQuery && window.jQuery.fn && window.jQuery.fn.modal) {
+            window.jQuery('#deviceDetailModal').modal('show');
+        }
+    }
+</script>
