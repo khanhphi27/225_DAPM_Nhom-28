@@ -15,7 +15,46 @@ namespace QLTB.Controllers
         }
         private string CurrentUser => Session["UserId"]?.ToString() ?? "csvc";
 
-        public ActionResult QuanLyThietBi() { var r = CheckAuth(); return r ?? View(); }
+        public ActionResult QuanLyThietBi()
+        {
+            var r = CheckAuth(); if (r != null) return r;
+
+            var list = new List<ThietBiViewModel>();
+            using (var conn = DbHelper.GetConnection())
+            {
+                conn.Open();
+                const string sql = @"
+                    SELECT tb.ID_ThietBi, tb.TenTB,
+                           dm.TenDanhMuc,
+                           kp.TenPhongBanKhoa,
+                           ncc.TenNhaCC,
+                           tb.SoSeri, tb.Gia, tb.TrangThaiTB
+                    FROM THIETBI tb
+                    LEFT JOIN DANHMUC dm ON tb.DanhMucNo = dm.ID_DanhMuc
+                    LEFT JOIN KHOA_PHONGBAN kp ON tb.KhoaPhongBan = kp.ID_KhoaPhongBan
+                    LEFT JOIN NHACUNGCAP ncc ON tb.NhaCCNo = ncc.ID_NhaCC";
+
+                using (var cmd = new SqlCommand(sql, conn))
+                using (var rd = cmd.ExecuteReader())
+                {
+                    while (rd.Read())
+                    {
+                        list.Add(new ThietBiViewModel
+                        {
+                            ID_ThietBi = rd["ID_ThietBi"].ToString(),
+                            TenTB = rd["TenTB"].ToString(),
+                            DanhMuc = rd["TenDanhMuc"]?.ToString() ?? "",
+                            KhoaPhongBan = rd["TenPhongBanKhoa"]?.ToString() ?? "",
+                            NhaCungCap = rd["TenNhaCC"]?.ToString() ?? "",
+                            SoSeri = rd["SoSeri"] == DBNull.Value ? (int?)null : Convert.ToInt32(rd["SoSeri"]),
+                            Gia = rd["Gia"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(rd["Gia"]),
+                            TrangThaiTB = rd["TrangThaiTB"]?.ToString() ?? ""
+                        });
+                    }
+                }
+            }
+            return View(list);
+        }
         public ActionResult KiemKeTaiSan() { var r = CheckAuth(); return r ?? View(); }
 
         // ══ LẬP KẾ HOẠCH BẢO TRÌ ══════════════════════════════
@@ -630,5 +669,141 @@ namespace QLTB.Controllers
             }
             catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
         }
+        [HttpGet]
+        public JsonResult GetThietBiById(string id)
+        {
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    const string sql = @"
+                        SELECT ID_ThietBi, TenTB, DanhMucNo, KhoaPhongBan, NhaCCNo,
+                               SoSeri, Gia, TrangThaiTB
+                        FROM THIETBI
+                        WHERE ID_ThietBi = @id";
+
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", id);
+
+                        using (var rd = cmd.ExecuteReader())
+                        {
+                            if (rd.Read())
+                            {
+                                var data = new
+                                {
+                                    ID_ThietBi = rd["ID_ThietBi"].ToString(),
+                                    TenTB = rd["TenTB"].ToString(),
+                                    DanhMuc = rd["DanhMucNo"]?.ToString() ?? "",
+                                    KhoaPhongBan = rd["KhoaPhongBan"]?.ToString() ?? "",
+                                    NhaCungCap = rd["NhaCCNo"]?.ToString() ?? "",
+                                    SoSeri = rd["SoSeri"] == DBNull.Value ? (int?)null : Convert.ToInt32(rd["SoSeri"]),
+                                    Gia = rd["Gia"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(rd["Gia"]),
+                                    TrangThaiTB = rd["TrangThaiTB"]?.ToString() ?? ""
+                                };
+
+                                return Json(new { ok = true, data = data }, JsonRequestBehavior.AllowGet);
+                            }
+                        }
+                    }
+                }
+
+                return Json(new { ok = false, msg = "Không tìm thấy thiết bị" }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpPost]
+        public JsonResult SaveThietBi(ThietBiViewModel tb)
+        {
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+
+                    bool isUpdate = !string.IsNullOrWhiteSpace(tb.ID_ThietBi);
+
+                    if (!isUpdate)
+                    {
+                        tb.ID_ThietBi = GenerateNewThietBiID();
+                    }
+                    else if (!IdExists(conn, tb.ID_ThietBi))
+                    {
+                        return Json(new { ok = false, msg = "Không tìm thấy thiết bị để sửa" });
+                    }
+
+                    string sql = isUpdate
+                        ? @"UPDATE THIETBI SET TenTB=@ten, DanhMucNo=@dm, KhoaPhongBan=@khoa,
+                               NhaCCNo=@ncc, SoSeri=@seri, Gia=@gia, TrangThaiTB=@tt
+                            WHERE ID_ThietBi = @id"
+                        : @"INSERT INTO THIETBI (ID_ThietBi, TenTB, DanhMucNo, KhoaPhongBan, NhaCCNo, SoSeri, Gia, TrangThaiTB)
+                            VALUES (@id, @ten, @dm, @khoa, @ncc, @seri, @gia, @tt)";
+
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", tb.ID_ThietBi);
+                        cmd.Parameters.AddWithValue("@ten", tb.TenTB ?? "");
+                        cmd.Parameters.AddWithValue("@dm", (object)tb.DanhMuc ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@khoa", (object)tb.KhoaPhongBan ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@ncc", (object)tb.NhaCungCap ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@seri", (object)tb.SoSeri ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@gia", (object)tb.Gia ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@tt", tb.TrangThaiTB ?? "Mới nhập");
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                return Json(new { ok = true, message = "Lưu thiết bị thành công!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { ok = false, msg = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaThietBi(string id)
+        {
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    const string sql = "DELETE FROM THIETBI WHERE ID_ThietBi = @id";
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", id);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                return Json(new { ok = true }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        private string GenerateNewThietBiID()
+        {
+            return "TB" + DateTime.Now.Ticks.ToString().Substring(10);
+        }
+
+        private bool IdExists(SqlConnection conn, string id)
+        {
+            using (var cmd = new SqlCommand("SELECT COUNT(*) FROM THIETBI WHERE ID_ThietBi=@id", conn))
+            {
+                cmd.Parameters.AddWithValue("@id", id);
+                return (int)cmd.ExecuteScalar() > 0;
+            }
+        }
     }
+     
 }
+
