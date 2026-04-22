@@ -1,316 +1,182 @@
 ﻿@model List<QLTB.Models.DeXuatViewModel>
 @{
-    ViewBag.Title = "Phê duyệt đề xuất ngân sách";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Phê Duyệt Ngân Sách - KHTC";
 }
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
 <style>
-    /* Tổng thể và Font */
-    body {
-        background-color: #f8fafc;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    /* Tiêu đề và Badge số lượng */
-    .page-title {
-        color: #1a202c;
-        font-size: 1.5rem;
-        display: flex;
-        align-items: center;
-    }
-
-    .count-badge {
-        background-color: #e0e7ff;
-        color: #4338ca;
-        font-size: 0.85rem;
-        font-weight: 600;
-        padding: 6px 16px;
-        border-radius: 50px;
-        border: 1px solid #c7d2fe;
-    }
-
-    /* Card chứa bảng */
-    .modern-card {
-        border-radius: 12px;
-        border: none;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        background: #fff;
-    }
-
-    /* Định dạng bảng chuẩn ảnh mẫu */
-    .custom-table thead th {
-        background-color: #ffffff;
-        color: #94a3b8;
-        font-weight: 600;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        padding: 16px;
-        border-bottom: 1px solid #f1f5f9;
-    }
-
-    .custom-table tbody td {
-        padding: 16px;
-        vertical-align: middle;
-        border-bottom: 1px solid #f1f5f9;
-        color: #475569;
-    }
-
-    .data-row:hover {
-        background-color: #f8faff !important;
-    }
-
-    /* Badge ID */
-    .badge-id {
-        background-color: #f1f5f9;
-        color: #64748b;
-        font-weight: 600;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 0.75rem;
-        border: 1px solid #e2e8f0;
-    }
-
-    /* Nút Thao tác (Giống ảnh mẫu 100%) */
-    .btn-action-group {
-        display: flex;
-        gap: 8px;
-        justify-content: center;
-    }
-
-    .btn-act {
-        width: 36px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 6px;
-        transition: all 0.2s;
-        border: none;
-        cursor: pointer;
-    }
-
-    /* Nút Xem (Mắt xanh dương) */
-    .btn-act-view {
-        background-color: #ffffff;
-        border: 1.5px solid #3b82f6;
-        color: #3b82f6;
-    }
-
-        .btn-act-view:hover {
-            background-color: #eff6ff;
-        }
-
-    /* Nút Duyệt (Xanh lá) */
-    .btn-act-approve {
-        background-color: #10b981;
-        color: white;
-    }
-
-        .btn-act-approve:hover {
-            background-color: #059669;
-        }
-
-    /* Nút Từ chối (Đỏ) */
-    .btn-act-reject {
-        background-color: #ef4444;
-        color: white;
-    }
-
-        .btn-act-reject:hover {
-            background-color: #dc2626;
-        }
-
-    .btn-act i {
-        font-size: 1rem;
-    }
-
-    /* Modal Styling */
-    .modal-content {
-        border-radius: 16px;
-        border: none;
-    }
-
-    .inner-table {
-        background: #f8fafc;
-        border-radius: 10px;
-        overflow: hidden;
-        border: 1px solid #e2e8f0;
-    }
+.page-hdr h2 { color:#1a237e; font-weight:700; font-size:22px; margin:0; }
+.page-hdr p  { color:#666; font-size:13px; margin:3px 0 0; }
+.tab-bar { display:flex; gap:4px; margin-bottom:18px; background:#fff; border-radius:10px; padding:6px; box-shadow:0 2px 8px rgba(0,0,0,.06); width:fit-content; }
+.tab-btn { padding:7px 20px; border-radius:7px; border:none; cursor:pointer; font-size:13px; font-weight:600; background:transparent; color:#666; transition:all .2s; }
+.tab-btn.active { background:#1a237e; color:#fff; }
+.proposal-card { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); overflow:hidden; border-left:4px solid #1e88e5; margin-bottom:14px; }
+.card-head { padding:14px 20px; display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid #f0f2f8; }
+.card-id { font-size:12px; color:#888; font-weight:600; }
+.card-title { font-size:15px; font-weight:700; color:#1a237e; margin:2px 0 4px; }
+.card-meta { font-size:12px; color:#666; }
+.card-meta span { margin-right:14px; }
+.badge-p { display:inline-block; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap; }
+.badge-p.pending  { background:#e3f2fd; color:#1565c0; }
+.items-table { width:100%; border-collapse:collapse; margin:12px 0; }
+.items-table th { background:#e8eaf6; color:#1a237e; font-size:11px; font-weight:700; text-transform:uppercase; padding:8px 12px; text-align:left; }
+.items-table td { padding:8px 12px; font-size:12px; border-bottom:1px solid #f0f2f8; }
+.items-table tfoot td { font-weight:700; color:#1a237e; background:#f5f6ff; }
+.card-body { padding:14px 20px; }
+.card-foot { padding:12px 20px; background:#fafbff; border-top:1px solid #f0f2f8; display:flex; justify-content:space-between; align-items:center; }
+.foot-note { font-size:12px; color:#888; max-width:60%; }
+.action-group { display:flex; gap:8px; }
+.btn-approve { background:#43a047; color:#fff; border:none; border-radius:7px; padding:7px 16px; font-size:12px; font-weight:600; cursor:pointer; }
+.btn-approve:hover { background:#2e7d32; }
+.btn-reject  { background:#fce4ec; color:#c62828; border:none; border-radius:7px; padding:7px 16px; font-size:12px; font-weight:600; cursor:pointer; }
+.btn-detail  { background:#e8eaf6; color:#1a237e; border:none; border-radius:7px; padding:7px 14px; font-size:12px; font-weight:600; cursor:pointer; }
+.timeline { display:flex; align-items:center; padding:14px 24px 8px; }
+.tl-step { display:flex; flex-direction:column; align-items:center; flex:1; position:relative; }
+.tl-step:not(:last-child)::after { content:''; position:absolute; top:12px; left:calc(50% + 12px); width:calc(100% - 24px); height:2px; background:#e0e0e0; z-index:0; }
+.tl-step.done:not(:last-child)::after { background:#43a047; }
+.tl-dot { width:24px; height:24px; border-radius:50%; border:2px solid #e0e0e0; background:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; z-index:1; position:relative; }
+.tl-step.done .tl-dot   { background:#43a047; border-color:#43a047; color:#fff; }
+.tl-step.active .tl-dot { background:#1e88e5; border-color:#1e88e5; color:#fff; }
+.tl-label { font-size:10px; color:#999; margin-top:4px; text-align:center; font-weight:600; }
+.tl-step.done .tl-label   { color:#43a047; }
+.tl-step.active .tl-label { color:#1e88e5; }
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; align-items:center; justify-content:center; }
+.modal-overlay.active { display:flex; }
+.modal-box { background:#fff; border-radius:14px; padding:28px 30px; width:460px; max-width:95vw; box-shadow:0 20px 60px rgba(0,0,0,.25); }
+.modal-title { font-size:18px; font-weight:700; color:#1a237e; margin-bottom:12px; }
+.form-lbl { font-size:12px; font-weight:600; color:#555; margin-bottom:4px; display:block; }
+.form-inp { width:100%; padding:9px 12px; border:1px solid #d0d5e8; border-radius:8px; font-size:13px; background:#f8f9fe; box-sizing:border-box; margin-bottom:14px; }
+.btn-ok { background:#43a047; color:#fff; border:none; border-radius:8px; padding:9px 24px; font-size:13px; font-weight:600; cursor:pointer; }
+.btn-ok.red { background:#e53935; }
+.btn-cancel { background:#f5f5f5; color:#555; border:none; border-radius:8px; padding:9px 20px; font-size:13px; font-weight:600; cursor:pointer; }
+.empty-state { text-align:center; padding:40px; color:#aaa; font-size:14px; }
 </style>
 
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mt-4 mb-4">
-        <h2 class="page-title fw-bold m-0">
-            <i class="bi bi-patch-check-fill text-primary me-2"></i>
-            Phê Duyệt Đề Xuất Mua Sắm
-        </h2>
-        <span class="count-badge">
-            @Model.Count đơn đang chờ
-        </span>
-    </div>
-
-    <div class="card modern-card overflow-hidden">
-        <div class="card-body p-0">
-            @if (Model == null || Model.Count == 0)
-            {
-                <div class="text-center py-5">
-                    <i class="bi bi-check2-circle text-success display-1"></i>
-                    <h4 class="mt-3 fw-bold">Tuyệt vời!</h4>
-                    <p class="text-muted">Đã xử lý sạch sẽ các đề xuất hiện có.</p>
-                </div>
-            }
-            else
-            {
-                <div class="table-responsive">
-                    <table class="table custom-table mb-0">
-                        <thead>
-                            <tr>
-                                <th class="ps-4">Mã Đơn</th>
-                                <th>Người Đề Xuất</th>
-                                <th>Ngày Gửi</th>
-                                <th>Nội Dung Tóm Tắt</th>
-                                <th class="text-center pe-4">Thao Tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model)
-                            {
-                                <tr class="data-row"
-                                    data-id="@item.ID_DeXuat"
-                                    data-nguoi="@item.NguoiDeXuat"
-                                    data-ngay="@item.NgayDeXuat.ToString("dd/MM/yyyy")"
-                                    data-mota="@item.MoTa">
-                                    <td class="ps-4">
-                                        <span class="badge-id">@item.ID_DeXuat</span>
-                                    </td>
-                                    <td><span class="fw-bold text-dark">@item.NguoiDeXuat</span></td>
-                                    <td>@item.NgayDeXuat.ToString("dd/MM/yyyy")</td>
-                                    <td class="text-truncate" style="max-width: 400px;">@item.MoTa</td>
-                                    <td class="text-center pe-4">
-                                        <div class="btn-action-group">
-                                            <button class="btn-act btn-act-view btn-view-detail" title="Xem chi tiết">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-                                            <button class="btn-act btn-act-approve" onclick="event.stopPropagation(); xuLy('@item.ID_DeXuat', 'duyet')">
-                                                <i class="bi bi-check"></i>
-                                            </button>
-                                            <button class="btn-act btn-act-reject" onclick="event.stopPropagation(); xuLy('@item.ID_DeXuat', 'tuchoi')">
-                                                <i class="bi bi-x"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-        </div>
-    </div>
+<div class="page-hdr mb-3">
+    <h2>💰 Phê Duyệt Đề Xuất Ngân Sách</h2>
+    <p>Xem xét và phê duyệt ngân sách mua sắm thiết bị từ các khoa / phòng ban</p>
 </div>
 
-<div class="modal fade" id="modalDeXuat" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content shadow-lg">
-            <div class="modal-header border-0 pb-0 pt-4 px-4">
-                <h5 class="fw-bold m-0">Chi tiết Đề xuất <span id="md-id" class="text-primary"></span></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4">
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <small class="text-muted d-block">NGƯỜI YÊU CẦU</small>
-                        <strong id="md-nguoi" class="fs-5 text-dark"></strong>
-                    </div>
-                    <div class="col-md-6 text-md-end">
-                        <small class="text-muted d-block">NGÀY GỬI</small>
-                        <strong id="md-ngay"></strong>
-                    </div>
-                </div>
-                <div class="mb-4">
-                    <small class="text-muted d-block mb-1">MÔ TẢ CHUNG</small>
-                    <div id="md-mota" class="p-3 rounded-3" style="background-color: #f1f5f9;"></div>
-                </div>
-                <h6 class="fw-bold mb-2">DANH SÁCH THIẾT BỊ</h6>
-                <div class="inner-table">
-                    <table class="table table-sm mb-0">
-                        <thead class="bg-light">
-                            <tr>
-                                <th class="ps-3 border-0">Tên</th>
-                                <th class="border-0">Loại</th>
-                                <th class="text-center border-0">SL</th>
-                                <th class="text-end pe-3 border-0">Đơn giá</th>
-                            </tr>
-                        </thead>
-                        <tbody id="listItems"></tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="modal-footer border-0 px-4 pb-4">
-                <button class="btn btn-outline-danger px-4" id="btnReject">Từ chối</button>
-                <button class="btn btn-success px-4" id="btnApprove">Duyệt ngay</button>
-            </div>
-        </div>
-    </div>
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-warning" style="border-radius:8px;font-size:13px;">⚠️ @ViewBag.Error</div>
+}
+
+<div class="tab-bar">
+    <button class="tab-btn active" onclick="setTab(this,'pending')">⏳ Chờ xử lý (@(Model != null ? Model.Count : 0))</button>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function () {
-        // Mở chi tiết khi bấm vào dòng hoặc nút xem
-        $(".data-row, .btn-view-detail").click(function (e) {
-            e.stopPropagation();
-            const row = $(this).closest('tr');
-            const id = row.data("id");
-
-            $('#md-id').text(id);
-            $('#md-nguoi').text(row.data("nguoi"));
-            $('#md-ngay').text(row.data("ngay"));
-            $('#md-mota').text(row.data("mota"));
-
-            $('#btnApprove').off().on('click', () => xuLy(id, 'duyet'));
-            $('#btnReject').off().on('click', () => xuLy(id, 'tuchoi'));
-
-            // Load Ajax chi tiết thiết bị
-            $('#listItems').html('<tr><td colspan="4" class="text-center py-3">Đang tải dữ liệu...</td></tr>');
-            $.get('@Url.Action("GetDeXuatDetail", "KHTC")', { id: id }, function (res) {
-                if (res.ok) {
-                    let html = "";
-                    res.data.forEach(item => {
-                        html += `<tr>
-                            <td class="ps-3 fw-bold">${item.Ten}</td>
-                            <td class="text-muted">${item.DanhMuc}</td>
-                            <td class="text-center">${item.SoLuong} ${item.DVT}</td>
-                            <td class="text-end pe-3 text-primary fw-bold">${Number(item.Gia).toLocaleString('vi-VN')} đ</td>
-                        </tr>`;
-                    });
-                    $('#listItems').html(html || '<tr><td colspan="4" class="text-center">Trống</td></tr>');
-                }
-            });
-
-            new bootstrap.Modal(document.getElementById('modalDeXuat')).show();
-        });
-    });
-
-    // Hàm xử lý Duyệt / Từ chối
-    function xuLy(id, action) {
-        let ghiChu = "";
-        if (action === 'tuchoi') {
-            ghiChu = prompt("Lý do từ chối đơn " + id + ":");
-            if (ghiChu === null) return;
-        } else {
-            if (!confirm("Xác nhận duyệt đề xuất " + id + "?")) return;
+<div id="sec-pending">
+    @if (Model == null || !Model.Any())
+    {
+        <div class="empty-state">🎉 Không có đề xuất nào đang chờ xử lý.</div>
+    }
+    else
+    {
+        foreach (var dx in Model)
+        {
+            <div class="proposal-card">
+                <div class="card-head">
+                    <div>
+                        <div class="card-id">@dx.ID_DeXuat &nbsp;|&nbsp; Ngày gửi: @dx.NgayDeXuat.ToString("dd/MM/yyyy")</div>
+                        <div class="card-title">Phiếu đề xuất mua sắm thiết bị</div>
+                        <div class="card-meta">
+                            <span>👤 @dx.NguoiDeXuat</span>
+                            <span>🏢 @dx.KhoaPhongBan</span>
+                            <span>💰 @dx.TongGiaDuKien.ToString("N0") đ</span>
+                        </div>
+                    </div>
+                    <span class="badge-p pending">⏳ Chờ KHTC duyệt</span>
+                </div>
+                <div class="timeline">
+                    <div class="tl-step done"><div class="tl-dot">✓</div><div class="tl-label">Đã gửi</div></div>
+                    <div class="tl-step done"><div class="tl-dot">✓</div><div class="tl-label">CSVC</div></div>
+                    <div class="tl-step active"><div class="tl-dot">●</div><div class="tl-label">KHTC</div></div>
+                    <div class="tl-step"><div class="tl-dot"></div><div class="tl-label">BGH</div></div>
+                    <div class="tl-step"><div class="tl-dot"></div><div class="tl-label">Hoàn tất</div></div>
+                </div>
+                <div class="card-body">
+                    <div id="detail-@dx.ID_DeXuat" style="display:none;">
+                        <table class="items-table">
+                            <thead><tr><th>STT</th><th>Tên thiết bị</th><th>SL</th><th>ĐVT</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+                            <tbody class="detail-body"></tbody>
+                            <tfoot><tr><td colspan="5" style="text-align:right">Tổng cộng:</td><td class="detail-total"></td></tr></tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-foot">
+                    <div class="foot-note">@if (!string.IsNullOrEmpty(dx.MoTa)) { <span>💬 @dx.MoTa</span> }</div>
+                    <div class="action-group">
+                        <button class="btn-detail" onclick="toggleDetail('@dx.ID_DeXuat', this)">📄 Xem chi tiết</button>
+                        <button class="btn-reject"  onclick="openModal('@dx.ID_DeXuat', 'tuchoi')">❌ Từ chối</button>
+                        <button class="btn-approve" onclick="openModal('@dx.ID_DeXuat', 'duyet')">✅ Duyệt & Chuyển BGH</button>
+                    </div>
+                </div>
+            </div>
         }
+    }
+</div>
 
-        $.post('@Url.Action("XuLyNganSach", "KHTC")', { id: id, action: action, ghiChu: ghiChu }, function (res) {
-            if (res.ok) {
-                location.reload();
-            } else {
-                alert("Lỗi: " + res.msg);
+<div class="modal-overlay" id="actionModal">
+    <div class="modal-box">
+        <div class="modal-title" id="modalTitle"></div>
+        <p id="modalBody" style="font-size:13px;color:#555;margin-bottom:12px;"></p>
+        <label class="form-lbl" id="modalLabel"></label>
+        <textarea class="form-inp" id="modalNote" rows="3" placeholder="Nhập ghi chú..."></textarea>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+            <button class="btn-cancel" onclick="closeModal()">Hủy</button>
+            <button class="btn-ok" id="modalConfirm" onclick="submitAction()"></button>
+        </div>
+    </div>
+</div>
+
+<script>
+    var _id = '', _act = '';
+    function setTab(el, tab) {
+        document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+        el.classList.add('active');
+    }
+    function toggleDetail(id, btn) {
+        var box = document.getElementById('detail-' + id);
+        if (box.style.display === 'none') {
+            if (!box.dataset.loaded) {
+                $.get('@Url.Action("GetDeXuatDetail","KHTC")', { id: id }, function(res) {
+                    if (res.ok) {
+                        var html = '', tong = 0;
+                        res.data.forEach(function(item, i) {
+                            var tt = item.SoLuong * item.Gia;
+                            tong += tt;
+                            html += '<tr><td>'+(i+1)+'</td><td><b>'+item.Ten+'</b></td><td>'+item.SoLuong+'</td><td>'+(item.DVT||'')+'</td><td>'+Number(item.Gia).toLocaleString('vi-VN')+' đ</td><td><b>'+Number(tt).toLocaleString('vi-VN')+' đ</b></td></tr>';
+                        });
+                        box.querySelector('.detail-body').innerHTML = html || '<tr><td colspan="6" style="text-align:center;color:#aaa">Không có dữ liệu</td></tr>';
+                        box.querySelector('.detail-total').textContent = Number(tong).toLocaleString('vi-VN') + ' đ';
+                        box.dataset.loaded = '1';
+                    }
+                });
             }
+            box.style.display = ''; btn.textContent = '🔼 Ẩn chi tiết';
+        } else { box.style.display = 'none'; btn.textContent = '📄 Xem chi tiết'; }
+    }
+    function openModal(id, action) {
+        _id = id; _act = action;
+        var ok = action === 'duyet';
+        document.getElementById('modalTitle').textContent = ok ? '✅ Duyệt ngân sách' : '❌ Từ chối đề xuất';
+        document.getElementById('modalBody').textContent  = ok ? 'Xác nhận duyệt ngân sách đề xuất '+id+' và chuyển lên BGH?' : 'Nhập lý do từ chối để thông báo cho khoa.';
+        document.getElementById('modalLabel').textContent = ok ? 'Ghi chú (tùy chọn)' : 'Lý do từ chối *';
+        document.getElementById('modalNote').value = '';
+        var btn = document.getElementById('modalConfirm');
+        btn.textContent = ok ? '✅ Duyệt & Chuyển BGH' : '❌ Từ chối';
+        btn.className = ok ? 'btn-ok' : 'btn-ok red';
+        document.getElementById('actionModal').classList.add('active');
+    }
+    function closeModal() { document.getElementById('actionModal').classList.remove('active'); }
+    function submitAction() {
+        var note = document.getElementById('modalNote').value.trim();
+        if (_act === 'tuchoi' && !note) { alert('Vui lòng nhập lý do từ chối.'); return; }
+        closeModal();
+        $.post('@Url.Action("XuLyNganSach","KHTC")', { id: _id, action: _act, ghiChu: note }, function(res) {
+            if (res.ok) { alert(_act==='duyet' ? '✅ Đã duyệt và chuyển lên BGH!' : '❌ Đã từ chối!'); location.reload(); }
+            else { alert('⚠️ Lỗi: ' + (res.msg||'Không xác định')); }
         });
     }
+    document.getElementById('actionModal').addEventListener('click', function(e) { if (e.target===this) closeModal(); });
 </script>
