@@ -32,6 +32,7 @@ namespace DAPM_QLTB
         public Nullable<decimal> Gia { get; set; }
         public string ThongSoKT { get; set; }
         public Nullable<int> SoSeri { get; set; }
+        public string DeXuatNo { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<BAOHONG_THIETBI> BAOHONG_THIETBI { get; set; }
@@ -44,5 +45,6 @@ namespace DAPM_QLTB
         public virtual NHACUNGCAP NHACUNGCAP { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<PHONG_THIETBI> PHONG_THIETBI { get; set; }
+        public virtual DEXUAT_MUASAM DEXUAT_MUASAM { get; set; }
     }
 }

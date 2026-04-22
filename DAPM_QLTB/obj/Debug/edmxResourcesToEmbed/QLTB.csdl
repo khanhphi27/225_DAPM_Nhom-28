@@ -1,0 +1,860 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Schema Namespace="QuanLyThietBiModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+  <EntityType Name="BAOHONG_THIETBI">
+    <Key>
+      <PropertyRef Name="ID_BaoHong" />
+    </Key>
+    <Property Name="ID_BaoHong" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="ThietBiNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="NguoiBaoHongNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="MoTaHong" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+    <Property Name="HinhAnh" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+    <Property Name="NgayBao" Type="DateTime" Nullable="false" Precision="0" />
+    <Property Name="MucDoUuTien" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="TrangThai" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <NavigationProperty Name="NGUOIDUNG" Relationship="Self.FK_BH_NGUOI" FromRole="BAOHONG_THIETBI" ToRole="NGUOIDUNG" />
+    <NavigationProperty Name="THIETBI" Relationship="Self.FK_BH_THIETBI" FromRole="BAOHONG_THIETBI" ToRole="THIETBI" />
+    <NavigationProperty Name="CHITIET_KEHOACH" Relationship="Self.FK_CTKH_BAOHONG" FromRole="BAOHONG_THIETBI" ToRole="CHITIET_KEHOACH" />
+  </EntityType>
+  <EntityType Name="CHITIET_DEXUAT">
+    <Key>
+      <PropertyRef Name="ID_ChiTiet" />
+    </Key>
+    <Property Name="ID_ChiTiet" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="DeXuatNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="DanhMucNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" />
+    <Property Name="TenThietBiDeXuat" Type="String" MaxLength="200" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="SoLuong" Type="Int32" Nullable="false" />
+    <Property Name="GiaDuKien" Type="Decimal" Precision="18" Scale="2" />
+    <Property Name="DonViTinh" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <NavigationProperty Name="DANHMUC" Relationship="Self.FK_CTDX_DANHMUC" FromRole="CHITIET_DEXUAT" ToRole="DANHMUC" />
+    <NavigationProperty Name="DEXUAT_MUASAM" Relationship="Self.FK_CTDX_DEXUAT" FromRole="CHITIET_DEXUAT" ToRole="DEXUAT_MUASAM" />
+  </EntityType>
+  <EntityType Name="CHITIET_KEHOACH">
+    <Key>
+      <PropertyRef Name="ID_ChiTietKH" />
+    </Key>
+    <Property Name="ID_ChiTietKH" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="KeHoachNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="ThietBiNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="BaoHongNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" />
+    <Property Name="GhiChuChiTiet" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+    <NavigationProperty Name="BAOHONG_THIETBI" Relationship="Self.FK_CTKH_BAOHONG" FromRole="CHITIET_KEHOACH" ToRole="BAOHONG_THIETBI" />
+    <NavigationProperty Name="KEHOACH_BAOTRI" Relationship="Self.FK_CTKH_KEHOACH" FromRole="CHITIET_KEHOACH" ToRole="KEHOACH_BAOTRI" />
+    <NavigationProperty Name="THIETBI" Relationship="Self.FK_CTKH_THIETBI" FromRole="CHITIET_KEHOACH" ToRole="THIETBI" />
+    <NavigationProperty Name="GHINHAN_SUA_CHUA" Relationship="Self.FK_GN_CHITIET" FromRole="CHITIET_KEHOACH" ToRole="GHINHAN_SUA_CHUA" />
+  </EntityType>
+  <EntityType Name="CHITIET_KIEMKE">
+    <Key>
+      <PropertyRef Name="ID_ChiTietKK" />
+    </Key>
+    <Property Name="ID_ChiTietKK" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="KiemKeNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="ThietBiNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="SoLuongThucTe" Type="Int32" />
+    <Property Name="SoLuongHeThong" Type="Int32" />
+    <Property Name="TinhTrangThucTe" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+    <Property Name="ChenhLech" Type="Int32" />
+    <Property Name="GhiChu" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+    <NavigationProperty Name="KIEMKE" Relationship="Self.FK_CTKK_KIEMKE" FromRole="CHITIET_KIEMKE" ToRole="KIEMKE" />
+    <NavigationProperty Name="THIETBI" Relationship="Self.FK_CTKK_THIETBI" FromRole="CHITIET_KIEMKE" ToRole="THIETBI" />
+  </EntityType>
+  <EntityType Name="COSO">
+    <Key>
+      <PropertyRef Name="ID_CoSo" />
+    </Key>
+    <Property Name="ID_CoSo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="TenCoSo" Type="String" MaxLength="200" FixedLength="false" Unicode="true" Nullable="false" />
+    <NavigationProperty Name="KHUVUCs" Relationship="Self.FK_KHUVUC_COSO" FromRole="COSO" ToRole="KHUVUC" />
+  </EntityType>
+  <EntityType Name="DANHMUC">
+    <Key>
+      <PropertyRef Name="ID_DanhMuc" />
+    </Key>
+    <Property Name="ID_DanhMuc" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="TenDanhMuc" Type="String" MaxLength="200" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="MoTa" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+    <NavigationProperty Name="CHITIET_DEXUAT" Relationship="Self.FK_CTDX_DANHMUC" FromRole="DANHMUC" ToRole="CHITIET_DEXUAT" />
+    <NavigationProperty Name="THIETBIs" Relationship="Self.FK_TB_DANHMUC" FromRole="DANHMUC" ToRole="THIETBI" />
+  </EntityType>
+  <EntityType Name="DEXUAT_MUASAM">
+    <Key>
+      <PropertyRef Name="ID_DeXuat" />
+    </Key>
+    <Property Name="ID_DeXuat" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="NguoiDeXuatNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="NgayDeXuat" Type="DateTime" Nullable="false" Precision="0" />
+    <Property Name="TrangThai" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="CapDuyetHienTai" Type="Int32" />
+    <Property Name="NguoiDuyetCuoiNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" />
+    <Property Name="NgayDuyetCuoi" Type="DateTime" Precision="0" />
+    <Property Name="LyDoTuChoi" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+    <Property Name="MoTa" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+    <NavigationProperty Name="CHITIET_DEXUAT" Relationship="Self.FK_CTDX_DEXUAT" FromRole="DEXUAT_MUASAM" ToRole="CHITIET_DEXUAT" />
+    <NavigationProperty Name="NGUOIDUNG" Relationship="Self.FK_DX_NGUOIDEXUAT" FromRole="DEXUAT_MUASAM" ToRole="NGUOIDUNG" />
+    <NavigationProperty Name="NGUOIDUNG1" Relationship="Self.FK_DX_NGUOIDUYET" FromRole="DEXUAT_MUASAM" ToRole="NGUOIDUNG" />
+  </EntityType>
+  <EntityType Name="GHINHAN_SUA_CHUA">
+    <Key>
+      <PropertyRef Name="ID_GhiNhan" />
+    </Key>
+    <Property Name="ID_GhiNhan" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="KeHoachNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="ChiTietKeHoachNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" />
+    <Property Name="NgayThucHien" Type="DateTime" Nullable="false" Precision="0" />
+    <Property Name="KetQua" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+    <Property Name="ChiPhiThucTe" Type="Decimal" Precision="18" Scale="2" />
+    <Property Name="TrangThaiSauSua" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="HinhAnhSau" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+    <NavigationProperty Name="CHITIET_KEHOACH" Relationship="Self.FK_GN_CHITIET" FromRole="GHINHAN_SUA_CHUA" ToRole="CHITIET_KEHOACH" />
+    <NavigationProperty Name="KEHOACH_BAOTRI" Relationship="Self.FK_GN_KEHOACH" FromRole="GHINHAN_SUA_CHUA" ToRole="KEHOACH_BAOTRI" />
+  </EntityType>
+  <EntityType Name="KEHOACH_BAOTRI">
+    <Key>
+      <PropertyRef Name="ID_KeHoach" />
+    </Key>
+    <Property Name="ID_KeHoach" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="NguoiLapNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="NgayLap" Type="DateTime" Nullable="false" Precision="0" />
+    <Property Name="NgayDuKienHT" Type="DateTime" Precision="0" />
+    <Property Name="LoaiKeHoach" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="DonViThucHien" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
+    <Property Name="ChiPhiDuKien" Type="Decimal" Precision="18" Scale="2" />
+    <Property Name="TrangThai" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="GhiChu" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+    <NavigationProperty Name="CHITIET_KEHOACH" Relationship="Self.FK_CTKH_KEHOACH" FromRole="KEHOACH_BAOTRI" ToRole="CHITIET_KEHOACH" />
+    <NavigationProperty Name="GHINHAN_SUA_CHUA" Relationship="Self.FK_GN_KEHOACH" FromRole="KEHOACH_BAOTRI" ToRole="GHINHAN_SUA_CHUA" />
+    <NavigationProperty Name="NGUOIDUNG" Relationship="Self.FK_KH_NGUOILAP" FromRole="KEHOACH_BAOTRI" ToRole="NGUOIDUNG" />
+  </EntityType>
+  <EntityType Name="KHOA_PHONGBAN">
+    <Key>
+      <PropertyRef Name="ID_KhoaPhongBan" />
+    </Key>
+    <Property Name="ID_KhoaPhongBan" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="TenPhongBanKhoa" Type="String" MaxLength="200" FixedLength="false" Unicode="true" Nullable="false" />
+    <NavigationProperty Name="NGUOIDUNGs" Relationship="Self.FK_NGUOIDUNG_KHOA" FromRole="KHOA_PHONGBAN" ToRole="NGUOIDUNG" />
+    <NavigationProperty Name="THIETBIs" Relationship="Self.FK_TB_KHOA" FromRole="KHOA_PHONGBAN" ToRole="THIETBI" />
+  </EntityType>
+  <EntityType Name="KHUVUC">
+    <Key>
+      <PropertyRef Name="ID_KhuVuc" />
+    </Key>
+    <Property Name="ID_KhuVuc" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="CoSoNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="TenKhuVuc" Type="String" MaxLength="200" FixedLength="false" Unicode="true" Nullable="false" />
+    <NavigationProperty Name="COSO" Relationship="Self.FK_KHUVUC_COSO" FromRole="KHUVUC" ToRole="COSO" />
+    <NavigationProperty Name="PHONGs" Relationship="Self.FK_PHONG_KHUVUC" FromRole="KHUVUC" ToRole="PHONG" />
+  </EntityType>
+  <EntityType Name="KIEMKE">
+    <Key>
+      <PropertyRef Name="ID_KiemKe" />
+    </Key>
+    <Property Name="ID_KiemKe" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="NguoiThucHienNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="NgayKiemKe" Type="DateTime" Nullable="false" Precision="0" />
+    <Property Name="TrangThai" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="GhiChu" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+    <NavigationProperty Name="CHITIET_KIEMKE" Relationship="Self.FK_CTKK_KIEMKE" FromRole="KIEMKE" ToRole="CHITIET_KIEMKE" />
+    <NavigationProperty Name="NGUOIDUNG" Relationship="Self.FK_KK_NGUOI" FromRole="KIEMKE" ToRole="NGUOIDUNG" />
+  </EntityType>
+  <EntityType Name="NGUOIDUNG">
+    <Key>
+      <PropertyRef Name="ID_NguoiDung" />
+    </Key>
+    <Property Name="ID_NguoiDung" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="Khoa_BanNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" />
+    <Property Name="Email" Type="String" MaxLength="150" FixedLength="false" Unicode="false" Nullable="false" />
+    <Property Name="MatKhau" Type="String" MaxLength="255" FixedLength="false" Unicode="false" Nullable="false" />
+    <Property Name="HoTen" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="NgaySinh" Type="DateTime" Precision="0" />
+    <Property Name="TrangThaiTK" Type="Boolean" Nullable="false" />
+    <NavigationProperty Name="BAOHONG_THIETBI" Relationship="Self.FK_BH_NGUOI" FromRole="NGUOIDUNG" ToRole="BAOHONG_THIETBI" />
+    <NavigationProperty Name="DEXUAT_MUASAM" Relationship="Self.FK_DX_NGUOIDEXUAT" FromRole="NGUOIDUNG" ToRole="DEXUAT_MUASAM" />
+    <NavigationProperty Name="DEXUAT_MUASAM1" Relationship="Self.FK_DX_NGUOIDUYET" FromRole="NGUOIDUNG" ToRole="DEXUAT_MUASAM" />
+    <NavigationProperty Name="KEHOACH_BAOTRI" Relationship="Self.FK_KH_NGUOILAP" FromRole="NGUOIDUNG" ToRole="KEHOACH_BAOTRI" />
+    <NavigationProperty Name="KHOA_PHONGBAN" Relationship="Self.FK_NGUOIDUNG_KHOA" FromRole="NGUOIDUNG" ToRole="KHOA_PHONGBAN" />
+    <NavigationProperty Name="KIEMKEs" Relationship="Self.FK_KK_NGUOI" FromRole="NGUOIDUNG" ToRole="KIEMKE" />
+    <NavigationProperty Name="NGUOIDUNG_THONGBAO" Relationship="Self.FK_NTB_NGUOIDUNG" FromRole="NGUOIDUNG" ToRole="NGUOIDUNG_THONGBAO" />
+    <NavigationProperty Name="THONGBAOs" Relationship="Self.FK_THONGBAO_NGUOITAO" FromRole="NGUOIDUNG" ToRole="THONGBAO" />
+    <NavigationProperty Name="VAITRO_NGUOIDUNG" Relationship="Self.FK_VTN_NGUOIDUNG" FromRole="NGUOIDUNG" ToRole="VAITRO_NGUOIDUNG" />
+  </EntityType>
+  <EntityType Name="NGUOIDUNG_THONGBAO">
+    <Key>
+      <PropertyRef Name="ThongBaoNo" />
+      <PropertyRef Name="NguoiNhanNo" />
+    </Key>
+    <Property Name="ThongBaoNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="NguoiNhanNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="TrangThaiDoc" Type="Boolean" Nullable="false" />
+    <NavigationProperty Name="NGUOIDUNG" Relationship="Self.FK_NTB_NGUOIDUNG" FromRole="NGUOIDUNG_THONGBAO" ToRole="NGUOIDUNG" />
+    <NavigationProperty Name="THONGBAO" Relationship="Self.FK_NTB_THONGBAO" FromRole="NGUOIDUNG_THONGBAO" ToRole="THONGBAO" />
+  </EntityType>
+  <EntityType Name="NHACUNGCAP">
+    <Key>
+      <PropertyRef Name="ID_NhaCC" />
+    </Key>
+    <Property Name="ID_NhaCC" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="TenNhaCC" Type="String" MaxLength="200" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="LoaiDichVu" Type="Int32" />
+    <Property Name="DiaChi" Type="String" MaxLength="300" FixedLength="false" Unicode="true" />
+    <Property Name="Sdt" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+    <NavigationProperty Name="THIETBIs" Relationship="Self.FK_TB_NCC" FromRole="NHACUNGCAP" ToRole="THIETBI" />
+  </EntityType>
+  <EntityType Name="PHONG">
+    <Key>
+      <PropertyRef Name="ID_Phong" />
+    </Key>
+    <Property Name="ID_Phong" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="KhuVucNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="TenPhong" Type="String" MaxLength="200" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="SucChua" Type="Int32" />
+    <NavigationProperty Name="KHUVUC" Relationship="Self.FK_PHONG_KHUVUC" FromRole="PHONG" ToRole="KHUVUC" />
+    <NavigationProperty Name="PHONG_THIETBI" Relationship="Self.FK_PTB_PHONG" FromRole="PHONG" ToRole="PHONG_THIETBI" />
+  </EntityType>
+  <EntityType Name="PHONG_THIETBI">
+    <Key>
+      <PropertyRef Name="ThietBiNo" />
+      <PropertyRef Name="PhongNo" />
+    </Key>
+    <Property Name="ThietBiNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="PhongNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="NgayHieuLuc" Type="DateTime" Precision="0" />
+    <NavigationProperty Name="PHONG" Relationship="Self.FK_PTB_PHONG" FromRole="PHONG_THIETBI" ToRole="PHONG" />
+    <NavigationProperty Name="THIETBI" Relationship="Self.FK_PTB_THIETBI" FromRole="PHONG_THIETBI" ToRole="THIETBI" />
+  </EntityType>
+  <EntityType Name="sysdiagram">
+    <Key>
+      <PropertyRef Name="diagram_id" />
+    </Key>
+    <Property Name="name" Type="String" MaxLength="128" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="principal_id" Type="Int32" Nullable="false" />
+    <Property Name="diagram_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="version" Type="Int32" />
+    <Property Name="definition" Type="Binary" MaxLength="Max" FixedLength="false" />
+  </EntityType>
+  <EntityType Name="THIETBI">
+    <Key>
+      <PropertyRef Name="ID_ThietBi" />
+    </Key>
+    <Property Name="ID_ThietBi" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="DanhMucNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" />
+    <Property Name="NhaCCNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" />
+    <Property Name="KhoaPhongBan" Type="String" MaxLength="10" FixedLength="true" Unicode="false" />
+    <Property Name="TenTB" Type="String" MaxLength="200" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="TrangThaiTB" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="Gia" Type="Decimal" Precision="18" Scale="2" />
+    <Property Name="ThongSoKT" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+    <Property Name="SoSeri" Type="Int32" />
+    <NavigationProperty Name="BAOHONG_THIETBI" Relationship="Self.FK_BH_THIETBI" FromRole="THIETBI" ToRole="BAOHONG_THIETBI" />
+    <NavigationProperty Name="CHITIET_KEHOACH" Relationship="Self.FK_CTKH_THIETBI" FromRole="THIETBI" ToRole="CHITIET_KEHOACH" />
+    <NavigationProperty Name="CHITIET_KIEMKE" Relationship="Self.FK_CTKK_THIETBI" FromRole="THIETBI" ToRole="CHITIET_KIEMKE" />
+    <NavigationProperty Name="DANHMUC" Relationship="Self.FK_TB_DANHMUC" FromRole="THIETBI" ToRole="DANHMUC" />
+    <NavigationProperty Name="KHOA_PHONGBAN" Relationship="Self.FK_TB_KHOA" FromRole="THIETBI" ToRole="KHOA_PHONGBAN" />
+    <NavigationProperty Name="NHACUNGCAP" Relationship="Self.FK_TB_NCC" FromRole="THIETBI" ToRole="NHACUNGCAP" />
+    <NavigationProperty Name="PHONG_THIETBI" Relationship="Self.FK_PTB_THIETBI" FromRole="THIETBI" ToRole="PHONG_THIETBI" />
+  </EntityType>
+  <EntityType Name="THONGBAO">
+    <Key>
+      <PropertyRef Name="ID_ThongBao" />
+    </Key>
+    <Property Name="ID_ThongBao" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="TieuDe" Type="String" MaxLength="300" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="NoiDung" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+    <Property Name="NgayTao" Type="DateTime" Nullable="false" Precision="0" />
+    <Property Name="LoaiThongBao" Type="String" MaxLength="20" FixedLength="true" Unicode="false" />
+    <Property Name="PathFileDinhKem" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+    <Property Name="NguoiTaoNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <NavigationProperty Name="NGUOIDUNG" Relationship="Self.FK_THONGBAO_NGUOITAO" FromRole="THONGBAO" ToRole="NGUOIDUNG" />
+    <NavigationProperty Name="NGUOIDUNG_THONGBAO" Relationship="Self.FK_NTB_THONGBAO" FromRole="THONGBAO" ToRole="NGUOIDUNG_THONGBAO" />
+  </EntityType>
+  <EntityType Name="VAITRO">
+    <Key>
+      <PropertyRef Name="ID_VaiTro" />
+    </Key>
+    <Property Name="ID_VaiTro" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="TenVaiTro" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+    <NavigationProperty Name="VAITRO_NGUOIDUNG" Relationship="Self.FK_VTN_VAITRO" FromRole="VAITRO" ToRole="VAITRO_NGUOIDUNG" />
+  </EntityType>
+  <EntityType Name="VAITRO_NGUOIDUNG">
+    <Key>
+      <PropertyRef Name="NguoiDungNo" />
+      <PropertyRef Name="VaiTroNo" />
+    </Key>
+    <Property Name="NguoiDungNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="VaiTroNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="NgayHieuLuc" Type="DateTime" Precision="0" />
+    <NavigationProperty Name="NGUOIDUNG" Relationship="Self.FK_VTN_NGUOIDUNG" FromRole="VAITRO_NGUOIDUNG" ToRole="NGUOIDUNG" />
+    <NavigationProperty Name="VAITRO" Relationship="Self.FK_VTN_VAITRO" FromRole="VAITRO_NGUOIDUNG" ToRole="VAITRO" />
+  </EntityType>
+  <EntityType Name="View_BaoCaoTaiChinh">
+    <Key>
+      <PropertyRef Name="ID_ThietBi" />
+      <PropertyRef Name="TenTB" />
+    </Key>
+    <Property Name="ID_ThietBi" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="TenTB" Type="String" MaxLength="200" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="TenDanhMuc" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
+    <Property Name="TenPhongBanKhoa" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
+    <Property Name="Gia" Type="Decimal" Precision="18" Scale="2" />
+    <Property Name="TrangThaiTB" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="TongChiPhiSuaChua" Type="Decimal" Precision="38" Scale="2" />
+  </EntityType>
+  <EntityType Name="View_BaoHong_TrangThai">
+    <Key>
+      <PropertyRef Name="ID_BaoHong" />
+      <PropertyRef Name="NgayBao" />
+      <PropertyRef Name="TenTB" />
+      <PropertyRef Name="NguoiBaoHong" />
+    </Key>
+    <Property Name="ID_BaoHong" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="NgayBao" Type="DateTime" Nullable="false" Precision="0" />
+    <Property Name="MucDoUuTien" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="TrangThaiBaoHong" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="MoTaHong" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+    <Property Name="TenTB" Type="String" MaxLength="200" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="TenDanhMuc" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
+    <Property Name="NguoiBaoHong" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="ID_KeHoach" Type="String" MaxLength="10" FixedLength="true" Unicode="false" />
+    <Property Name="TrangThaiKeHoach" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="LoaiKeHoach" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+  </EntityType>
+  <EntityType Name="View_KeHoach_ChiTiet">
+    <Key>
+      <PropertyRef Name="ID_KeHoach" />
+      <PropertyRef Name="NgayLap" />
+      <PropertyRef Name="LoaiKeHoach" />
+      <PropertyRef Name="NguoiLap" />
+      <PropertyRef Name="NguonGoc" />
+    </Key>
+    <Property Name="ID_KeHoach" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="NgayLap" Type="DateTime" Nullable="false" Precision="0" />
+    <Property Name="NgayDuKienHT" Type="DateTime" Precision="0" />
+    <Property Name="LoaiKeHoach" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="TrangThaiKeHoach" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="DonViThucHien" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
+    <Property Name="ChiPhiDuKien" Type="Decimal" Precision="18" Scale="2" />
+    <Property Name="NguoiLap" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="ID_ChiTietKH" Type="String" MaxLength="10" FixedLength="true" Unicode="false" />
+    <Property Name="TenTB" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
+    <Property Name="TenDanhMuc" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
+    <Property Name="BaoHongNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" />
+    <Property Name="NguonGoc" Type="String" MaxLength="21" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="GhiChuChiTiet" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+  </EntityType>
+  <Association Name="FK_BH_NGUOI">
+    <End Role="NGUOIDUNG" Type="Self.NGUOIDUNG" Multiplicity="1" />
+    <End Role="BAOHONG_THIETBI" Type="Self.BAOHONG_THIETBI" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="NGUOIDUNG">
+        <PropertyRef Name="ID_NguoiDung" />
+      </Principal>
+      <Dependent Role="BAOHONG_THIETBI">
+        <PropertyRef Name="NguoiBaoHongNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_BH_THIETBI">
+    <End Role="THIETBI" Type="Self.THIETBI" Multiplicity="1" />
+    <End Role="BAOHONG_THIETBI" Type="Self.BAOHONG_THIETBI" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="THIETBI">
+        <PropertyRef Name="ID_ThietBi" />
+      </Principal>
+      <Dependent Role="BAOHONG_THIETBI">
+        <PropertyRef Name="ThietBiNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_CTKH_BAOHONG">
+    <End Role="BAOHONG_THIETBI" Type="Self.BAOHONG_THIETBI" Multiplicity="0..1" />
+    <End Role="CHITIET_KEHOACH" Type="Self.CHITIET_KEHOACH" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="BAOHONG_THIETBI">
+        <PropertyRef Name="ID_BaoHong" />
+      </Principal>
+      <Dependent Role="CHITIET_KEHOACH">
+        <PropertyRef Name="BaoHongNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_CTDX_DANHMUC">
+    <End Role="DANHMUC" Type="Self.DANHMUC" Multiplicity="0..1" />
+    <End Role="CHITIET_DEXUAT" Type="Self.CHITIET_DEXUAT" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="DANHMUC">
+        <PropertyRef Name="ID_DanhMuc" />
+      </Principal>
+      <Dependent Role="CHITIET_DEXUAT">
+        <PropertyRef Name="DanhMucNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_CTDX_DEXUAT">
+    <End Role="DEXUAT_MUASAM" Type="Self.DEXUAT_MUASAM" Multiplicity="1" />
+    <End Role="CHITIET_DEXUAT" Type="Self.CHITIET_DEXUAT" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="DEXUAT_MUASAM">
+        <PropertyRef Name="ID_DeXuat" />
+      </Principal>
+      <Dependent Role="CHITIET_DEXUAT">
+        <PropertyRef Name="DeXuatNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_CTKH_KEHOACH">
+    <End Role="KEHOACH_BAOTRI" Type="Self.KEHOACH_BAOTRI" Multiplicity="1" />
+    <End Role="CHITIET_KEHOACH" Type="Self.CHITIET_KEHOACH" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="KEHOACH_BAOTRI">
+        <PropertyRef Name="ID_KeHoach" />
+      </Principal>
+      <Dependent Role="CHITIET_KEHOACH">
+        <PropertyRef Name="KeHoachNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_CTKH_THIETBI">
+    <End Role="THIETBI" Type="Self.THIETBI" Multiplicity="1" />
+    <End Role="CHITIET_KEHOACH" Type="Self.CHITIET_KEHOACH" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="THIETBI">
+        <PropertyRef Name="ID_ThietBi" />
+      </Principal>
+      <Dependent Role="CHITIET_KEHOACH">
+        <PropertyRef Name="ThietBiNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_GN_CHITIET">
+    <End Role="CHITIET_KEHOACH" Type="Self.CHITIET_KEHOACH" Multiplicity="0..1" />
+    <End Role="GHINHAN_SUA_CHUA" Type="Self.GHINHAN_SUA_CHUA" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="CHITIET_KEHOACH">
+        <PropertyRef Name="ID_ChiTietKH" />
+      </Principal>
+      <Dependent Role="GHINHAN_SUA_CHUA">
+        <PropertyRef Name="ChiTietKeHoachNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_CTKK_KIEMKE">
+    <End Role="KIEMKE" Type="Self.KIEMKE" Multiplicity="1" />
+    <End Role="CHITIET_KIEMKE" Type="Self.CHITIET_KIEMKE" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="KIEMKE">
+        <PropertyRef Name="ID_KiemKe" />
+      </Principal>
+      <Dependent Role="CHITIET_KIEMKE">
+        <PropertyRef Name="KiemKeNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_CTKK_THIETBI">
+    <End Role="THIETBI" Type="Self.THIETBI" Multiplicity="1" />
+    <End Role="CHITIET_KIEMKE" Type="Self.CHITIET_KIEMKE" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="THIETBI">
+        <PropertyRef Name="ID_ThietBi" />
+      </Principal>
+      <Dependent Role="CHITIET_KIEMKE">
+        <PropertyRef Name="ThietBiNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_KHUVUC_COSO">
+    <End Role="COSO" Type="Self.COSO" Multiplicity="1" />
+    <End Role="KHUVUC" Type="Self.KHUVUC" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="COSO">
+        <PropertyRef Name="ID_CoSo" />
+      </Principal>
+      <Dependent Role="KHUVUC">
+        <PropertyRef Name="CoSoNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_TB_DANHMUC">
+    <End Role="DANHMUC" Type="Self.DANHMUC" Multiplicity="0..1" />
+    <End Role="THIETBI" Type="Self.THIETBI" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="DANHMUC">
+        <PropertyRef Name="ID_DanhMuc" />
+      </Principal>
+      <Dependent Role="THIETBI">
+        <PropertyRef Name="DanhMucNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_DX_NGUOIDEXUAT">
+    <End Role="NGUOIDUNG" Type="Self.NGUOIDUNG" Multiplicity="1" />
+    <End Role="DEXUAT_MUASAM" Type="Self.DEXUAT_MUASAM" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="NGUOIDUNG">
+        <PropertyRef Name="ID_NguoiDung" />
+      </Principal>
+      <Dependent Role="DEXUAT_MUASAM">
+        <PropertyRef Name="NguoiDeXuatNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_DX_NGUOIDUYET">
+    <End Role="NGUOIDUNG" Type="Self.NGUOIDUNG" Multiplicity="0..1" />
+    <End Role="DEXUAT_MUASAM" Type="Self.DEXUAT_MUASAM" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="NGUOIDUNG">
+        <PropertyRef Name="ID_NguoiDung" />
+      </Principal>
+      <Dependent Role="DEXUAT_MUASAM">
+        <PropertyRef Name="NguoiDuyetCuoiNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_GN_KEHOACH">
+    <End Role="KEHOACH_BAOTRI" Type="Self.KEHOACH_BAOTRI" Multiplicity="1" />
+    <End Role="GHINHAN_SUA_CHUA" Type="Self.GHINHAN_SUA_CHUA" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="KEHOACH_BAOTRI">
+        <PropertyRef Name="ID_KeHoach" />
+      </Principal>
+      <Dependent Role="GHINHAN_SUA_CHUA">
+        <PropertyRef Name="KeHoachNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_KH_NGUOILAP">
+    <End Role="NGUOIDUNG" Type="Self.NGUOIDUNG" Multiplicity="1" />
+    <End Role="KEHOACH_BAOTRI" Type="Self.KEHOACH_BAOTRI" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="NGUOIDUNG">
+        <PropertyRef Name="ID_NguoiDung" />
+      </Principal>
+      <Dependent Role="KEHOACH_BAOTRI">
+        <PropertyRef Name="NguoiLapNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_NGUOIDUNG_KHOA">
+    <End Role="KHOA_PHONGBAN" Type="Self.KHOA_PHONGBAN" Multiplicity="0..1" />
+    <End Role="NGUOIDUNG" Type="Self.NGUOIDUNG" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="KHOA_PHONGBAN">
+        <PropertyRef Name="ID_KhoaPhongBan" />
+      </Principal>
+      <Dependent Role="NGUOIDUNG">
+        <PropertyRef Name="Khoa_BanNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_TB_KHOA">
+    <End Role="KHOA_PHONGBAN" Type="Self.KHOA_PHONGBAN" Multiplicity="0..1" />
+    <End Role="THIETBI" Type="Self.THIETBI" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="KHOA_PHONGBAN">
+        <PropertyRef Name="ID_KhoaPhongBan" />
+      </Principal>
+      <Dependent Role="THIETBI">
+        <PropertyRef Name="KhoaPhongBan" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_PHONG_KHUVUC">
+    <End Role="KHUVUC" Type="Self.KHUVUC" Multiplicity="1" />
+    <End Role="PHONG" Type="Self.PHONG" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="KHUVUC">
+        <PropertyRef Name="ID_KhuVuc" />
+      </Principal>
+      <Dependent Role="PHONG">
+        <PropertyRef Name="KhuVucNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_KK_NGUOI">
+    <End Role="NGUOIDUNG" Type="Self.NGUOIDUNG" Multiplicity="1" />
+    <End Role="KIEMKE" Type="Self.KIEMKE" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="NGUOIDUNG">
+        <PropertyRef Name="ID_NguoiDung" />
+      </Principal>
+      <Dependent Role="KIEMKE">
+        <PropertyRef Name="NguoiThucHienNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_NTB_NGUOIDUNG">
+    <End Role="NGUOIDUNG" Type="Self.NGUOIDUNG" Multiplicity="1" />
+    <End Role="NGUOIDUNG_THONGBAO" Type="Self.NGUOIDUNG_THONGBAO" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="NGUOIDUNG">
+        <PropertyRef Name="ID_NguoiDung" />
+      </Principal>
+      <Dependent Role="NGUOIDUNG_THONGBAO">
+        <PropertyRef Name="NguoiNhanNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_THONGBAO_NGUOITAO">
+    <End Role="NGUOIDUNG" Type="Self.NGUOIDUNG" Multiplicity="1" />
+    <End Role="THONGBAO" Type="Self.THONGBAO" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="NGUOIDUNG">
+        <PropertyRef Name="ID_NguoiDung" />
+      </Principal>
+      <Dependent Role="THONGBAO">
+        <PropertyRef Name="NguoiTaoNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_VTN_NGUOIDUNG">
+    <End Role="NGUOIDUNG" Type="Self.NGUOIDUNG" Multiplicity="1" />
+    <End Role="VAITRO_NGUOIDUNG" Type="Self.VAITRO_NGUOIDUNG" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="NGUOIDUNG">
+        <PropertyRef Name="ID_NguoiDung" />
+      </Principal>
+      <Dependent Role="VAITRO_NGUOIDUNG">
+        <PropertyRef Name="NguoiDungNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_NTB_THONGBAO">
+    <End Role="THONGBAO" Type="Self.THONGBAO" Multiplicity="1" />
+    <End Role="NGUOIDUNG_THONGBAO" Type="Self.NGUOIDUNG_THONGBAO" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="THONGBAO">
+        <PropertyRef Name="ID_ThongBao" />
+      </Principal>
+      <Dependent Role="NGUOIDUNG_THONGBAO">
+        <PropertyRef Name="ThongBaoNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_TB_NCC">
+    <End Role="NHACUNGCAP" Type="Self.NHACUNGCAP" Multiplicity="0..1" />
+    <End Role="THIETBI" Type="Self.THIETBI" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="NHACUNGCAP">
+        <PropertyRef Name="ID_NhaCC" />
+      </Principal>
+      <Dependent Role="THIETBI">
+        <PropertyRef Name="NhaCCNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_PTB_PHONG">
+    <End Role="PHONG" Type="Self.PHONG" Multiplicity="1" />
+    <End Role="PHONG_THIETBI" Type="Self.PHONG_THIETBI" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="PHONG">
+        <PropertyRef Name="ID_Phong" />
+      </Principal>
+      <Dependent Role="PHONG_THIETBI">
+        <PropertyRef Name="PhongNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_PTB_THIETBI">
+    <End Role="THIETBI" Type="Self.THIETBI" Multiplicity="1" />
+    <End Role="PHONG_THIETBI" Type="Self.PHONG_THIETBI" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="THIETBI">
+        <PropertyRef Name="ID_ThietBi" />
+      </Principal>
+      <Dependent Role="PHONG_THIETBI">
+        <PropertyRef Name="ThietBiNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_VTN_VAITRO">
+    <End Role="VAITRO" Type="Self.VAITRO" Multiplicity="1" />
+    <End Role="VAITRO_NGUOIDUNG" Type="Self.VAITRO_NGUOIDUNG" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="VAITRO">
+        <PropertyRef Name="ID_VaiTro" />
+      </Principal>
+      <Dependent Role="VAITRO_NGUOIDUNG">
+        <PropertyRef Name="VaiTroNo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <EntityContainer Name="QuanLyThietBiEntities" annotation:LazyLoadingEnabled="true">
+    <EntitySet Name="BAOHONG_THIETBI" EntityType="Self.BAOHONG_THIETBI" />
+    <EntitySet Name="CHITIET_DEXUAT" EntityType="Self.CHITIET_DEXUAT" />
+    <EntitySet Name="CHITIET_KEHOACH" EntityType="Self.CHITIET_KEHOACH" />
+    <EntitySet Name="CHITIET_KIEMKE" EntityType="Self.CHITIET_KIEMKE" />
+    <EntitySet Name="COSOes" EntityType="Self.COSO" />
+    <EntitySet Name="DANHMUCs" EntityType="Self.DANHMUC" />
+    <EntitySet Name="DEXUAT_MUASAM" EntityType="Self.DEXUAT_MUASAM" />
+    <EntitySet Name="GHINHAN_SUA_CHUA" EntityType="Self.GHINHAN_SUA_CHUA" />
+    <EntitySet Name="KEHOACH_BAOTRI" EntityType="Self.KEHOACH_BAOTRI" />
+    <EntitySet Name="KHOA_PHONGBAN" EntityType="Self.KHOA_PHONGBAN" />
+    <EntitySet Name="KHUVUCs" EntityType="Self.KHUVUC" />
+    <EntitySet Name="KIEMKEs" EntityType="Self.KIEMKE" />
+    <EntitySet Name="NGUOIDUNGs" EntityType="Self.NGUOIDUNG" />
+    <EntitySet Name="NGUOIDUNG_THONGBAO" EntityType="Self.NGUOIDUNG_THONGBAO" />
+    <EntitySet Name="NHACUNGCAPs" EntityType="Self.NHACUNGCAP" />
+    <EntitySet Name="PHONGs" EntityType="Self.PHONG" />
+    <EntitySet Name="PHONG_THIETBI" EntityType="Self.PHONG_THIETBI" />
+    <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagram" />
+    <EntitySet Name="THIETBIs" EntityType="Self.THIETBI" />
+    <EntitySet Name="THONGBAOs" EntityType="Self.THONGBAO" />
+    <EntitySet Name="VAITROes" EntityType="Self.VAITRO" />
+    <EntitySet Name="VAITRO_NGUOIDUNG" EntityType="Self.VAITRO_NGUOIDUNG" />
+    <EntitySet Name="View_BaoCaoTaiChinh" EntityType="Self.View_BaoCaoTaiChinh" />
+    <EntitySet Name="View_BaoHong_TrangThai" EntityType="Self.View_BaoHong_TrangThai" />
+    <EntitySet Name="View_KeHoach_ChiTiet" EntityType="Self.View_KeHoach_ChiTiet" />
+    <AssociationSet Name="FK_BH_NGUOI" Association="Self.FK_BH_NGUOI">
+      <End Role="NGUOIDUNG" EntitySet="NGUOIDUNGs" />
+      <End Role="BAOHONG_THIETBI" EntitySet="BAOHONG_THIETBI" />
+    </AssociationSet>
+    <AssociationSet Name="FK_BH_THIETBI" Association="Self.FK_BH_THIETBI">
+      <End Role="THIETBI" EntitySet="THIETBIs" />
+      <End Role="BAOHONG_THIETBI" EntitySet="BAOHONG_THIETBI" />
+    </AssociationSet>
+    <AssociationSet Name="FK_CTKH_BAOHONG" Association="Self.FK_CTKH_BAOHONG">
+      <End Role="BAOHONG_THIETBI" EntitySet="BAOHONG_THIETBI" />
+      <End Role="CHITIET_KEHOACH" EntitySet="CHITIET_KEHOACH" />
+    </AssociationSet>
+    <AssociationSet Name="FK_CTDX_DANHMUC" Association="Self.FK_CTDX_DANHMUC">
+      <End Role="DANHMUC" EntitySet="DANHMUCs" />
+      <End Role="CHITIET_DEXUAT" EntitySet="CHITIET_DEXUAT" />
+    </AssociationSet>
+    <AssociationSet Name="FK_CTDX_DEXUAT" Association="Self.FK_CTDX_DEXUAT">
+      <End Role="DEXUAT_MUASAM" EntitySet="DEXUAT_MUASAM" />
+      <End Role="CHITIET_DEXUAT" EntitySet="CHITIET_DEXUAT" />
+    </AssociationSet>
+    <AssociationSet Name="FK_CTKH_KEHOACH" Association="Self.FK_CTKH_KEHOACH">
+      <End Role="KEHOACH_BAOTRI" EntitySet="KEHOACH_BAOTRI" />
+      <End Role="CHITIET_KEHOACH" EntitySet="CHITIET_KEHOACH" />
+    </AssociationSet>
+    <AssociationSet Name="FK_CTKH_THIETBI" Association="Self.FK_CTKH_THIETBI">
+      <End Role="THIETBI" EntitySet="THIETBIs" />
+      <End Role="CHITIET_KEHOACH" EntitySet="CHITIET_KEHOACH" />
+    </AssociationSet>
+    <AssociationSet Name="FK_GN_CHITIET" Association="Self.FK_GN_CHITIET">
+      <End Role="CHITIET_KEHOACH" EntitySet="CHITIET_KEHOACH" />
+      <End Role="GHINHAN_SUA_CHUA" EntitySet="GHINHAN_SUA_CHUA" />
+    </AssociationSet>
+    <AssociationSet Name="FK_CTKK_KIEMKE" Association="Self.FK_CTKK_KIEMKE">
+      <End Role="KIEMKE" EntitySet="KIEMKEs" />
+      <End Role="CHITIET_KIEMKE" EntitySet="CHITIET_KIEMKE" />
+    </AssociationSet>
+    <AssociationSet Name="FK_CTKK_THIETBI" Association="Self.FK_CTKK_THIETBI">
+      <End Role="THIETBI" EntitySet="THIETBIs" />
+      <End Role="CHITIET_KIEMKE" EntitySet="CHITIET_KIEMKE" />
+    </AssociationSet>
+    <AssociationSet Name="FK_KHUVUC_COSO" Association="Self.FK_KHUVUC_COSO">
+      <End Role="COSO" EntitySet="COSOes" />
+      <End Role="KHUVUC" EntitySet="KHUVUCs" />
+    </AssociationSet>
+    <AssociationSet Name="FK_TB_DANHMUC" Association="Self.FK_TB_DANHMUC">
+      <End Role="DANHMUC" EntitySet="DANHMUCs" />
+      <End Role="THIETBI" EntitySet="THIETBIs" />
+    </AssociationSet>
+    <AssociationSet Name="FK_DX_NGUOIDEXUAT" Association="Self.FK_DX_NGUOIDEXUAT">
+      <End Role="NGUOIDUNG" EntitySet="NGUOIDUNGs" />
+      <End Role="DEXUAT_MUASAM" EntitySet="DEXUAT_MUASAM" />
+    </AssociationSet>
+    <AssociationSet Name="FK_DX_NGUOIDUYET" Association="Self.FK_DX_NGUOIDUYET">
+      <End Role="NGUOIDUNG" EntitySet="NGUOIDUNGs" />
+      <End Role="DEXUAT_MUASAM" EntitySet="DEXUAT_MUASAM" />
+    </AssociationSet>
+    <AssociationSet Name="FK_GN_KEHOACH" Association="Self.FK_GN_KEHOACH">
+      <End Role="KEHOACH_BAOTRI" EntitySet="KEHOACH_BAOTRI" />
+      <End Role="GHINHAN_SUA_CHUA" EntitySet="GHINHAN_SUA_CHUA" />
+    </AssociationSet>
+    <AssociationSet Name="FK_KH_NGUOILAP" Association="Self.FK_KH_NGUOILAP">
+      <End Role="NGUOIDUNG" EntitySet="NGUOIDUNGs" />
+      <End Role="KEHOACH_BAOTRI" EntitySet="KEHOACH_BAOTRI" />
+    </AssociationSet>
+    <AssociationSet Name="FK_NGUOIDUNG_KHOA" Association="Self.FK_NGUOIDUNG_KHOA">
+      <End Role="KHOA_PHONGBAN" EntitySet="KHOA_PHONGBAN" />
+      <End Role="NGUOIDUNG" EntitySet="NGUOIDUNGs" />
+    </AssociationSet>
+    <AssociationSet Name="FK_TB_KHOA" Association="Self.FK_TB_KHOA">
+      <End Role="KHOA_PHONGBAN" EntitySet="KHOA_PHONGBAN" />
+      <End Role="THIETBI" EntitySet="THIETBIs" />
+    </AssociationSet>
+    <AssociationSet Name="FK_PHONG_KHUVUC" Association="Self.FK_PHONG_KHUVUC">
+      <End Role="KHUVUC" EntitySet="KHUVUCs" />
+      <End Role="PHONG" EntitySet="PHONGs" />
+    </AssociationSet>
+    <AssociationSet Name="FK_KK_NGUOI" Association="Self.FK_KK_NGUOI">
+      <End Role="NGUOIDUNG" EntitySet="NGUOIDUNGs" />
+      <End Role="KIEMKE" EntitySet="KIEMKEs" />
+    </AssociationSet>
+    <AssociationSet Name="FK_NTB_NGUOIDUNG" Association="Self.FK_NTB_NGUOIDUNG">
+      <End Role="NGUOIDUNG" EntitySet="NGUOIDUNGs" />
+      <End Role="NGUOIDUNG_THONGBAO" EntitySet="NGUOIDUNG_THONGBAO" />
+    </AssociationSet>
+    <AssociationSet Name="FK_THONGBAO_NGUOITAO" Association="Self.FK_THONGBAO_NGUOITAO">
+      <End Role="NGUOIDUNG" EntitySet="NGUOIDUNGs" />
+      <End Role="THONGBAO" EntitySet="THONGBAOs" />
+    </AssociationSet>
+    <AssociationSet Name="FK_VTN_NGUOIDUNG" Association="Self.FK_VTN_NGUOIDUNG">
+      <End Role="NGUOIDUNG" EntitySet="NGUOIDUNGs" />
+      <End Role="VAITRO_NGUOIDUNG" EntitySet="VAITRO_NGUOIDUNG" />
+    </AssociationSet>
+    <AssociationSet Name="FK_NTB_THONGBAO" Association="Self.FK_NTB_THONGBAO">
+      <End Role="THONGBAO" EntitySet="THONGBAOs" />
+      <End Role="NGUOIDUNG_THONGBAO" EntitySet="NGUOIDUNG_THONGBAO" />
+    </AssociationSet>
+    <AssociationSet Name="FK_TB_NCC" Association="Self.FK_TB_NCC">
+      <End Role="NHACUNGCAP" EntitySet="NHACUNGCAPs" />
+      <End Role="THIETBI" EntitySet="THIETBIs" />
+    </AssociationSet>
+    <AssociationSet Name="FK_PTB_PHONG" Association="Self.FK_PTB_PHONG">
+      <End Role="PHONG" EntitySet="PHONGs" />
+      <End Role="PHONG_THIETBI" EntitySet="PHONG_THIETBI" />
+    </AssociationSet>
+    <AssociationSet Name="FK_PTB_THIETBI" Association="Self.FK_PTB_THIETBI">
+      <End Role="THIETBI" EntitySet="THIETBIs" />
+      <End Role="PHONG_THIETBI" EntitySet="PHONG_THIETBI" />
+    </AssociationSet>
+    <AssociationSet Name="FK_VTN_VAITRO" Association="Self.FK_VTN_VAITRO">
+      <End Role="VAITRO" EntitySet="VAITROes" />
+      <End Role="VAITRO_NGUOIDUNG" EntitySet="VAITRO_NGUOIDUNG" />
+    </AssociationSet>
+    <FunctionImport Name="sp_alterdiagram">
+      <Parameter Name="diagramname" Mode="In" Type="String" />
+      <Parameter Name="owner_id" Mode="In" Type="Int32" />
+      <Parameter Name="version" Mode="In" Type="Int32" />
+      <Parameter Name="definition" Mode="In" Type="Binary" />
+    </FunctionImport>
+    <FunctionImport Name="sp_creatediagram">
+      <Parameter Name="diagramname" Mode="In" Type="String" />
+      <Parameter Name="owner_id" Mode="In" Type="Int32" />
+      <Parameter Name="version" Mode="In" Type="Int32" />
+      <Parameter Name="definition" Mode="In" Type="Binary" />
+    </FunctionImport>
+    <FunctionImport Name="sp_dropdiagram">
+      <Parameter Name="diagramname" Mode="In" Type="String" />
+      <Parameter Name="owner_id" Mode="In" Type="Int32" />
+    </FunctionImport>
+    <FunctionImport Name="sp_helpdiagramdefinition" ReturnType="Collection(QuanLyThietBiModel.sp_helpdiagramdefinition_Result)">
+      <Parameter Name="diagramname" Mode="In" Type="String" />
+      <Parameter Name="owner_id" Mode="In" Type="Int32" />
+    </FunctionImport>
+    <FunctionImport Name="sp_helpdiagrams" ReturnType="Collection(QuanLyThietBiModel.sp_helpdiagrams_Result)">
+      <Parameter Name="diagramname" Mode="In" Type="String" />
+      <Parameter Name="owner_id" Mode="In" Type="Int32" />
+    </FunctionImport>
+    <FunctionImport Name="sp_renamediagram">
+      <Parameter Name="diagramname" Mode="In" Type="String" />
+      <Parameter Name="owner_id" Mode="In" Type="Int32" />
+      <Parameter Name="new_diagramname" Mode="In" Type="String" />
+    </FunctionImport>
+    <FunctionImport Name="sp_upgraddiagrams" />
+  </EntityContainer>
+  <ComplexType Name="sp_helpdiagramdefinition_Result">
+    <Property Type="Int32" Name="version" Nullable="true" />
+    <Property Type="Binary" Name="definition" Nullable="true" />
+  </ComplexType>
+  <ComplexType Name="sp_helpdiagrams_Result">
+    <Property Type="String" Name="Database" Nullable="true" MaxLength="128" />
+    <Property Type="String" Name="Name" Nullable="false" MaxLength="128" />
+    <Property Type="Int32" Name="ID" Nullable="false" />
+    <Property Type="String" Name="Owner" Nullable="true" MaxLength="128" />
+    <Property Type="Int32" Name="OwnerID" Nullable="false" />
+  </ComplexType>
+</Schema>
