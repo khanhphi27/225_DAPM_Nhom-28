@@ -4,7 +4,7 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema Namespace="QuanLyThietBiModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+    <Schema Namespace="QuanLyThietBiModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityType Name="BAOHONG_THIETBI">
           <Key>
             <PropertyRef Name="ID_BaoHong" />
@@ -134,6 +134,18 @@
           <Property Name="TrangThai" Type="nvarchar" MaxLength="50" />
           <Property Name="GhiChu" Type="nvarchar(max)" />
         </EntityType>
+        <EntityType Name="LICHSUDUYET">
+          <Key>
+            <PropertyRef Name="ID_LichSu" />
+          </Key>
+          <Property Name="ID_LichSu" Type="char" MaxLength="10" Nullable="false" />
+          <Property Name="DeXuatNo" Type="char" MaxLength="10" Nullable="false" />
+          <Property Name="CapDuyet" Type="int" />
+          <Property Name="NguoiDuyetNo" Type="char" MaxLength="10" Nullable="false" />
+          <Property Name="ThoiGianDuyet" Type="datetime" Nullable="false" />
+          <Property Name="TrangThaiSauDuyet" Type="nvarchar" MaxLength="50" />
+          <Property Name="GhiChu" Type="nvarchar(max)" />
+        </EntityType>
         <EntityType Name="NGUOIDUNG">
           <Key>
             <PropertyRef Name="ID_NguoiDung" />
@@ -206,6 +218,7 @@
           <Property Name="Gia" Type="decimal" Precision="18" Scale="2" />
           <Property Name="ThongSoKT" Type="nvarchar" MaxLength="500" />
           <Property Name="SoSeri" Type="int" />
+          <Property Name="DeXuatNo" Type="char" MaxLength="10" />
         </EntityType>
         <EntityType Name="THONGBAO">
           <Key>
@@ -295,6 +308,27 @@ warning 6002: The table/view 'QuanLyThietBi.dbo.View_KeHoach_ChiTiet' does not h
           <Property Name="BaoHongNo" Type="char" MaxLength="10" />
           <Property Name="NguonGoc" Type="nvarchar" MaxLength="21" Nullable="false" />
           <Property Name="GhiChuChiTiet" Type="nvarchar(max)" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'QuanLyThietBi.dbo.View_LichSuDuyet' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="View_LichSuDuyet">
+          <Key>
+            <PropertyRef Name="ID_LichSu" />
+            <PropertyRef Name="DeXuatNo" />
+            <PropertyRef Name="TenCapDuyet" />
+            <PropertyRef Name="NguoiDuyet" />
+            <PropertyRef Name="ThoiGianDuyet" />
+          </Key>
+          <Property Name="ID_LichSu" Type="char" MaxLength="10" Nullable="false" />
+          <Property Name="DeXuatNo" Type="char" MaxLength="10" Nullable="false" />
+          <Property Name="NoiDungDeXuat" Type="nvarchar(max)" />
+          <Property Name="TrangThaiHienTai" Type="nvarchar" MaxLength="50" />
+          <Property Name="CapDuyet" Type="int" />
+          <Property Name="TenCapDuyet" Type="nvarchar" MaxLength="4" Nullable="false" />
+          <Property Name="NguoiDuyet" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="ThoiGianDuyet" Type="datetime" Nullable="false" />
+          <Property Name="TrangThaiSauDuyet" Type="nvarchar" MaxLength="50" />
+          <Property Name="GhiChu" Type="nvarchar(max)" />
         </EntityType>
         <Association Name="FK_BH_NGUOI">
           <End Role="NGUOIDUNG" Type="Self.NGUOIDUNG" Multiplicity="1" />
@@ -488,6 +522,30 @@ warning 6002: The table/view 'QuanLyThietBi.dbo.View_KeHoach_ChiTiet' does not h
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_LICHSUDUYET_DEXUAT">
+          <End Role="DEXUAT_MUASAM" Type="Self.DEXUAT_MUASAM" Multiplicity="1" />
+          <End Role="LICHSUDUYET" Type="Self.LICHSUDUYET" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="DEXUAT_MUASAM">
+              <PropertyRef Name="ID_DeXuat" />
+            </Principal>
+            <Dependent Role="LICHSUDUYET">
+              <PropertyRef Name="DeXuatNo" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_LICHSUDUYET_NGUOIDUNG">
+          <End Role="NGUOIDUNG" Type="Self.NGUOIDUNG" Multiplicity="1" />
+          <End Role="LICHSUDUYET" Type="Self.LICHSUDUYET" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="NGUOIDUNG">
+              <PropertyRef Name="ID_NguoiDung" />
+            </Principal>
+            <Dependent Role="LICHSUDUYET">
+              <PropertyRef Name="NguoiDuyetNo" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_NGUOIDUNG_KHOA">
           <End Role="KHOA_PHONGBAN" Type="Self.KHOA_PHONGBAN" Multiplicity="0..1" />
           <End Role="NGUOIDUNG" Type="Self.NGUOIDUNG" Multiplicity="*" />
@@ -596,6 +654,18 @@ warning 6002: The table/view 'QuanLyThietBi.dbo.View_KeHoach_ChiTiet' does not h
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_THIETBI_DEXUAT">
+          <End Role="DEXUAT_MUASAM" Type="Self.DEXUAT_MUASAM" Multiplicity="0..1" />
+          <End Role="THIETBI" Type="Self.THIETBI" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="DEXUAT_MUASAM">
+              <PropertyRef Name="ID_DeXuat" />
+            </Principal>
+            <Dependent Role="THIETBI">
+              <PropertyRef Name="DeXuatNo" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_THONGBAO_NGUOITAO">
           <End Role="NGUOIDUNG" Type="Self.NGUOIDUNG" Multiplicity="1" />
           <End Role="THONGBAO" Type="Self.THONGBAO" Multiplicity="*" />
@@ -676,6 +746,7 @@ warning 6002: The table/view 'QuanLyThietBi.dbo.View_KeHoach_ChiTiet' does not h
           <EntitySet Name="KHOA_PHONGBAN" EntityType="Self.KHOA_PHONGBAN" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="KHUVUC" EntityType="Self.KHUVUC" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="KIEMKE" EntityType="Self.KIEMKE" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="LICHSUDUYET" EntityType="Self.LICHSUDUYET" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="NGUOIDUNG" EntityType="Self.NGUOIDUNG" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="NGUOIDUNG_THONGBAO" EntityType="Self.NGUOIDUNG_THONGBAO" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="NHACUNGCAP" EntityType="Self.NHACUNGCAP" Schema="dbo" store:Type="Tables" />
@@ -729,6 +800,20 @@ warning 6002: The table/view 'QuanLyThietBi.dbo.View_KeHoach_ChiTiet' does not h
     [View_KeHoach_ChiTiet].[NguonGoc] AS [NguonGoc], 
     [View_KeHoach_ChiTiet].[GhiChuChiTiet] AS [GhiChuChiTiet]
     FROM [dbo].[View_KeHoach_ChiTiet] AS [View_KeHoach_ChiTiet]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="View_LichSuDuyet" EntityType="Self.View_LichSuDuyet" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [View_LichSuDuyet].[ID_LichSu] AS [ID_LichSu], 
+    [View_LichSuDuyet].[DeXuatNo] AS [DeXuatNo], 
+    [View_LichSuDuyet].[NoiDungDeXuat] AS [NoiDungDeXuat], 
+    [View_LichSuDuyet].[TrangThaiHienTai] AS [TrangThaiHienTai], 
+    [View_LichSuDuyet].[CapDuyet] AS [CapDuyet], 
+    [View_LichSuDuyet].[TenCapDuyet] AS [TenCapDuyet], 
+    [View_LichSuDuyet].[NguoiDuyet] AS [NguoiDuyet], 
+    [View_LichSuDuyet].[ThoiGianDuyet] AS [ThoiGianDuyet], 
+    [View_LichSuDuyet].[TrangThaiSauDuyet] AS [TrangThaiSauDuyet], 
+    [View_LichSuDuyet].[GhiChu] AS [GhiChu]
+    FROM [dbo].[View_LichSuDuyet] AS [View_LichSuDuyet]</DefiningQuery>
           </EntitySet>
           <AssociationSet Name="FK_BH_NGUOI" Association="Self.FK_BH_NGUOI">
             <End Role="NGUOIDUNG" EntitySet="NGUOIDUNG" />
@@ -794,6 +879,14 @@ warning 6002: The table/view 'QuanLyThietBi.dbo.View_KeHoach_ChiTiet' does not h
             <End Role="NGUOIDUNG" EntitySet="NGUOIDUNG" />
             <End Role="KIEMKE" EntitySet="KIEMKE" />
           </AssociationSet>
+          <AssociationSet Name="FK_LICHSUDUYET_DEXUAT" Association="Self.FK_LICHSUDUYET_DEXUAT">
+            <End Role="DEXUAT_MUASAM" EntitySet="DEXUAT_MUASAM" />
+            <End Role="LICHSUDUYET" EntitySet="LICHSUDUYET" />
+          </AssociationSet>
+          <AssociationSet Name="FK_LICHSUDUYET_NGUOIDUNG" Association="Self.FK_LICHSUDUYET_NGUOIDUNG">
+            <End Role="NGUOIDUNG" EntitySet="NGUOIDUNG" />
+            <End Role="LICHSUDUYET" EntitySet="LICHSUDUYET" />
+          </AssociationSet>
           <AssociationSet Name="FK_NGUOIDUNG_KHOA" Association="Self.FK_NGUOIDUNG_KHOA">
             <End Role="KHOA_PHONGBAN" EntitySet="KHOA_PHONGBAN" />
             <End Role="NGUOIDUNG" EntitySet="NGUOIDUNG" />
@@ -830,6 +923,10 @@ warning 6002: The table/view 'QuanLyThietBi.dbo.View_KeHoach_ChiTiet' does not h
             <End Role="NHACUNGCAP" EntitySet="NHACUNGCAP" />
             <End Role="THIETBI" EntitySet="THIETBI" />
           </AssociationSet>
+          <AssociationSet Name="FK_THIETBI_DEXUAT" Association="Self.FK_THIETBI_DEXUAT">
+            <End Role="DEXUAT_MUASAM" EntitySet="DEXUAT_MUASAM" />
+            <End Role="THIETBI" EntitySet="THIETBI" />
+          </AssociationSet>
           <AssociationSet Name="FK_THONGBAO_NGUOITAO" Association="Self.FK_THONGBAO_NGUOITAO">
             <End Role="NGUOIDUNG" EntitySet="NGUOIDUNG" />
             <End Role="THONGBAO" EntitySet="THONGBAO" />
@@ -843,8 +940,7 @@ warning 6002: The table/view 'QuanLyThietBi.dbo.View_KeHoach_ChiTiet' does not h
             <End Role="VAITRO_NGUOIDUNG" EntitySet="VAITRO_NGUOIDUNG" />
           </AssociationSet>
         </EntityContainer>
-      </Schema>
-    </edmx:StorageModels>
+      </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="QuanLyThietBiModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
@@ -941,6 +1037,8 @@ warning 6002: The table/view 'QuanLyThietBi.dbo.View_KeHoach_ChiTiet' does not h
           <NavigationProperty Name="CHITIET_DEXUAT" Relationship="Self.FK_CTDX_DEXUAT" FromRole="DEXUAT_MUASAM" ToRole="CHITIET_DEXUAT" />
           <NavigationProperty Name="NGUOIDUNG" Relationship="Self.FK_DX_NGUOIDEXUAT" FromRole="DEXUAT_MUASAM" ToRole="NGUOIDUNG" />
           <NavigationProperty Name="NGUOIDUNG1" Relationship="Self.FK_DX_NGUOIDUYET" FromRole="DEXUAT_MUASAM" ToRole="NGUOIDUNG" />
+          <NavigationProperty Name="LICHSUDUYETs" Relationship="QuanLyThietBiModel.FK_LICHSUDUYET_DEXUAT" FromRole="DEXUAT_MUASAM" ToRole="LICHSUDUYET" />
+          <NavigationProperty Name="THIETBIs" Relationship="QuanLyThietBiModel.FK_THIETBI_DEXUAT" FromRole="DEXUAT_MUASAM" ToRole="THIETBI" />
         </EntityType>
         <EntityType Name="GHINHAN_SUA_CHUA">
           <Key>
@@ -1025,6 +1123,7 @@ warning 6002: The table/view 'QuanLyThietBi.dbo.View_KeHoach_ChiTiet' does not h
           <NavigationProperty Name="NGUOIDUNG_THONGBAO" Relationship="Self.FK_NTB_NGUOIDUNG" FromRole="NGUOIDUNG" ToRole="NGUOIDUNG_THONGBAO" />
           <NavigationProperty Name="THONGBAOs" Relationship="Self.FK_THONGBAO_NGUOITAO" FromRole="NGUOIDUNG" ToRole="THONGBAO" />
           <NavigationProperty Name="VAITRO_NGUOIDUNG" Relationship="Self.FK_VTN_NGUOIDUNG" FromRole="NGUOIDUNG" ToRole="VAITRO_NGUOIDUNG" />
+          <NavigationProperty Name="LICHSUDUYETs" Relationship="QuanLyThietBiModel.FK_LICHSUDUYET_NGUOIDUNG" FromRole="NGUOIDUNG" ToRole="LICHSUDUYET" />
         </EntityType>
         <EntityType Name="NGUOIDUNG_THONGBAO">
           <Key>
@@ -1100,6 +1199,8 @@ warning 6002: The table/view 'QuanLyThietBi.dbo.View_KeHoach_ChiTiet' does not h
           <NavigationProperty Name="KHOA_PHONGBAN" Relationship="Self.FK_TB_KHOA" FromRole="THIETBI" ToRole="KHOA_PHONGBAN" />
           <NavigationProperty Name="NHACUNGCAP" Relationship="Self.FK_TB_NCC" FromRole="THIETBI" ToRole="NHACUNGCAP" />
           <NavigationProperty Name="PHONG_THIETBI" Relationship="Self.FK_PTB_THIETBI" FromRole="THIETBI" ToRole="PHONG_THIETBI" />
+          <Property Name="DeXuatNo" Type="String" MaxLength="10" FixedLength="true" Unicode="false" />
+          <NavigationProperty Name="DEXUAT_MUASAM" Relationship="QuanLyThietBiModel.FK_THIETBI_DEXUAT" FromRole="THIETBI" ToRole="DEXUAT_MUASAM" />
         </EntityType>
         <EntityType Name="THONGBAO">
           <Key>
@@ -1693,6 +1794,20 @@ warning 6002: The table/view 'QuanLyThietBi.dbo.View_KeHoach_ChiTiet' does not h
             <Parameter Name="new_diagramname" Mode="In" Type="String" />
           </FunctionImport>
           <FunctionImport Name="sp_upgraddiagrams" />
+          <EntitySet Name="LICHSUDUYETs" EntityType="QuanLyThietBiModel.LICHSUDUYET" />
+          <EntitySet Name="View_LichSuDuyet" EntityType="QuanLyThietBiModel.View_LichSuDuyet" />
+          <AssociationSet Name="FK_LICHSUDUYET_DEXUAT" Association="QuanLyThietBiModel.FK_LICHSUDUYET_DEXUAT">
+            <End Role="DEXUAT_MUASAM" EntitySet="DEXUAT_MUASAM" />
+            <End Role="LICHSUDUYET" EntitySet="LICHSUDUYETs" />
+          </AssociationSet>
+          <AssociationSet Name="FK_THIETBI_DEXUAT" Association="QuanLyThietBiModel.FK_THIETBI_DEXUAT">
+            <End Role="DEXUAT_MUASAM" EntitySet="DEXUAT_MUASAM" />
+            <End Role="THIETBI" EntitySet="THIETBIs" />
+          </AssociationSet>
+          <AssociationSet Name="FK_LICHSUDUYET_NGUOIDUNG" Association="QuanLyThietBiModel.FK_LICHSUDUYET_NGUOIDUNG">
+            <End Role="NGUOIDUNG" EntitySet="NGUOIDUNGs" />
+            <End Role="LICHSUDUYET" EntitySet="LICHSUDUYETs" />
+          </AssociationSet>
         </EntityContainer>
         <ComplexType Name="sp_helpdiagramdefinition_Result">
           <Property Type="Int32" Name="version" Nullable="true" />
@@ -1705,6 +1820,75 @@ warning 6002: The table/view 'QuanLyThietBi.dbo.View_KeHoach_ChiTiet' does not h
           <Property Type="String" Name="Owner" Nullable="true" MaxLength="128" />
           <Property Type="Int32" Name="OwnerID" Nullable="false" />
         </ComplexType>
+        <EntityType Name="LICHSUDUYET">
+          <Key>
+            <PropertyRef Name="ID_LichSu" />
+          </Key>
+          <Property Name="ID_LichSu" Type="String" Nullable="false" MaxLength="10" FixedLength="true" Unicode="false" />
+          <Property Name="DeXuatNo" Type="String" Nullable="false" MaxLength="10" FixedLength="true" Unicode="false" />
+          <Property Name="CapDuyet" Type="Int32" />
+          <Property Name="NguoiDuyetNo" Type="String" Nullable="false" MaxLength="10" FixedLength="true" Unicode="false" />
+          <Property Name="ThoiGianDuyet" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="TrangThaiSauDuyet" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="GhiChu" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="DEXUAT_MUASAM" Relationship="QuanLyThietBiModel.FK_LICHSUDUYET_DEXUAT" FromRole="LICHSUDUYET" ToRole="DEXUAT_MUASAM" />
+          <NavigationProperty Name="NGUOIDUNG" Relationship="QuanLyThietBiModel.FK_LICHSUDUYET_NGUOIDUNG" FromRole="LICHSUDUYET" ToRole="NGUOIDUNG" />
+        </EntityType>
+        <EntityType Name="View_LichSuDuyet">
+          <Key>
+            <PropertyRef Name="ID_LichSu" />
+            <PropertyRef Name="DeXuatNo" />
+            <PropertyRef Name="TenCapDuyet" />
+            <PropertyRef Name="NguoiDuyet" />
+            <PropertyRef Name="ThoiGianDuyet" />
+          </Key>
+          <Property Name="ID_LichSu" Type="String" Nullable="false" MaxLength="10" FixedLength="true" Unicode="false" />
+          <Property Name="DeXuatNo" Type="String" Nullable="false" MaxLength="10" FixedLength="true" Unicode="false" />
+          <Property Name="NoiDungDeXuat" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="TrangThaiHienTai" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CapDuyet" Type="Int32" />
+          <Property Name="TenCapDuyet" Type="String" Nullable="false" MaxLength="4" FixedLength="false" Unicode="true" />
+          <Property Name="NguoiDuyet" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="ThoiGianDuyet" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="TrangThaiSauDuyet" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="GhiChu" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <Association Name="FK_LICHSUDUYET_DEXUAT">
+          <End Type="QuanLyThietBiModel.DEXUAT_MUASAM" Role="DEXUAT_MUASAM" Multiplicity="1" />
+          <End Type="QuanLyThietBiModel.LICHSUDUYET" Role="LICHSUDUYET" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="DEXUAT_MUASAM">
+              <PropertyRef Name="ID_DeXuat" />
+            </Principal>
+            <Dependent Role="LICHSUDUYET">
+              <PropertyRef Name="DeXuatNo" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_THIETBI_DEXUAT">
+          <End Type="QuanLyThietBiModel.DEXUAT_MUASAM" Role="DEXUAT_MUASAM" Multiplicity="0..1" />
+          <End Type="QuanLyThietBiModel.THIETBI" Role="THIETBI" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="DEXUAT_MUASAM">
+              <PropertyRef Name="ID_DeXuat" />
+            </Principal>
+            <Dependent Role="THIETBI">
+              <PropertyRef Name="DeXuatNo" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_LICHSUDUYET_NGUOIDUNG">
+          <End Type="QuanLyThietBiModel.NGUOIDUNG" Role="NGUOIDUNG" Multiplicity="1" />
+          <End Type="QuanLyThietBiModel.LICHSUDUYET" Role="LICHSUDUYET" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="NGUOIDUNG">
+              <PropertyRef Name="ID_NguoiDung" />
+            </Principal>
+            <Dependent Role="LICHSUDUYET">
+              <PropertyRef Name="NguoiDuyetNo" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -1918,6 +2102,7 @@ warning 6002: The table/view 'QuanLyThietBi.dbo.View_KeHoach_ChiTiet' does not h
           <EntitySetMapping Name="THIETBIs">
             <EntityTypeMapping TypeName="QuanLyThietBiModel.THIETBI">
               <MappingFragment StoreEntitySet="THIETBI">
+                <ScalarProperty Name="DeXuatNo" ColumnName="DeXuatNo" />
                 <ScalarProperty Name="ID_ThietBi" ColumnName="ID_ThietBi" />
                 <ScalarProperty Name="DanhMucNo" ColumnName="DanhMucNo" />
                 <ScalarProperty Name="NhaCCNo" ColumnName="NhaCCNo" />
@@ -2034,6 +2219,35 @@ warning 6002: The table/view 'QuanLyThietBi.dbo.View_KeHoach_ChiTiet' does not h
           </FunctionImportMapping>
           <FunctionImportMapping FunctionImportName="sp_renamediagram" FunctionName="QuanLyThietBiModel.Store.sp_renamediagram" />
           <FunctionImportMapping FunctionImportName="sp_upgraddiagrams" FunctionName="QuanLyThietBiModel.Store.sp_upgraddiagrams" />
+          <EntitySetMapping Name="LICHSUDUYETs">
+            <EntityTypeMapping TypeName="QuanLyThietBiModel.LICHSUDUYET">
+              <MappingFragment StoreEntitySet="LICHSUDUYET">
+                <ScalarProperty Name="GhiChu" ColumnName="GhiChu" />
+                <ScalarProperty Name="TrangThaiSauDuyet" ColumnName="TrangThaiSauDuyet" />
+                <ScalarProperty Name="ThoiGianDuyet" ColumnName="ThoiGianDuyet" />
+                <ScalarProperty Name="NguoiDuyetNo" ColumnName="NguoiDuyetNo" />
+                <ScalarProperty Name="CapDuyet" ColumnName="CapDuyet" />
+                <ScalarProperty Name="DeXuatNo" ColumnName="DeXuatNo" />
+                <ScalarProperty Name="ID_LichSu" ColumnName="ID_LichSu" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="View_LichSuDuyet">
+            <EntityTypeMapping TypeName="QuanLyThietBiModel.View_LichSuDuyet">
+              <MappingFragment StoreEntitySet="View_LichSuDuyet">
+                <ScalarProperty Name="GhiChu" ColumnName="GhiChu" />
+                <ScalarProperty Name="TrangThaiSauDuyet" ColumnName="TrangThaiSauDuyet" />
+                <ScalarProperty Name="ThoiGianDuyet" ColumnName="ThoiGianDuyet" />
+                <ScalarProperty Name="NguoiDuyet" ColumnName="NguoiDuyet" />
+                <ScalarProperty Name="TenCapDuyet" ColumnName="TenCapDuyet" />
+                <ScalarProperty Name="CapDuyet" ColumnName="CapDuyet" />
+                <ScalarProperty Name="TrangThaiHienTai" ColumnName="TrangThaiHienTai" />
+                <ScalarProperty Name="NoiDungDeXuat" ColumnName="NoiDungDeXuat" />
+                <ScalarProperty Name="DeXuatNo" ColumnName="DeXuatNo" />
+                <ScalarProperty Name="ID_LichSu" ColumnName="ID_LichSu" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
         </EntityContainerMapping>
       </Mapping>
     </edmx:Mappings>

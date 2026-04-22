@@ -173,6 +173,9 @@
     <Compile Include="KIEMKE.cs">
       <DependentUpon>QLTB.tt</DependentUpon>
     </Compile>
+    <Compile Include="LICHSUDUYET.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
     <Compile Include="Models\DbHelper.cs" />
     <Compile Include="Models\ThietBiViewModel.cs" />
     <Compile Include="Models\User.cs" />
@@ -236,6 +239,9 @@
       <DependentUpon>QLTB.tt</DependentUpon>
     </Compile>
     <Compile Include="View_KeHoach_ChiTiet.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="View_LichSuDuyet.cs">
       <DependentUpon>QLTB.tt</DependentUpon>
     </Compile>
   </ItemGroup>

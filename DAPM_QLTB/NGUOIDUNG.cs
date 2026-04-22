@@ -25,6 +25,7 @@ namespace DAPM_QLTB
             this.NGUOIDUNG_THONGBAO = new HashSet<NGUOIDUNG_THONGBAO>();
             this.THONGBAOs = new HashSet<THONGBAO>();
             this.VAITRO_NGUOIDUNG = new HashSet<VAITRO_NGUOIDUNG>();
+            this.LICHSUDUYETs = new HashSet<LICHSUDUYET>();
         }
     
         public string ID_NguoiDung { get; set; }
@@ -52,5 +53,7 @@ namespace DAPM_QLTB
         public virtual ICollection<THONGBAO> THONGBAOs { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<VAITRO_NGUOIDUNG> VAITRO_NGUOIDUNG { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<LICHSUDUYET> LICHSUDUYETs { get; set; }
     }
 }
