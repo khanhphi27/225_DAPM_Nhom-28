@@ -61,6 +61,35 @@ namespace QLTB.Controllers
             return View(vm);
         }
 
+        // GET: BGH/GetChiTietDeXuat
+        [HttpGet]
+        public JsonResult GetChiTietDeXuat(string id)
+        {
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    const string sql = "SELECT TenThietBiDeXuat, SoLuong, GiaDuKien, DonViTinh FROM CHITIET_DEXUAT WHERE DeXuatNo=@Id";
+                    var list = new System.Collections.Generic.List<object>();
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Id", id);
+                        using (var r = cmd.ExecuteReader())
+                            while (r.Read())
+                                list.Add(new {
+                                    Ten     = r["TenThietBiDeXuat"].ToString(),
+                                    SoLuong = r["SoLuong"]   == DBNull.Value ? 0 : Convert.ToInt32(r["SoLuong"]),
+                                    Gia     = r["GiaDuKien"] == DBNull.Value ? 0m : Convert.ToDecimal(r["GiaDuKien"]),
+                                    DVT     = r["DonViTinh"] == DBNull.Value ? "" : r["DonViTinh"].ToString()
+                                });
+                    }
+                    return Json(new { ok = true, data = list }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
+        }
+
         // GET: BGH/XetDuyetYeuCau
         public ActionResult XetDuyetYeuCau()
         {

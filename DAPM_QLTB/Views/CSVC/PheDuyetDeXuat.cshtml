@@ -6,61 +6,60 @@
 }
 
 <style>
-    .page-hdr h2 { color:#1a237e; font-weight:700; font-size:22px; margin:0; }
-    .page-hdr p  { color:#666; font-size:13px; margin:3px 0 0; }
-
-    .tab-bar { display:flex; gap:4px; margin-bottom:18px; background:#fff; border-radius:10px; padding:6px; box-shadow:0 2px 8px rgba(0,0,0,.06); width:fit-content; }
-    .tab-btn { padding:7px 20px; border-radius:7px; border:none; cursor:pointer; font-size:13px; font-weight:600; background:transparent; color:#666; transition:all .2s; }
-    .tab-btn.active { background:#1a237e; color:#fff; }
-    .tab-btn:hover:not(.active) { background:#e8eaf6; color:#1a237e; }
-
-    .proposal-card { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); overflow:hidden; border-left:4px solid #fb8c00; margin-bottom:14px; }
-    .proposal-card.approved { border-color:#43a047; }
-    .proposal-card.rejected { border-color:#e53935; }
-    .proposal-card.history  { border-color:#90a4ae; }
-
-    .card-head { padding:14px 20px; display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid #f0f2f8; }
-    .card-id   { font-size:12px; color:#888; font-weight:600; }
-    .card-title{ font-size:15px; font-weight:700; color:#1a237e; margin:2px 0 4px; }
-    .card-meta { font-size:12px; color:#666; }
-    .card-meta span { margin-right:14px; }
-
-    .badge-p { display:inline-block; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap; }
-    .badge-p.pending  { background:#fff3e0; color:#e65100; }
-    .badge-p.approved { background:#e8f5e9; color:#2e7d32; }
-    .badge-p.rejected { background:#fce4ec; color:#c62828; }
-    .badge-p.history  { background:#eceff1; color:#546e7a; }
-
-    .items-table { width:100%; border-collapse:collapse; margin:12px 0; }
-    .items-table th { background:#e8eaf6; color:#1a237e; font-size:11px; font-weight:700; text-transform:uppercase; padding:8px 12px; text-align:left; }
-    .items-table td { padding:8px 12px; font-size:12px; border-bottom:1px solid #f0f2f8; }
-    .items-table tr:last-child td { border:none; }
-    .items-table tfoot td { font-weight:700; color:#1a237e; background:#f5f6ff; }
-
-    .card-body { padding:14px 20px; }
-    .card-foot { padding:12px 20px; background:#fafbff; border-top:1px solid #f0f2f8; display:flex; justify-content:space-between; align-items:center; }
-    .foot-note { font-size:12px; color:#888; max-width:60%; }
-    .action-group { display:flex; gap:8px; }
-
-    .btn-approve { background:#43a047; color:#fff; border:none; border-radius:7px; padding:7px 16px; font-size:12px; font-weight:600; cursor:pointer; }
-    .btn-approve:hover { background:#2e7d32; }
-    .btn-reject  { background:#fce4ec; color:#c62828; border:none; border-radius:7px; padding:7px 16px; font-size:12px; font-weight:600; cursor:pointer; }
-    .btn-reject:hover { background:#f8bbd0; }
-
-    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; align-items:center; justify-content:center; }
-    .modal-overlay.active { display:flex; }
-    .modal-box { background:#fff; border-radius:14px; padding:28px 30px; width:460px; max-width:95vw; box-shadow:0 20px 60px rgba(0,0,0,.25); }
-    .modal-title { font-size:18px; font-weight:700; color:#1a237e; margin-bottom:12px; }
-    .modal-body  { font-size:13px; color:#555; margin-bottom:16px; line-height:1.6; }
-    .modal-footer{ display:flex; gap:10px; justify-content:flex-end; }
-    .form-lbl { font-size:12px; font-weight:600; color:#555; margin-bottom:4px; display:block; }
-    .form-inp { width:100%; padding:9px 12px; border:1px solid #d0d5e8; border-radius:8px; font-size:13px; background:#f8f9fe; box-sizing:border-box; margin-bottom:14px; }
-    .form-inp:focus { border-color:#3949ab; outline:none; }
-    .btn-cancel { background:#f5f5f5; color:#555; border:none; border-radius:8px; padding:9px 20px; font-size:13px; font-weight:600; cursor:pointer; }
-    .btn-ok     { background:#43a047; color:#fff; border:none; border-radius:8px; padding:9px 24px; font-size:13px; font-weight:600; cursor:pointer; }
-    .btn-ok.red { background:#e53935; }
-    .empty-state { text-align:center; padding:40px; color:#aaa; font-size:14px; }
-    .section-title { font-size:14px; font-weight:700; color:#1a237e; margin:20px 0 10px; padding-bottom:6px; border-bottom:2px solid #e8eaf6; }
+.page-hdr h2 { color:#1a237e; font-weight:700; font-size:22px; margin:0; }
+.page-hdr p  { color:#666; font-size:13px; margin:3px 0 0; }
+.tab-bar { display:flex; gap:4px; margin-bottom:18px; background:#fff; border-radius:10px; padding:6px; box-shadow:0 2px 8px rgba(0,0,0,.06); width:fit-content; }
+.tab-btn { padding:7px 20px; border-radius:7px; border:none; cursor:pointer; font-size:13px; font-weight:600; background:transparent; color:#666; transition:all .2s; }
+.tab-btn.active { background:#1a237e; color:#fff; }
+.tab-btn:hover:not(.active) { background:#e8eaf6; color:#1a237e; }
+.proposal-card { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); overflow:hidden; border-left:4px solid #fb8c00; margin-bottom:14px; }
+.proposal-card.approved { border-color:#43a047; }
+.proposal-card.rejected { border-color:#e53935; }
+.card-head { padding:14px 20px; display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid #f0f2f8; }
+.card-id { font-size:12px; color:#888; font-weight:600; }
+.card-title { font-size:15px; font-weight:700; color:#1a237e; margin:2px 0 4px; }
+.card-meta { font-size:12px; color:#666; }
+.card-meta span { margin-right:14px; }
+.badge-p { display:inline-block; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap; }
+.badge-p.pending  { background:#fff3e0; color:#e65100; }
+.badge-p.approved { background:#e8f5e9; color:#2e7d32; }
+.badge-p.rejected { background:#fce4ec; color:#c62828; }
+.items-table { width:100%; border-collapse:collapse; margin:12px 0; }
+.items-table th { background:#e8eaf6; color:#1a237e; font-size:11px; font-weight:700; text-transform:uppercase; padding:8px 12px; text-align:left; }
+.items-table td { padding:8px 12px; font-size:12px; border-bottom:1px solid #f0f2f8; }
+.items-table tfoot td { font-weight:700; color:#1a237e; background:#f5f6ff; }
+.card-body { padding:14px 20px; }
+.card-foot { padding:12px 20px; background:#fafbff; border-top:1px solid #f0f2f8; display:flex; justify-content:space-between; align-items:center; }
+.foot-note { font-size:12px; color:#888; max-width:60%; }
+.action-group { display:flex; gap:8px; }
+.btn-approve { background:#43a047; color:#fff; border:none; border-radius:7px; padding:7px 16px; font-size:12px; font-weight:600; cursor:pointer; }
+.btn-approve:hover { background:#2e7d32; }
+.btn-reject  { background:#fce4ec; color:#c62828; border:none; border-radius:7px; padding:7px 16px; font-size:12px; font-weight:600; cursor:pointer; }
+.btn-reject:hover { background:#f8bbd0; }
+.btn-detail  { background:#e8eaf6; color:#1a237e; border:none; border-radius:7px; padding:7px 14px; font-size:12px; font-weight:600; cursor:pointer; }
+.timeline { display:flex; align-items:center; padding:14px 24px 8px; }
+.tl-step { display:flex; flex-direction:column; align-items:center; flex:1; position:relative; }
+.tl-step:not(:last-child)::after { content:''; position:absolute; top:12px; left:calc(50% + 12px); width:calc(100% - 24px); height:2px; background:#e0e0e0; z-index:0; }
+.tl-step.done:not(:last-child)::after { background:#43a047; }
+.tl-dot { width:24px; height:24px; border-radius:50%; border:2px solid #e0e0e0; background:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; z-index:1; position:relative; }
+.tl-step.done .tl-dot   { background:#43a047; border-color:#43a047; color:#fff; }
+.tl-step.active .tl-dot { background:#fb8c00; border-color:#fb8c00; color:#fff; }
+.tl-step.reject .tl-dot { background:#e53935; border-color:#e53935; color:#fff; }
+.tl-label { font-size:10px; color:#999; margin-top:4px; text-align:center; font-weight:600; }
+.tl-step.done .tl-label   { color:#43a047; }
+.tl-step.active .tl-label { color:#fb8c00; }
+.tl-step.reject .tl-label { color:#e53935; }
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; align-items:center; justify-content:center; }
+.modal-overlay.active { display:flex; }
+.modal-box { background:#fff; border-radius:14px; padding:28px 30px; width:460px; max-width:95vw; box-shadow:0 20px 60px rgba(0,0,0,.25); }
+.modal-title { font-size:18px; font-weight:700; color:#1a237e; margin-bottom:12px; }
+.form-lbl { font-size:12px; font-weight:600; color:#555; margin-bottom:4px; display:block; }
+.form-inp { width:100%; padding:9px 12px; border:1px solid #d0d5e8; border-radius:8px; font-size:13px; background:#f8f9fe; box-sizing:border-box; margin-bottom:14px; }
+.form-inp:focus { border-color:#3949ab; outline:none; }
+.btn-ok { background:#43a047; color:#fff; border:none; border-radius:8px; padding:9px 24px; font-size:13px; font-weight:600; cursor:pointer; }
+.btn-ok.red { background:#e53935; }
+.btn-cancel { background:#f5f5f5; color:#555; border:none; border-radius:8px; padding:9px 20px; font-size:13px; font-weight:600; cursor:pointer; }
+.empty-state { text-align:center; padding:40px; color:#aaa; font-size:14px; }
 </style>
 
 <div class="page-hdr mb-3">
@@ -73,14 +72,12 @@
     <div class="alert alert-warning" style="border-radius:8px;font-size:13px;">⚠️ @ViewBag.Error</div>
 }
 
-<!-- Tab -->
 <div class="tab-bar">
     <button class="tab-btn active" onclick="setTab(this,'all')">Tất cả (@(choDuyet.Count + lichSu.Count))</button>
     <button class="tab-btn" onclick="setTab(this,'pending')">⏳ Chờ xử lý (@choDuyet.Count)</button>
     <button class="tab-btn" onclick="setTab(this,'history')">📋 Lịch sử (@lichSu.Count)</button>
 </div>
 
-<!-- Chờ duyệt -->
 <div id="sec-pending">
     @if (!choDuyet.Any())
     {
@@ -101,10 +98,16 @@
                             <span>💰 @dx.TongGiaDuKien.ToString("N0") đ</span>
                         </div>
                     </div>
-                    <span class="badge-p pending">⏳ Chờ xử lý</span>
+                    <span class="badge-p pending">⏳ Chờ CSVC duyệt</span>
+                </div>
+                <div class="timeline">
+                    <div class="tl-step done"><div class="tl-dot">✓</div><div class="tl-label">Đã gửi</div></div>
+                    <div class="tl-step active"><div class="tl-dot">●</div><div class="tl-label">CSVC</div></div>
+                    <div class="tl-step"><div class="tl-dot"></div><div class="tl-label">KHTC</div></div>
+                    <div class="tl-step"><div class="tl-dot"></div><div class="tl-label">BGH</div></div>
+                    <div class="tl-step"><div class="tl-dot"></div><div class="tl-label">Hoàn tất</div></div>
                 </div>
                 <div class="card-body">
-                    <!-- Chi tiết thiết bị load qua Ajax -->
                     <div id="detail-@dx.ID_DeXuat" style="display:none;">
                         <table class="items-table">
                             <thead><tr><th>STT</th><th>Tên thiết bị</th><th>SL</th><th>ĐVT</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
@@ -114,13 +117,9 @@
                     </div>
                 </div>
                 <div class="card-foot">
-                    <div class="foot-note">
-                        @if (!string.IsNullOrEmpty(dx.MoTa)) {
-                            <span>💬 @dx.MoTa</span>
-                        }
-                    </div>
+                    <div class="foot-note">@if (!string.IsNullOrEmpty(dx.MoTa)) { <span>💬 @dx.MoTa</span> }</div>
                     <div class="action-group">
-                        <button class="btn-cancel" style="border-radius:7px;padding:7px 14px;font-size:12px;" onclick="toggleDetail('@dx.ID_DeXuat', this)">📄 Xem chi tiết</button>
+                        <button class="btn-detail" onclick="toggleDetail('@dx.ID_DeXuat', this)">📄 Xem chi tiết</button>
                         <button class="btn-reject"  onclick="openModal('@dx.ID_DeXuat', 'tuchoi')">❌ Từ chối</button>
                         <button class="btn-approve" onclick="openModal('@dx.ID_DeXuat', 'duyet')">✅ Xác nhận & Chuyển KHTC</button>
                     </div>
@@ -130,7 +129,6 @@
     }
 </div>
 
-<!-- Lịch sử -->
 <div id="sec-history" style="display:none;">
     @if (!lichSu.Any())
     {
@@ -140,8 +138,17 @@
     {
         foreach (var dx in lichSu)
         {
-            string cardCls  = dx.TrangThai.Contains("Từ chối") ? "rejected" : "approved";
+            string cardCls = dx.TrangThai.Contains("Từ chối") ? "rejected" : "approved";
             string badgeCls = dx.TrangThai.Contains("Từ chối") ? "rejected" : "approved";
+            string s0="done", s1="", s2="", s3="", s4="";
+            if (dx.TrangThai == "Chờ CSVC duyệt")      { s1="active"; }
+            else if (dx.TrangThai == "Chờ KHTC duyệt") { s1="done"; s2="active"; }
+            else if (dx.TrangThai == "Chờ BGH duyệt")  { s1="done"; s2="done"; s3="active"; }
+            else if (dx.TrangThai == "Đã duyệt")        { s1="done"; s2="done"; s3="done"; s4="done"; }
+            else if (dx.TrangThai == "CSVC Từ chối")    { s1="reject"; }
+            else if (dx.TrangThai == "KHTC Từ chối")    { s1="done"; s2="reject"; }
+            else if (dx.TrangThai == "BGH Từ chối")     { s1="done"; s2="done"; s3="reject"; }
+
             <div class="proposal-card @cardCls">
                 <div class="card-head">
                     <div>
@@ -155,25 +162,29 @@
                     </div>
                     <span class="badge-p @badgeCls">@dx.TrangThai</span>
                 </div>
+                <div class="timeline">
+                    <div class="tl-step @s0"><div class="tl-dot">✓</div><div class="tl-label">Đã gửi</div></div>
+                    <div class="tl-step @s1"><div class="tl-dot">@(s1=="done"?"✓":s1=="reject"?"✕":"1")</div><div class="tl-label">CSVC</div></div>
+                    <div class="tl-step @s2"><div class="tl-dot">@(s2=="done"?"✓":s2=="reject"?"✕":"2")</div><div class="tl-label">KHTC</div></div>
+                    <div class="tl-step @s3"><div class="tl-dot">@(s3=="done"?"✓":s3=="reject"?"✕":"3")</div><div class="tl-label">BGH</div></div>
+                    <div class="tl-step @s4"><div class="tl-dot">@(s4=="done"?"✓":"✓")</div><div class="tl-label">Hoàn tất</div></div>
+                </div>
                 @if (!string.IsNullOrEmpty(dx.LyDoTuChoi))
                 {
-                    <div class="card-foot">
-                        <div class="foot-note" style="color:#c62828;">❌ Lý do từ chối: @dx.LyDoTuChoi</div>
-                    </div>
+                    <div class="card-foot"><div class="foot-note" style="color:#c62828;">❌ Lý do từ chối: @dx.LyDoTuChoi</div></div>
                 }
             </div>
         }
     }
 </div>
 
-<!-- Modal xác nhận / từ chối -->
 <div class="modal-overlay" id="actionModal">
     <div class="modal-box">
         <div class="modal-title" id="modalTitle"></div>
-        <div class="modal-body"  id="modalBody"></div>
+        <p id="modalBody" style="font-size:13px;color:#555;margin-bottom:12px;"></p>
         <label class="form-lbl" id="modalLabel"></label>
         <textarea class="form-inp" id="modalNote" rows="3" placeholder="Nhập ghi chú..."></textarea>
-        <div class="modal-footer">
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
             <button class="btn-cancel" onclick="closeModal()">Hủy</button>
             <button class="btn-ok" id="modalConfirm" onclick="submitAction()"></button>
         </div>
@@ -181,19 +192,16 @@
 </div>
 
 <script>
-    var _currentId = '', _currentAction = '';
-
+    var _id = '', _act = '';
     function setTab(el, tab) {
         document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
         el.classList.add('active');
-        document.getElementById('sec-pending').style.display = (tab === 'all' || tab === 'pending') ? '' : 'none';
-        document.getElementById('sec-history').style.display = (tab === 'all' || tab === 'history') ? '' : 'none';
+        document.getElementById('sec-pending').style.display = (tab==='all'||tab==='pending') ? '' : 'none';
+        document.getElementById('sec-history').style.display = (tab==='all'||tab==='history') ? '' : 'none';
     }
-
     function toggleDetail(id, btn) {
         var box = document.getElementById('detail-' + id);
         if (box.style.display === 'none') {
-            // Load chi tiết nếu chưa load
             if (!box.dataset.loaded) {
                 $.get('@Url.Action("GetChiTiet","CSVC")', { id: id }, function(res) {
                     if (res.ok) {
@@ -201,57 +209,38 @@
                         res.data.forEach(function(item, i) {
                             var tt = item.SoLuong * item.GiaDuKien;
                             tong += tt;
-                            html += '<tr><td>' + (i+1) + '</td><td><b>' + item.TenThietBiDeXuat + '</b></td>'
-                                  + '<td>' + item.SoLuong + '</td><td>' + (item.DonViTinh||'') + '</td>'
-                                  + '<td>' + Number(item.GiaDuKien).toLocaleString('vi-VN') + ' đ</td>'
-                                  + '<td><b>' + Number(tt).toLocaleString('vi-VN') + ' đ</b></td></tr>';
+                            html += '<tr><td>'+(i+1)+'</td><td><b>'+item.TenThietBiDeXuat+'</b></td><td>'+item.SoLuong+'</td><td>'+(item.DonViTinh||'')+'</td><td>'+Number(item.GiaDuKien).toLocaleString('vi-VN')+' đ</td><td><b>'+Number(tt).toLocaleString('vi-VN')+' đ</b></td></tr>';
                         });
-                        box.querySelector('.detail-body').innerHTML = html;
+                        box.querySelector('.detail-body').innerHTML = html || '<tr><td colspan="6" style="text-align:center;color:#aaa">Không có dữ liệu</td></tr>';
                         box.querySelector('.detail-total').textContent = Number(tong).toLocaleString('vi-VN') + ' đ';
                         box.dataset.loaded = '1';
                     }
                 });
             }
-            box.style.display = '';
-            btn.textContent = '🔼 Ẩn chi tiết';
-        } else {
-            box.style.display = 'none';
-            btn.textContent = '📄 Xem chi tiết';
-        }
+            box.style.display = ''; btn.textContent = '🔼 Ẩn chi tiết';
+        } else { box.style.display = 'none'; btn.textContent = '📄 Xem chi tiết'; }
     }
-
     function openModal(id, action) {
-        _currentId = id; _currentAction = action;
-        var isApprove = action === 'duyet';
-        document.getElementById('modalTitle').textContent = isApprove ? '✅ Xác nhận đề xuất' : '❌ Từ chối đề xuất';
-        document.getElementById('modalBody').textContent  = isApprove
-            ? 'Xác nhận đề xuất ' + id + ' và chuyển lên Phòng KHTC duyệt ngân sách?'
-            : 'Vui lòng nhập lý do từ chối để thông báo cho khoa.';
-        document.getElementById('modalLabel').textContent = isApprove ? 'Ghi chú (tùy chọn)' : 'Lý do từ chối *';
+        _id = id; _act = action;
+        var ok = action === 'duyet';
+        document.getElementById('modalTitle').textContent = ok ? '✅ Xác nhận đề xuất' : '❌ Từ chối đề xuất';
+        document.getElementById('modalBody').textContent  = ok ? 'Xác nhận đề xuất '+id+' và chuyển lên Phòng KHTC?' : 'Nhập lý do từ chối để thông báo cho khoa.';
+        document.getElementById('modalLabel').textContent = ok ? 'Ghi chú (tùy chọn)' : 'Lý do từ chối *';
         document.getElementById('modalNote').value = '';
         var btn = document.getElementById('modalConfirm');
-        btn.textContent = isApprove ? '✅ Xác nhận' : '❌ Từ chối';
-        btn.className = isApprove ? 'btn-ok' : 'btn-ok red';
+        btn.textContent = ok ? '✅ Xác nhận' : '❌ Từ chối';
+        btn.className = ok ? 'btn-ok' : 'btn-ok red';
         document.getElementById('actionModal').classList.add('active');
     }
-
     function closeModal() { document.getElementById('actionModal').classList.remove('active'); }
-
     function submitAction() {
         var note = document.getElementById('modalNote').value.trim();
-        if (_currentAction === 'tuchoi' && !note) { alert('Vui lòng nhập lý do từ chối.'); return; }
+        if (_act === 'tuchoi' && !note) { alert('Vui lòng nhập lý do từ chối.'); return; }
         closeModal();
-        $.post('@Url.Action("XuLyDeXuat","CSVC")', { id: _currentId, action: _currentAction, ghiChu: note }, function(res) {
-            if (res.ok) {
-                alert(_currentAction === 'duyet' ? '✅ Đã xác nhận và chuyển lên KHTC!' : '❌ Đã từ chối đề xuất!');
-                location.reload();
-            } else {
-                alert('⚠️ Lỗi: ' + (res.msg || 'Không xác định'));
-            }
+        $.post('@Url.Action("XuLyDeXuat","CSVC")', { id: _id, action: _act, ghiChu: note }, function(res) {
+            if (res.ok) { alert(_act==='duyet' ? '✅ Đã xác nhận và chuyển lên KHTC!' : '❌ Đã từ chối!'); location.reload(); }
+            else { alert('⚠️ Lỗi: ' + (res.msg||'Không xác định')); }
         });
     }
-
-    document.getElementById('actionModal').addEventListener('click', function(e) {
-        if (e.target === this) closeModal();
-    });
+    document.getElementById('actionModal').addEventListener('click', function(e) { if (e.target===this) closeModal(); });
 </script>
