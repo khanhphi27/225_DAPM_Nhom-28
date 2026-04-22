@@ -634,6 +634,18 @@ namespace QLTB.Controllers
                     {
                         using (var cmd = new SqlCommand(@"UPDATE DEXUAT_MUASAM SET TrangThai=@TT, LyDoTuChoi=CASE WHEN @Act='tuchoi' THEN @GC ELSE LyDoTuChoi END, NgayDuyetCuoi=GETDATE() WHERE ID_DeXuat=@Id", conn, tran))
                         { cmd.Parameters.AddWithValue("@TT", trangThaiMoi); cmd.Parameters.AddWithValue("@Act", action ?? ""); cmd.Parameters.AddWithValue("@GC", (object)ghiChu ?? DBNull.Value); cmd.Parameters.AddWithValue("@Id", id); cmd.ExecuteNonQuery(); }
+
+                        // Ghi lịch sử duyệt
+                        using (var cmd = new SqlCommand(@"INSERT INTO LICHSUDUYET (ID_LichSu,DeXuatNo,CapDuyet,NguoiDuyetNo,ThoiGianDuyet,TrangThaiSauDuyet,GhiChu)
+                            VALUES (LEFT(REPLACE(NEWID(),'-',''),10),@DX,N'CSVC',@ND,GETDATE(),@TT,@GC)", conn, tran))
+                        {
+                            cmd.Parameters.AddWithValue("@DX", id);
+                            cmd.Parameters.AddWithValue("@ND", Session["UserId"]?.ToString() ?? "");
+                            cmd.Parameters.AddWithValue("@TT", trangThaiMoi);
+                            cmd.Parameters.AddWithValue("@GC", (object)ghiChu ?? DBNull.Value);
+                            cmd.ExecuteNonQuery();
+                        }
+
                         tran.Commit();
                     }
                 }
