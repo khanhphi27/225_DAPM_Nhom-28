@@ -1,0 +1,222 @@
+@model QLTB.Models.TaoPhieuKiemKeViewModel
+@using System.Linq
+@{
+    ViewBag.Title = "Tạo Phiếu Kiểm Kê - Phòng CSVC";
+}
+
+<style>
+    body, td, th, select, input, button, a { font-size: 15px; }
+
+    .page-hdr h2 { color:#1a237e; font-weight:700; font-size:24px; margin:0; }
+    .page-hdr p  { color:#666; font-size:14px; margin:3px 0 0; }
+
+    .info-card {
+        background:#e8eaf6; border-radius:12px; padding:18px 24px;
+        margin-bottom:20px; display:flex; gap:32px; flex-wrap:wrap; align-items:center;
+    }
+    .info-item { font-size:14px; color:#333; }
+    .info-item strong { color:#1a237e; }
+
+    .alert-info  { background:#e3f2fd; border:1px solid #90caf9; border-radius:10px; padding:14px 18px; color:#1565c0; font-size:14px; margin-bottom:16px; }
+    .alert-warn  { background:#fff8e1; border:1px solid #ffe082; border-radius:10px; padding:14px 18px; color:#e65100; font-size:14px; margin-bottom:16px; }
+    .alert-error { background:#fce4ec; border:1px solid #ef9a9a; border-radius:10px; padding:14px 18px; color:#c62828; font-size:14px; margin-bottom:16px; }
+
+    .card-table { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); overflow:hidden; margin-bottom:20px; }
+    .card-table table { width:100%; border-collapse:collapse; }
+    .card-table thead th {
+        background:#e8eaf6; color:#1a237e; font-size:13px; font-weight:700;
+        text-transform:uppercase; letter-spacing:.4px; padding:14px 16px; border:none; white-space:nowrap;
+    }
+    .card-table tbody td { padding:12px 16px; font-size:14px; color:#333; border-bottom:1px solid #f0f2f8; vertical-align:middle; }
+    .card-table tbody tr:last-child td { border-bottom:none; }
+    .card-table tbody tr:hover td { background:#f5f6ff; }
+
+    .group-header td { background:#f0f2ff; padding:10px 16px; font-size:13px; font-weight:700; color:#1a237e; }
+
+    .qty-input {
+        width:90px; padding:7px 10px; border:1px solid #d0d5e8;
+        border-radius:6px; font-size:15px; text-align:center; font-weight:600;
+    }
+    .qty-input:focus { border-color:#3949ab; outline:none; box-shadow:0 0 0 2px #c5cae9; }
+
+    .sl-he-thong-cell { text-align:center; font-size:15px; font-weight:700; color:#1a237e; }
+
+    .tt-select {
+        padding:7px 12px; border:1px solid #d0d5e8; border-radius:6px;
+        font-size:14px; background:#fff; min-width:150px;
+    }
+    .tt-select:focus { border-color:#3949ab; outline:none; }
+
+    .note-input {
+        width:100%; padding:7px 10px; border:1px solid #d0d5e8;
+        border-radius:6px; font-size:14px; background:#fff;
+    }
+    .note-input:focus { border-color:#3949ab; outline:none; }
+
+    .tb-status { display:inline-block; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600; }
+    .tb-status.hoatdong { background:#e8f5e9; color:#2e7d32; }
+    .tb-status.baotri   { background:#fff3e0; color:#e65100; }
+    .tb-status.hong     { background:#fce4ec; color:#c62828; }
+    .tb-status.other    { background:#f5f5f5; color:#555; }
+
+    .action-bar {
+        display:flex; justify-content:space-between; align-items:center;
+        background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07);
+        padding:18px 24px;
+    }
+    .btn-primary   { background:#1a237e; color:#fff; border:none; border-radius:8px; padding:11px 26px; font-size:15px; font-weight:600; cursor:pointer; }
+    .btn-primary:hover { background:#283593; }
+    .btn-secondary { background:#e8eaf6; color:#1a237e; border:none; border-radius:8px; padding:11px 22px; font-size:14px; font-weight:600; cursor:pointer; text-decoration:none; display:inline-block; }
+    .btn-secondary:hover { background:#c5cae9; text-decoration:none; color:#1a237e; }
+
+    .counter-badge { background:#1a237e; color:#fff; border-radius:20px; padding:3px 12px; font-size:13px; font-weight:700; margin-left:8px; }
+</style>
+
+<div class="page-hdr" style="margin-bottom:22px">
+    <h2>📝 Tạo Phiếu Kiểm Kê Tài Sản</h2>
+    <p>Nhập số lượng và tình trạng thực tế cho các thiết bị chưa được kiểm kê</p>
+</div>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert-error">⚠️ @ViewBag.Error</div>
+}
+
+<div class="info-card">
+    <div class="info-item">📋 Mã phiếu: <strong>@Model.ID_KiemKe</strong></div>
+    <div class="info-item">📅 Ngày tạo: <strong>@Model.NgayKiemKe.ToString("dd/MM/yyyy HH:mm")</strong></div>
+    <div class="info-item">👤 Người thực hiện: <strong>@Model.NguoiTao</strong></div>
+    <div class="info-item">🔢 Thiết bị chưa kiểm: <strong style="color:#fb8c00">@Model.DanhSachChuaKiem.Count</strong></div>
+</div>
+
+@if (!Model.DanhSachChuaKiem.Any())
+{
+    <div class="alert-info">✅ Tất cả thiết bị đã được kiểm kê. Không có thiết bị nào cần tạo phiếu mới.</div>
+    <a href="@Url.Action("KiemKeTaiSan","CSVC")" class="btn-secondary">← Quay lại</a>
+}
+else
+{
+    <div class="alert-warn">
+        ⚠️ Chỉ những thiết bị bạn <strong>nhập số lượng thực tế</strong> mới được lưu vào phiếu kiểm kê.
+        Thiết bị không nhập gì sẽ vẫn ở trạng thái <em>chưa kiểm kê</em>.
+    </div>
+
+    using (Html.BeginForm("HoanTatKiemKe", "CSVC", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="card-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Mã TB</th>
+                        <th>Tên thiết bị</th>
+                        <th>Danh mục</th>
+                        <th>Đơn vị quản lý</th>
+                        <th>Trạng thái</th>
+                        <th>SL Sổ sách</th>
+                        <th>SL Thực tế <span style="color:#e53935">*</span></th>
+                        <th>Tình trạng thực tế</th>
+                        <th>Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        string currentKhoa = null;
+                        int stt = 0;
+                    }
+                    @for (int i = 0; i < Model.DanhSachChuaKiem.Count; i++)
+                    {
+                        var tb = Model.DanhSachChuaKiem[i];
+
+                        if (tb.TenKhoa != currentKhoa)
+                        {
+                            currentKhoa = tb.TenKhoa;
+                            int soTBKhoa = Model.DanhSachChuaKiem.Count(x => x.TenKhoa == currentKhoa);
+                            <tr class="group-header">
+                                <td colspan="10">🏢 @currentKhoa — @soTBKhoa thiết bị chưa kiểm</td>
+                            </tr>
+                        }
+                        stt++;
+                        string trangThaiClass = tb.TrangThaiTB == "Hoạt động" ? "hoatdong"
+                                              : tb.TrangThaiTB == "Bảo trì"   ? "baotri"
+                                              : tb.TrangThaiTB == "Hỏng"      ? "hong" : "other";
+
+                        @Html.Hidden("DanhSachChuaKiem[" + i + "].ID_ThietBi",     tb.ID_ThietBi)
+                        @Html.Hidden("DanhSachChuaKiem[" + i + "].TenTB",          tb.TenTB)
+                        @Html.Hidden("DanhSachChuaKiem[" + i + "].TrangThaiTB",    tb.TrangThaiTB)
+                        @Html.Hidden("DanhSachChuaKiem[" + i + "].TenKhoa",        tb.TenKhoa)
+                        @Html.Hidden("DanhSachChuaKiem[" + i + "].TenDanhMuc",     tb.TenDanhMuc)
+                        @Html.Hidden("DanhSachChuaKiem[" + i + "].SoLuongHeThong", tb.SoLuongHeThong)
+
+                        <tr>
+                            <td style="color:#aaa;font-size:13px">@stt</td>
+                            <td><strong style="color:#1a237e">@tb.ID_ThietBi</strong></td>
+                            <td>@tb.TenTB</td>
+                            <td style="color:#666">@tb.TenDanhMuc</td>
+                            <td>@tb.TenKhoa</td>
+                            <td><span class="tb-status @trangThaiClass">@tb.TrangThaiTB</span></td>
+                            <td class="sl-he-thong-cell">@tb.SoLuongHeThong</td>
+                            <td>
+                                <input type="number" min="0"
+                                       name="DanhSachChuaKiem[@i].SoLuongThucTe"
+                                       class="qty-input sl-input"
+                                       placeholder="Nhập SL" />
+                            </td>
+                            <td>
+                                <select name="DanhSachChuaKiem[@i].TinhTrangThucTe" class="tt-select">
+                                    <option value="Bình thường">Bình thường</option>
+                                    <option value="Cần bảo trì">Cần bảo trì</option>
+                                    <option value="Hỏng">Hỏng</option>
+                                    <option value="Mất">Mất</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text"
+                                       name="DanhSachChuaKiem[@i].GhiChu"
+                                       class="note-input"
+                                       placeholder="Ghi chú (tuỳ chọn)" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="action-bar">
+            <div style="font-size:14px;color:#555">
+                Đã nhập:
+                <span id="daNhapCount" class="counter-badge">0</span>
+                / @Model.DanhSachChuaKiem.Count thiết bị
+            </div>
+            <div style="display:flex;gap:12px;align-items:center">
+                <a href="@Url.Action("KiemKeTaiSan","CSVC")" class="btn-secondary">← Hủy bỏ</a>
+                <button type="submit" class="btn-primary" id="btnHoanTat">✅ Hoàn tất kiểm kê</button>
+            </div>
+        </div>
+    }
+}
+
+<script>
+    document.querySelectorAll('.sl-input').forEach(function (inp) {
+        inp.addEventListener('input', capNhatDem);
+    });
+
+    function capNhatDem() {
+        var count = 0;
+        document.querySelectorAll('.sl-input').forEach(function (inp) {
+            if (inp.value !== '') count++;
+        });
+        document.getElementById('daNhapCount').textContent = count;
+    }
+
+    document.getElementById('btnHoanTat')?.addEventListener('click', function (e) {
+        var coNhap = false;
+        document.querySelectorAll('.sl-input').forEach(function (inp) { if (inp.value !== '') coNhap = true; });
+        if (!coNhap) {
+            e.preventDefault();
+            alert('Vui lòng nhập số lượng thực tế cho ít nhất 1 thiết bị trước khi hoàn tất.');
+        }
+    });
+</script>

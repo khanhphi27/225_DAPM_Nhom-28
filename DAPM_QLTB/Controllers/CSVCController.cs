@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Web.Mvc;
 using QLTB.Models;
 
@@ -55,7 +56,181 @@ namespace QLTB.Controllers
             }
             return View(list);
         }
-        public ActionResult KiemKeTaiSan() { var r = CheckAuth(); return r ?? View(); }
+        // ══ KIỂM KÊ TÀI SẢN ════════════════════════════════════
+        public ActionResult KiemKeTaiSan()
+        {
+            var r = CheckAuth(); if (r != null) return r;
+            var vm = new KiemKeTaiSanViewModel();
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    // Lấy tất cả thiết bị kèm kết quả kiểm kê gần nhất
+                    const string sql = @"
+                        SELECT tb.ID_ThietBi, tb.TenTB, tb.TrangThaiTB,
+                               ISNULL(kp.TenPhongBanKhoa, N'Chưa phân khoa') AS TenKhoa,
+                               ISNULL(dm.TenDanhMuc, '') AS TenDanhMuc,
+                               ISNULL(ct.SoLuongHeThong, 1) AS SoLuongHeThong,
+                               ct.SoLuongThucTe, ct.TinhTrangThucTe, ct.GhiChu,
+                               kk.NgayKiemKe
+                        FROM THIETBI tb
+                        LEFT JOIN KHOA_PHONGBAN kp ON kp.ID_KhoaPhongBan = tb.KhoaPhongBan
+                        LEFT JOIN DANHMUC dm ON dm.ID_DanhMuc = tb.DanhMucNo
+                        LEFT JOIN (
+                            SELECT ct2.ThietBiNo, ct2.SoLuongHeThong, ct2.SoLuongThucTe, ct2.TinhTrangThucTe, ct2.GhiChu, ct2.KiemKeNo,
+                                   ROW_NUMBER() OVER (PARTITION BY ct2.ThietBiNo ORDER BY kk2.NgayKiemKe DESC) AS rn
+                            FROM CHITIET_KIEMKE ct2
+                            JOIN KIEMKE kk2 ON kk2.ID_KiemKe = ct2.KiemKeNo
+                        ) ct ON ct.ThietBiNo = tb.ID_ThietBi AND ct.rn = 1
+                        LEFT JOIN KIEMKE kk ON kk.ID_KiemKe = ct.KiemKeNo
+                        ORDER BY TenKhoa, tb.TenTB";
+
+                    using (var cmd = new SqlCommand(sql, conn))
+                    using (var rd = cmd.ExecuteReader())
+                        while (rd.Read())
+                            vm.DanhSachThietBi.Add(new ThietBiKiemKeRow
+                            {
+                                ID_ThietBi   = rd["ID_ThietBi"].ToString(),
+                                TenTB        = rd["TenTB"].ToString(),
+                                TrangThaiTB  = rd["TrangThaiTB"]?.ToString() ?? "",
+                                TenKhoa      = rd["TenKhoa"].ToString(),
+                                TenDanhMuc   = rd["TenDanhMuc"].ToString(),
+                                SoLuongHeThong  = Convert.ToInt32(rd["SoLuongHeThong"]),
+                                SoLuongThucTe   = rd["SoLuongThucTe"] == DBNull.Value ? (int?)null : Convert.ToInt32(rd["SoLuongThucTe"]),
+                                TinhTrangThucTe = rd["TinhTrangThucTe"]?.ToString(),
+                                GhiChu          = rd["GhiChu"]?.ToString(),
+                                NgayKiemKe      = rd["NgayKiemKe"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(rd["NgayKiemKe"])
+                            });
+
+                    vm.TongThietBi   = vm.DanhSachThietBi.Count;
+                    vm.DaKiemKe      = vm.DanhSachThietBi.Count(x => x.NgayKiemKe.HasValue);
+                    vm.ChuaKiemKe    = vm.TongThietBi - vm.DaKiemKe;
+                }
+            }
+            catch (Exception ex) { ViewBag.Error = ex.Message; }
+            return View(vm);
+        }
+
+        public ActionResult TaoPhieuKiemKe()
+        {
+            var r = CheckAuth(); if (r != null) return r;
+            var vm = new TaoPhieuKiemKeViewModel();
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    // Chỉ lấy thiết bị CHƯA có trong bất kỳ phiếu kiểm kê nào
+                    const string sql = @"
+                        SELECT tb.ID_ThietBi, tb.TenTB, tb.TrangThaiTB,
+                               ISNULL(kp.TenPhongBanKhoa, N'Chưa phân khoa') AS TenKhoa,
+                               ISNULL(dm.TenDanhMuc, '') AS TenDanhMuc
+                        FROM THIETBI tb
+                        LEFT JOIN KHOA_PHONGBAN kp ON kp.ID_KhoaPhongBan = tb.KhoaPhongBan
+                        LEFT JOIN DANHMUC dm ON dm.ID_DanhMuc = tb.DanhMucNo
+                        WHERE NOT EXISTS (
+                            SELECT 1 FROM CHITIET_KIEMKE ct WHERE ct.ThietBiNo = tb.ID_ThietBi
+                        )
+                        ORDER BY TenKhoa, tb.TenTB";
+
+                    using (var cmd = new SqlCommand(sql, conn))
+                    using (var rd = cmd.ExecuteReader())
+                        while (rd.Read())
+                            vm.DanhSachChuaKiem.Add(new ItemTaoKiemKe
+                            {
+                                ID_ThietBi       = rd["ID_ThietBi"].ToString(),
+                                TenTB            = rd["TenTB"].ToString(),
+                                TrangThaiTB      = rd["TrangThaiTB"]?.ToString() ?? "",
+                                TenKhoa          = rd["TenKhoa"].ToString(),
+                                TenDanhMuc       = rd["TenDanhMuc"].ToString(),
+                                SoLuongHeThong   = 1  // mỗi bản ghi THIETBI = 1 thiết bị vật lý
+                            });
+
+                    // Sinh ID phiếu
+                    int soPhieu = 0;
+                    using (var cmd = new SqlCommand("SELECT COUNT(*) FROM KIEMKE", conn))
+                        soPhieu = Convert.ToInt32(cmd.ExecuteScalar()) + 1;
+                    vm.ID_KiemKe  = "KK" + soPhieu.ToString("D8");
+                    vm.NgayKiemKe = DateTime.Now;
+                    vm.NguoiTao   = Session["HoTen"]?.ToString() ?? Session["UserId"]?.ToString() ?? "csvc";
+                }
+            }
+            catch (Exception ex) { ViewBag.Error = ex.Message; }
+            return View(vm);
+        }
+
+        [HttpPost]
+        public ActionResult HoanTatKiemKe(TaoPhieuKiemKeViewModel model)
+        {
+            var r = CheckAuth(); if (r != null) return r;
+            try
+            {
+                // Chỉ lấy các dòng người dùng có nhập SoLuongThucTe
+                var coNhap = model.DanhSachChuaKiem?
+                    .Where(x => x.SoLuongThucTe.HasValue)
+                    .ToList();
+
+                if (coNhap == null || coNhap.Count == 0)
+                    return RedirectToAction("KiemKeTaiSan");
+
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    using (var tran = conn.BeginTransaction())
+                    {
+                        // Sinh ID phiếu an toàn
+                        int soPhieu = 0;
+                        using (var cmd = new SqlCommand("SELECT COUNT(*) FROM KIEMKE", conn, tran))
+                            soPhieu = Convert.ToInt32(cmd.ExecuteScalar()) + 1;
+                        string idKiemKe = "KK" + soPhieu.ToString("D8");
+
+                        // Insert phiếu kiểm kê
+                        using (var cmd = new SqlCommand(@"
+                            INSERT INTO KIEMKE (ID_KiemKe, NguoiThucHienNo, NgayKiemKe, TrangThai)
+                            VALUES (@id, @nguoi, GETDATE(), N'Hoàn thành')", conn, tran))
+                        {
+                            cmd.Parameters.AddWithValue("@id", idKiemKe);
+                            cmd.Parameters.AddWithValue("@nguoi", Session["UserId"]?.ToString() ?? "csvc");
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        // Insert chi tiết — chỉ những dòng có nhập
+                        int idx = 0;
+                        int totalCT = 0;
+                        using (var cmd2 = new SqlCommand("SELECT COUNT(*) FROM CHITIET_KIEMKE", conn, tran))
+                            totalCT = Convert.ToInt32(cmd2.ExecuteScalar());
+
+                        foreach (var item in coNhap)
+                        {
+                            idx++;
+                            string idCT = "CT" + (totalCT + idx).ToString("D8");
+                            using (var cmd = new SqlCommand(@"
+                                INSERT INTO CHITIET_KIEMKE
+                                    (ID_ChiTietKK, KiemKeNo, ThietBiNo, SoLuongHeThong, SoLuongThucTe, TinhTrangThucTe, GhiChu)
+                                VALUES (@id, @kk, @tb, @slht, @sl, @tt, @gc)", conn, tran))
+                            {
+                                cmd.Parameters.AddWithValue("@id", idCT);
+                                cmd.Parameters.AddWithValue("@kk", idKiemKe);
+                                cmd.Parameters.AddWithValue("@tb", item.ID_ThietBi);
+                                cmd.Parameters.AddWithValue("@slht", (object)item.SoLuongHeThong);
+                                cmd.Parameters.AddWithValue("@sl", item.SoLuongThucTe.Value);
+                                cmd.Parameters.AddWithValue("@tt", (object)(item.TinhTrangThucTe ?? "Bình thường") ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@gc", (object)item.GhiChu ?? DBNull.Value);
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                        tran.Commit();
+                    }
+                }
+                return RedirectToAction("KiemKeTaiSan");
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = ex.Message;
+                return Content("Lỗi: " + ex.Message);
+            }
+        }
 
         // ══ LẬP KẾ HOẠCH BẢO TRÌ ══════════════════════════════
         public ActionResult LapKeHoachBaoTri()
