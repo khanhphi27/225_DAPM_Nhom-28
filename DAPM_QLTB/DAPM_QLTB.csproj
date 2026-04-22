@@ -259,6 +259,7 @@
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
     <Content Include="Content\login.css" />
+    <Content Include="Content\Logo_Đại_học_Sư_phạm_Kỹ_thuật_Đà_Nẵng.png" />
     <Content Include="Content\notifications.css" />
     <Content Include="Content\profile.css" />
     <Content Include="favicon.ico" />

@@ -81,7 +81,10 @@
     .alert-ok  { background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7; border-radius:8px; padding:12px 16px; font-size:13px; font-weight:600; margin-bottom:20px; }
     .alert-err { background:#fff3e0; color:#e65100; border:1px solid #ffcc80; border-radius:8px; padding:12px 16px; font-size:13px; margin-bottom:20px; }
 
-    .tong-gia { background:#f5f6ff; border-radius:8px; padding:10px 16px; font-size:13px; font-weight:700; color:#1a237e; text-align:right; margin-bottom:16px; }
+    .btn-edit  { background:#e3f2fd; color:#1565c0; border:none; border-radius:7px; padding:5px 12px; font-size:11px; font-weight:600; cursor:pointer; }
+    .btn-edit:hover { background:#bbdefb; }
+    .edit-form-card { background:#fff8e1; border:2px solid #fb8c00; border-radius:14px; padding:24px 28px; margin-bottom:28px; }
+    .edit-form-card .section-title { color:#e65100; border-bottom-color:#ffe0b2; }
 </style>
 
 <div class="page-header mb-4">
@@ -101,6 +104,51 @@
 {
     <div class="alert-err">⚠️ @ViewBag.Error</div>
 }
+
+<!-- Form chỉnh sửa (ẩn, hiện khi click Chỉnh sửa) -->
+<div class="edit-form-card" id="editFormCard" style="display:none;">
+    <div class="section-title">✏️ Chỉnh Sửa Phiếu Đề Xuất — <span id="editIdLabel"></span></div>
+    <div style="background:#fff3e0;border-radius:8px;padding:10px 14px;font-size:12px;color:#e65100;margin-bottom:16px;">
+        ⚠️ Khi gửi lại, phiếu sẽ được reset về <b>Chờ CSVC duyệt</b> và các bên sẽ duyệt lại từ đầu.
+    </div>
+    @using (Html.BeginForm("ChinhSuaDeXuat", "TruongKhoa", FormMethod.Post, new { id = "formChinhSua" }))
+    {
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="idDX" id="editIdInput" />
+
+        <table class="tb-table" id="tbEditThietBi">
+            <thead>
+                <tr>
+                    <th style="width:35%">Tên thiết bị *</th>
+                    <th style="width:12%">Số lượng *</th>
+                    <th style="width:12%">Đơn vị tính</th>
+                    <th style="width:20%">Giá dự kiến (VNĐ) *</th>
+                    <th style="width:15%">Thành tiền</th>
+                    <th style="width:6%"></th>
+                </tr>
+            </thead>
+            <tbody id="tbEditBody"></tbody>
+        </table>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <button type="button" class="btn-add-row" onclick="themDongEdit()">＋ Thêm thiết bị</button>
+            <div class="tong-gia" style="margin:0;">Tổng dự kiến: <span id="tongGiaEdit">0</span> đ</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Lý do / Mô tả chung</label>
+            <textarea name="mota" id="editMota" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn-cancel-edit" onclick="dongFormEdit()"
+                style="background:#f5f5f5;color:#555;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;">
+                Hủy
+            </button>
+            <button type="submit" class="btn-submit" style="background:#fb8c00;">📤 Gửi lại đề xuất</button>
+        </div>
+    }
+</div>
 
 <!-- Form tạo mới -->
 <div class="form-card">
@@ -233,6 +281,19 @@
                     </div>
                     <span class="badge-status @badgeClass">@tt</span>
                 </div>
+                @{
+                    // Không cho chỉnh sửa khi đã duyệt hoàn tất
+                    bool daHoanTat = tt == "Đã duyệt";
+                }
+                @if (!daHoanTat)
+                {
+                    string moTaEscape = moTa.Replace("'", "\\'").Replace("\n", "\\n");
+                    <div style="padding:8px 20px 0;text-align:right;">
+                        <button class="btn-edit" onclick="moFormEdit('@first["ID_DeXuat"]', '@moTaEscape', this)">
+                            ✏️ Chỉnh sửa & Gửi lại
+                        </button>
+                    </div>
+                }
 
                 <!-- Timeline -->
                 <div class="timeline">
@@ -352,4 +413,73 @@
 
     // Bind sự kiện cho dòng đầu tiên
     document.querySelectorAll('#tbBody .tb-row').forEach(bindRowEvents);
+
+    // ===== CHỈNH SỬA =====
+    function moFormEdit(id, mota, btn) {
+        document.getElementById('editIdInput').value = id;
+        document.getElementById('editIdLabel').textContent = id;
+        document.getElementById('editMota').value = mota;
+        document.getElementById('tbEditBody').innerHTML = '';
+
+        // Load chi tiết thiết bị hiện tại qua Ajax
+        $.get('@Url.Action("GetChiTietDeXuat","TruongKhoa")', { id: id }, function(res) {
+            if (res.ok) {
+                res.data.forEach(function(item) {
+                    themDongEditData(item.Ten, item.SoLuong, item.DVT, item.Gia);
+                });
+                tinhTongEdit();
+            }
+        });
+
+        document.getElementById('editFormCard').style.display = '';
+        document.getElementById('editFormCard').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function dongFormEdit() {
+        document.getElementById('editFormCard').style.display = 'none';
+    }
+
+    function themDongEdit() {
+        themDongEditData('', 1, '', 0);
+    }
+
+    function themDongEditData(ten, sl, dvt, gia) {
+        var tbody = document.getElementById('tbEditBody');
+        var row = document.createElement('tr');
+        row.className = 'tb-row';
+        row.innerHTML = `
+            <td><input type="text"   name="tenTB[]"   class="form-control" required value="${ten}" placeholder="Tên thiết bị" /></td>
+            <td><input type="number" name="soluong[]" class="form-control sl-input" required min="1" value="${sl}" /></td>
+            <td><input type="text"   name="donvi[]"   class="form-control" value="${dvt}" placeholder="Cái, bộ..." /></td>
+            <td><input type="number" name="gia[]"     class="form-control gia-input" required min="0" value="${gia}" /></td>
+            <td class="thanh-tien" style="font-weight:600;color:#1a237e;font-size:13px;">0 đ</td>
+            <td><button type="button" class="btn-del-row" onclick="xoaDongEdit(this)">✕</button></td>`;
+        tbody.appendChild(row);
+        bindEditRowEvents(row);
+        tinhTongEdit();
+    }
+
+    function xoaDongEdit(btn) {
+        var rows = document.querySelectorAll('#tbEditBody .tb-row');
+        if (rows.length <= 1) { alert('Cần ít nhất 1 thiết bị.'); return; }
+        btn.closest('tr').remove();
+        tinhTongEdit();
+    }
+
+    function tinhTongEdit() {
+        var tong = 0;
+        document.querySelectorAll('#tbEditBody .tb-row').forEach(function(row) {
+            var sl  = parseFloat(row.querySelector('.sl-input').value)  || 0;
+            var gia = parseFloat(row.querySelector('.gia-input').value) || 0;
+            var tt  = sl * gia;
+            tong += tt;
+            row.querySelector('.thanh-tien').textContent = tt.toLocaleString('vi-VN') + ' đ';
+        });
+        document.getElementById('tongGiaEdit').textContent = tong.toLocaleString('vi-VN');
+    }
+
+    function bindEditRowEvents(row) {
+        row.querySelector('.sl-input').addEventListener('input', tinhTongEdit);
+        row.querySelector('.gia-input').addEventListener('input', tinhTongEdit);
+    }
 </script>
