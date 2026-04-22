@@ -247,6 +247,169 @@ namespace QLTB.Controllers
         public ActionResult GuiDeXuat() => RedirectToAction("DeXuatMuaSam");
         public ActionResult XemDeXuat() => RedirectToAction("DeXuatMuaSam");
 
+        // Ajax: lấy chi tiết để điền vào form chỉnh sửa
+        [HttpGet]
+        public JsonResult GetChiTietDeXuat(string id)
+        {
+            try
+            {
+                using (var conn = new SqlConnection(connStr))
+                {
+                    conn.Open();
+                    const string sql = "SELECT TenThietBiDeXuat, SoLuong, GiaDuKien, DonViTinh FROM CHITIET_DEXUAT WHERE DeXuatNo=@Id";
+                    var list = new System.Collections.Generic.List<object>();
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Id", id);
+                        using (var r = cmd.ExecuteReader())
+                            while (r.Read())
+                                list.Add(new {
+                                    Ten = r["TenThietBiDeXuat"].ToString(),
+                                    SoLuong = r["SoLuong"] == DBNull.Value ? 1 : Convert.ToInt32(r["SoLuong"]),
+                                    Gia     = r["GiaDuKien"] == DBNull.Value ? 0m : Convert.ToDecimal(r["GiaDuKien"]),
+                                    DVT     = r["DonViTinh"] == DBNull.Value ? "" : r["DonViTinh"].ToString()
+                                });
+                    }
+                    return Json(new { ok = true, data = list }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
+        }
+
+        // POST: Chỉnh sửa và gửi lại — reset về Chờ CSVC duyệt
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ChinhSuaDeXuat(string idDX, string[] tenTB, int[] soluong, decimal[] gia, string[] donvi, string mota)
+        {
+            if (string.IsNullOrEmpty(idDX) || tenTB == null || tenTB.Length == 0)
+            {
+                TempData["Error"] = "Dữ liệu không hợp lệ.";
+                return RedirectToAction("DeXuatMuaSam");
+            }
+
+            using (var conn = new SqlConnection(connStr))
+            {
+                conn.Open();
+                var tran = conn.BeginTransaction();
+                try
+                {
+                    string user = Session["UserId"]?.ToString() ?? "";
+
+                    // Kiểm tra phiếu thuộc về user này và đang ở trạng thái cho phép chỉnh sửa
+                    string trangThaiHienTai = null;
+                    using (var cmd = new SqlCommand(
+                        "SELECT TrangThai FROM DEXUAT_MUASAM WHERE ID_DeXuat=@Id AND NguoiDeXuatNo=@User", conn, tran))
+                    {
+                        cmd.Parameters.AddWithValue("@Id",   idDX);
+                        cmd.Parameters.AddWithValue("@User", user);
+                        var val = cmd.ExecuteScalar();
+                        if (val != null) trangThaiHienTai = val.ToString();
+                    }
+
+                    if (trangThaiHienTai == null)
+                    {
+                        TempData["Error"] = "Không tìm thấy phiếu hoặc bạn không có quyền chỉnh sửa.";
+                        tran.Rollback();
+                        return RedirectToAction("DeXuatMuaSam");
+                    }
+
+                    // Không cho chỉnh sửa khi đã duyệt hoàn tất
+                    if (trangThaiHienTai == "Đã duyệt")
+                    {
+                        TempData["Error"] = "Phiếu đã được BGH phê duyệt hoàn tất, không thể chỉnh sửa.";
+                        tran.Rollback();
+                        return RedirectToAction("DeXuatMuaSam");
+                    }
+
+                    // Xác định thông báo cảnh báo cho user
+                    string resetMsg;
+                    if (trangThaiHienTai == "Chờ CSVC duyệt" || trangThaiHienTai.Contains("Từ chối"))
+                    {
+                        resetMsg = "Đã cập nhật và gửi lại! Đang chờ Phòng CSVC xét duyệt.";
+                    }
+                    else if (trangThaiHienTai == "Chờ KHTC duyệt")
+                    {
+                        resetMsg = "Đã cập nhật! Phiếu reset về Chờ CSVC duyệt — CSVC sẽ duyệt lại từ đầu.";
+                    }
+                    else // Chờ BGH duyệt
+                    {
+                        resetMsg = "Đã cập nhật! Phiếu reset về Chờ CSVC duyệt — tất cả các bên sẽ duyệt lại từ đầu.";
+                    }
+
+                    // 1. Reset trạng thái về Chờ CSVC duyệt
+                    using (var cmd = new SqlCommand(
+                        @"UPDATE DEXUAT_MUASAM
+                          SET TrangThai     = N'Chờ CSVC duyệt',
+                              MoTa          = @MoTa,
+                              NgayDeXuat    = GETDATE(),
+                              LyDoTuChoi    = NULL,
+                              NgayDuyetCuoi = NULL,
+                              NguoiDuyetCuoiNo = NULL
+                          WHERE ID_DeXuat = @Id", conn, tran))
+                    {
+                        cmd.Parameters.AddWithValue("@MoTa", (object)mota ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Id",   idDX);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // 2. Xóa chi tiết cũ
+                    using (var cmd = new SqlCommand("DELETE FROM CHITIET_DEXUAT WHERE DeXuatNo=@Id", conn, tran))
+                    {
+                        cmd.Parameters.AddWithValue("@Id", idDX);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // 3. Insert chi tiết mới
+                    int dem = 0;
+                    for (int i = 0; i < tenTB.Length; i++)
+                    {
+                        if (string.IsNullOrWhiteSpace(tenTB[i])) continue;
+                        using (var cmd = new SqlCommand(
+                            @"INSERT INTO CHITIET_DEXUAT (ID_ChiTiet, DeXuatNo, TenThietBiDeXuat, SoLuong, GiaDuKien, DonViTinh)
+                              VALUES (LEFT(REPLACE(NEWID(),'-',''),10), @dx, @ten, @sl, @gia, @dvt)", conn, tran))
+                        {
+                            cmd.Parameters.AddWithValue("@dx",  idDX);
+                            cmd.Parameters.AddWithValue("@ten", tenTB[i]);
+                            cmd.Parameters.AddWithValue("@sl",  soluong != null && i < soluong.Length ? soluong[i] : 1);
+                            cmd.Parameters.AddWithValue("@gia", gia     != null && i < gia.Length     ? gia[i]     : 0m);
+                            cmd.Parameters.AddWithValue("@dvt", donvi   != null && i < donvi.Length && !string.IsNullOrEmpty(donvi[i])
+                                                                    ? (object)donvi[i] : DBNull.Value);
+                            cmd.ExecuteNonQuery();
+                        }
+                        dem++;
+                    }
+
+                    tran.Commit();
+                    TempData["Success"] = resetMsg;
+
+                    // Thông báo CSVC có phiếu cập nhật
+                    try
+                    {
+                        using (var conn2 = new SqlConnection(connStr))
+                        {
+                            conn2.Open();
+                            using (var cmd = new SqlCommand(
+                                @"INSERT INTO THONGBAO (ID_ThongBao,NguoiNhanNo,TieuDe,NoiDung,NgayTao,LoaiThongBao,DaDoc)
+                                  SELECT NEWID(),vn.NguoiDungNo,@TieuDe,@NoiDung,GETDATE(),N'pending',0
+                                  FROM VAITRO_NGUOIDUNG vn WHERE vn.VaiTroNo=N'VT_CSVC'", conn2))
+                            {
+                                cmd.Parameters.AddWithValue("@TieuDe",  "📋 Đề xuất mua sắm đã được cập nhật");
+                                cmd.Parameters.AddWithValue("@NoiDung", "Trưởng khoa đã chỉnh sửa và gửi lại đề xuất (Mã: " + idDX + "). Vui lòng xem xét lại.");
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                    catch { }
+                }
+                catch (Exception ex)
+                {
+                    tran.Rollback();
+                    TempData["Error"] = "Lỗi: " + ex.Message;
+                }
+            }
+            return RedirectToAction("DeXuatMuaSam");
+        }
+
         // ===================== HELPER =====================
         private void GuiThongBaoVaiTro(SqlConnection conn, SqlTransaction tran, string vaiTro, string tieuDe, string noiDung, string loai)
         {
