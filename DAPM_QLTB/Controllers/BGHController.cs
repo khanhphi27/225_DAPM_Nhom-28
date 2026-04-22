@@ -224,6 +224,21 @@ namespace QLTB.Controllers
                         }
                         catch { /* bảng THONGBAO chưa tạo thì bỏ qua */ }
 
+                        // Ghi lịch sử duyệt BGH
+                        try
+                        {
+                            using (var cmd = new SqlCommand(@"INSERT INTO LICHSUDUYET (ID_LichSu,DeXuatNo,CapDuyet,NguoiDuyetNo,ThoiGianDuyet,TrangThaiSauDuyet,GhiChu)
+                                VALUES (LEFT(REPLACE(NEWID(),'-',''),10),@DX,N'BGH',@ND,GETDATE(),@TT,@GC)", conn, tran))
+                            {
+                                cmd.Parameters.AddWithValue("@DX", id);
+                                cmd.Parameters.AddWithValue("@ND", Session["UserId"]?.ToString() ?? "");
+                                cmd.Parameters.AddWithValue("@TT", trangThai);
+                                cmd.Parameters.AddWithValue("@GC", (object)ghiChu ?? DBNull.Value);
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                        catch { }
+
                         tran.Commit();
                     }
                 }
