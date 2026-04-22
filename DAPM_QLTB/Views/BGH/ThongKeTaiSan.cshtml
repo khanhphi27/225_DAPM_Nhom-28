@@ -1,157 +1,287 @@
 @model QLTB.Models.ThongKeTaiSanViewModel
 @{
     ViewBag.Title = "Thống Kê Tài Sản";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    int maxSL = Model.TheoDanhMuc != null && Model.TheoDanhMuc.Count > 0 ? Model.TheoDanhMuc[0].SoLuong : 1;
     int tong = Model.TongThietBi > 0 ? Model.TongThietBi : 1;
     int pHD = (int)Math.Round((double)Model.HoatDong / tong * 100);
     int pBT = (int)Math.Round((double)Model.BaoTri / tong * 100);
     int pH  = (int)Math.Round((double)Model.Hong / tong * 100);
 }
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<style>
+    .page-hdr h2 { color:#1a237e; font-weight:700; font-size:22px; margin:0; }
+    .page-hdr p  { color:#666; font-size:13px; margin:3px 0 0; }
+    .stat-card { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); padding:20px; text-align:center; }
+    .stat-num  { font-size:32px; font-weight:700; margin-bottom:4px; }
+    .stat-label{ font-size:12px; color:#888; font-weight:600; text-transform:uppercase; }
+    .section-card { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); padding:24px; margin-bottom:20px; }
+    .section-title { font-size:16px; font-weight:700; color:#1a237e; margin-bottom:16px; padding-bottom:8px; border-bottom:2px solid #e8eaf6; }
+    .progress-bar-custom { height:10px; border-radius:5px; background:#e0e0e0; overflow:hidden; margin-bottom:12px; }
+    .progress-fill { height:100%; transition:width .3s; }
+    .progress-fill.success { background:#43a047; }
+    .progress-fill.warning { background:#fb8c00; }
+    .progress-fill.danger  { background:#e53935; }
+    .table-custom { width:100%; border-collapse:collapse; }
+    .table-custom th { background:#e8eaf6; color:#1a237e; font-size:11px; font-weight:700; text-transform:uppercase; padding:10px 12px; text-align:left; }
+    .table-custom td { padding:10px 12px; font-size:13px; border-bottom:1px solid #f5f6ff; }
+    .table-custom tr:last-child td { border-bottom:none; }
+    .table-custom tr:hover td { background:#f8f9fe; }
+    .badge-tt { display:inline-block; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+    .badge-tt.ok   { background:#e8f5e9; color:#2e7d32; }
+    .badge-tt.warn { background:#fff3e0; color:#e65100; }
+    .badge-tt.err  { background:#fce4ec; color:#c62828; }
+    .empty-state { text-align:center; padding:40px; color:#aaa; font-size:14px; }
+</style>
 
-<div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold mb-0">📊 Thống Kê Tài Sản</h2>
-        <a href="@Url.Action("Index","BGH")" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-chevron-left"></i> Quay lại
-        </a>
+<div class="page-hdr mb-4">
+    <h2>📊 Thống Kê Tài Sản Toàn Trường</h2>
+    <p>Tổng quan tình trạng thiết bị, chi phí bảo trì và phân bổ theo đơn vị</p>
+</div>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-warning" style="border-radius:8px;font-size:13px;">⚠️ @ViewBag.Error</div>
+}
+
+<!-- Debug: xem giá trị TrangThaiTB thực tế -->
+<div style="background:#f5f5f5;border-radius:8px;padding:10px 16px;font-size:12px;color:#666;margin-bottom:16px;">
+    🔍 Giá trị TrangThaiTB trong DB:
+    <a href="@Url.Action("DebugTrangThai","BGH")" target="_blank" style="color:#1a237e;font-weight:600;">Xem tại đây</a>
+    &nbsp;|&nbsp; HoatDong=@Model.HoatDong &nbsp; BaoTri=@Model.BaoTri &nbsp; Hong=@Model.Hong
+</div>
+
+<!-- Thống kê tổng quan -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-num" style="color:#1a237e;">@Model.TongThietBi</div>
+            <div class="stat-label">📦 Tổng thiết bị</div>
+        </div>
     </div>
-
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm text-center p-3">
-                <p class="text-muted small mb-1">📦 Tổng thiết bị</p>
-                <h3 class="text-primary fw-bold">@Model.TongThietBi</h3>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm text-center p-3">
-                <p class="text-muted small mb-1">💰 Tổng giá trị (VNĐ)</p>
-                <h5 class="text-success fw-bold">@Model.TongGiaTri.ToString("N0")</h5>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm text-center p-3">
-                <p class="text-muted small mb-1">🏫 Số khoa / đơn vị</p>
-                <h3 class="text-info fw-bold">@(Model.TheoKhoa?.Count ?? 0)</h3>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm text-center p-3">
-                <p class="text-muted small mb-1">📅 Lần kiểm kê</p>
-                <h3 class="text-warning fw-bold">@(Model.LichSuKiemKe?.Count ?? 0)</h3>
-            </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-num" style="color:#43a047;">@Model.HoatDong</div>
+            <div class="stat-label">✅ Đang sử dụng</div>
         </div>
     </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-num" style="color:#fb8c00;">@Model.BaoTri</div>
+            <div class="stat-label">🔧 Cần bảo trì</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-num" style="color:#e53935;">@Model.Hong</div>
+            <div class="stat-label">❌ Báo hỏng</div>
+        </div>
+    </div>
+</div>
 
-    <div class="row g-4 mb-4">
-        <div class="col-lg-5">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-4">📈 Tình Trạng Hiện Tại</h5>
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between mb-1"><span>Đang hoạt động tốt</span><span>@pHD%</span></div>
-                        <div class="progress" style="height:10px"><div class="progress-bar bg-success" style="width:@pHD%"></div></div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between mb-1"><span>Đang bảo trì</span><span>@pBT%</span></div>
-                        <div class="progress" style="height:10px"><div class="progress-bar bg-warning" style="width:@pBT%"></div></div>
-                    </div>
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between mb-1"><span>Hỏng / Thanh lý</span><span>@pH%</span></div>
-                        <div class="progress" style="height:10px"><div class="progress-bar bg-danger" style="width:@pH%"></div></div>
-                    </div>
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-num" style="color:#1e88e5;font-size:20px;">@Model.TongGiaTri.ToString("N0") đ</div>
+            <div class="stat-label">💰 Tổng giá trị tài sản</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-num" style="color:#f57c00;font-size:20px;">@Model.ChiPhiBaoTri.ToString("N0") đ</div>
+            <div class="stat-label">🔧 Chi phí bảo trì</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-num" style="color:#d32f2f;">@Model.TongBaoHong</div>
+            <div class="stat-label">⚠️ Số lần báo hỏng</div>
+        </div>
+    </div>
+</div>
 
-                    <hr />
-                    <h6 class="fw-bold mb-3">📂 Phân loại theo Danh mục</h6>
-                    @foreach (var dm in Model.TheoDanhMuc)
-                    {
-                        int pct = (int)Math.Round((double)dm.SoLuong / maxSL * 100);
-                        <div class="mb-2">
-                            <div class="d-flex justify-content-between mb-1"><span class="small">@dm.TenDanhMuc</span><span class="small fw-bold">@dm.SoLuong</span></div>
-                            <div class="progress" style="height:6px"><div class="progress-bar bg-primary" style="width:@pct%"></div></div>
+<!-- Tình trạng hiện tại -->
+<div class="section-card">
+    <div class="section-title">📈 Tình Trạng Thiết Bị Hiện Tại</div>
+    <div class="mb-3">
+        <div class="d-flex justify-content-between mb-1" style="font-size:13px;font-weight:600;">
+            <span>Đang sử dụng</span>
+            <span style="color:#43a047;">@Model.HoatDong / @Model.TongThietBi (@pHD%)</span>
+        </div>
+        <div class="progress-bar-custom">
+            <div class="progress-fill success" style="width:@pHD%"></div>
+        </div>
+    </div>
+    <div class="mb-3">
+        <div class="d-flex justify-content-between mb-1" style="font-size:13px;font-weight:600;">
+            <span>Cần bảo trì</span>
+            <span style="color:#fb8c00;">@Model.BaoTri / @Model.TongThietBi (@pBT%)</span>
+        </div>
+        <div class="progress-bar-custom">
+            <div class="progress-fill warning" style="width:@pBT%"></div>
+        </div>
+    </div>
+    <div>
+        <div class="d-flex justify-content-between mb-1" style="font-size:13px;font-weight:600;">
+            <span>Báo hỏng</span>
+            <span style="color:#e53935;">@Model.Hong / @Model.TongThietBi (@pH%)</span>
+        </div>
+        <div class="progress-bar-custom">
+            <div class="progress-fill danger" style="width:@pH%"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Phân bổ theo khoa -->
+<div class="section-card">
+    <div class="section-title">🏫 Phân Bổ Thiết Bị Theo Đơn Vị</div>
+    @if (!Model.TheoKhoa.Any())
+    {
+        <div class="empty-state">Chưa có dữ liệu phân bổ theo khoa.</div>
+    }
+    else
+    {
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Đơn vị</th>
+                    <th style="text-align:center">Tổng</th>
+                    <th style="text-align:center">Hoạt động</th>
+                    <th style="text-align:center">Bảo trì</th>
+                    <th style="text-align:center">Hỏng</th>
+                    <th style="text-align:right">Giá trị</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var k in Model.TheoKhoa)
+                {
+                    <tr>
+                        <td style="font-weight:600;">@k.TenKhoa</td>
+                        <td style="text-align:center;font-weight:700;color:#1a237e;">@k.Tong</td>
+                        <td style="text-align:center;color:#43a047;">@k.HoatDong</td>
+                        <td style="text-align:center;color:#fb8c00;">@k.BaoTri</td>
+                        <td style="text-align:center;color:#e53935;">@k.Hong</td>
+                        <td style="text-align:right;font-weight:600;">@k.TongGia.ToString("N0") đ</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<div class="row g-3 mb-4">
+    <!-- Phân loại theo danh mục -->
+    <div class="col-md-6">
+        <div class="section-card">
+            <div class="section-title">📂 Phân Loại Theo Danh Mục</div>
+            @if (!Model.TheoDanhMuc.Any())
+            {
+                <div class="empty-state">Chưa có dữ liệu danh mục.</div>
+            }
+            else
+            {
+                int maxSL = Model.TheoDanhMuc[0].SoLuong;
+                foreach (var dm in Model.TheoDanhMuc)
+                {
+                    int pct = maxSL > 0 ? (int)Math.Round((double)dm.SoLuong / maxSL * 100) : 0;
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1" style="font-size:13px;">
+                            <span style="font-weight:600;">@dm.TenDanhMuc</span>
+                            <span style="font-weight:700;color:#1a237e;">@dm.SoLuong</span>
                         </div>
-                    }
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-7">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-4">🏫 Thống Kê Chi Tiết Đơn Vị</h5>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Đơn vị</th>
-                                    <th class="text-center">Tổng</th>
-                                    <th class="text-center text-success">Tốt</th>
-                                    <th class="text-center text-danger">Hỏng</th>
-                                    <th>Giá trị</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var k in Model.TheoKhoa)
-                                {
-                                    <tr>
-                                        <td class="fw-semibold">@k.TenKhoa</td>
-                                        <td class="text-center">@k.Tong</td>
-                                        <td class="text-center fw-bold text-success">@k.HoatDong</td>
-                                        <td class="text-center text-danger">@k.Hong</td>
-                                        <td class="small">@k.TongGia.ToString("N0")</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+                        <div class="progress-bar-custom" style="height:8px;">
+                            <div class="progress-fill" style="width:@pct%;background:#1a237e;"></div>
+                        </div>
                     </div>
-                </div>
-            </div>
+                }
+            }
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white border-0 pt-3 d-flex justify-content-between align-items-center">
-            <h5 class="fw-bold mb-0">📅 Lịch Sử Kiểm Kê Tài Sản</h5>
-            <span class="badge bg-light text-dark">Dữ liệu lưu trữ</span>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
+    <!-- Thiết bị cần chú ý -->
+    <div class="col-md-6">
+        <div class="section-card">
+            <div class="section-title">⚠️ Thiết Bị Cần Chú Ý</div>
+            @if (!Model.CanChuY.Any())
+            {
+                <div class="empty-state">Tất cả thiết bị đang hoạt động tốt.</div>
+            }
+            else
+            {
+                <table class="table-custom">
+                    <thead>
                         <tr>
-                            <th>Mã KK</th>
-                            <th>Ngày thực hiện</th>
-                            <th>Người phụ trách</th>
-                            <th>Số lượng TB</th>
-                            <th>Trạng thái</th>
+                            <th>Thiết bị</th>
+                            <th style="text-align:center">Trạng thái</th>
+                            <th>Đơn vị</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var kk in Model.LichSuKiemKe)
+                        @foreach (var tb in Model.CanChuY)
                         {
+                            string badgeCls = tb.TrangThaiTB == "Hỏng" ? "err" : "warn";
                             <tr>
-                                <td class="fw-bold text-primary">#@kk.ID_KiemKe</td>
-                                <td>@kk.NgayKiemKe.ToString("dd/MM/yyyy")</td>
-                                <td>@kk.NguoiThucHien</td>
-                                <td class="fw-bold">@kk.TongThietBiKK</td>
                                 <td>
-                                    @if (kk.TrangThai == "Hoàn thành")
+                                    <div style="font-weight:600;font-size:13px;">@tb.TenTB</div>
+                                    <div style="font-size:11px;color:#888;">@tb.TenDanhMuc</div>
+                                    @if (!string.IsNullOrEmpty(tb.MoTaHong))
                                     {
-                                        <span class="badge bg-success">@kk.TrangThai</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-info">@kk.TrangThai</span>
+                                        <div style="font-size:11px;color:#c62828;margin-top:2px;">💬 @tb.MoTaHong</div>
                                     }
                                 </td>
+                                <td style="text-align:center;">
+                                    <span class="badge-tt @badgeCls">@tb.TrangThaiTB</span>
+                                </td>
+                                <td style="font-size:12px;color:#666;">@tb.KhoaPhongBan</td>
                             </tr>
                         }
                     </tbody>
                 </table>
-            </div>
+            }
         </div>
     </div>
+</div>
+
+<!-- Lịch sử kiểm kê -->
+<div class="section-card">
+    <div class="section-title">📅 Lịch Sử Kiểm Kê Tài Sản</div>
+    @if (!Model.LichSuKiemKe.Any())
+    {
+        <div class="empty-state">Chưa có lịch sử kiểm kê.</div>
+    }
+    else
+    {
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Mã kiểm kê</th>
+                    <th>Ngày thực hiện</th>
+                    <th>Người phụ trách</th>
+                    <th style="text-align:center">Số lượng TB</th>
+                    <th style="text-align:center">Trạng thái</th>
+                    <th>Ghi chú</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var kk in Model.LichSuKiemKe)
+                {
+                    <tr>
+                        <td style="font-weight:600;color:#1a237e;">@kk.ID_KiemKe</td>
+                        <td>@kk.NgayKiemKe.ToString("dd/MM/yyyy")</td>
+                        <td>@kk.NguoiThucHien</td>
+                        <td style="text-align:center;font-weight:700;">@kk.TongThietBiKK</td>
+                        <td style="text-align:center;">
+                            @if (kk.TrangThai == "Hoàn thành")
+                            {
+                                <span class="badge-tt ok">@kk.TrangThai</span>
+                            }
+                            else
+                            {
+                                <span class="badge-tt warn">@kk.TrangThai</span>
+                            }
+                        </td>
+                        <td style="font-size:12px;color:#666;">@kk.GhiChu</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
 </div>

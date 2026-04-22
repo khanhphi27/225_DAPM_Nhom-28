@@ -62,14 +62,29 @@ namespace QLTB.Models
     // ── BGH Thống kê tài sản ─────────────────────────────────
     public class ThongKeTaiSanViewModel
     {
-        public int     TongThietBi { get; set; }
-        public int     HoatDong    { get; set; }
-        public int     BaoTri      { get; set; }
-        public int     Hong        { get; set; }
-        public decimal TongGiaTri  { get; set; }
+        public int     TongThietBi    { get; set; }
+        public int     HoatDong       { get; set; }
+        public int     BaoTri         { get; set; }
+        public int     Hong           { get; set; }
+        public decimal TongGiaTri     { get; set; }
+        public decimal ChiPhiBaoTri   { get; set; }  // tổng chi phí sửa chữa thực tế
+        public int     TongBaoHong    { get; set; }  // số báo hỏng trong kỳ
         public List<ThongKeTheoKhoaViewModel>    TheoKhoa     { get; set; }
         public List<ThongKeTheoDanhMucViewModel> TheoDanhMuc  { get; set; }
         public List<KiemKeViewModel>             LichSuKiemKe { get; set; }
+        public List<ThietBiCanChuYViewModel>     CanChuY      { get; set; }
+    }
+
+    public class ThietBiCanChuYViewModel
+    {
+        public string   ID_ThietBi   { get; set; }
+        public string   TenTB        { get; set; }
+        public string   TrangThaiTB  { get; set; }
+        public string   TenDanhMuc   { get; set; }
+        public string   KhoaPhongBan { get; set; }
+        public decimal? Gia          { get; set; }
+        public string   MoTaHong     { get; set; }
+        public DateTime? NgayBaoHong { get; set; }
     }
 
     public class ThongKeTheoKhoaViewModel
