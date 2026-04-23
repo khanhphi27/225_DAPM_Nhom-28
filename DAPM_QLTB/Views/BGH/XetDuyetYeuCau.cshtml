@@ -1,215 +1,241 @@
+@using QLTB.Models
 @{
-    ViewBag.Title = "Xét Duyệt Yêu Cầu Lần Cuối";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    var choDuyet = ViewBag.ChoDuyet as List<QLTB.Models.DeXuatViewModel> ?? new List<QLTB.Models.DeXuatViewModel>();
-    var lichSu = ViewBag.LichSu as List<QLTB.Models.DeXuatViewModel> ?? new List<QLTB.Models.DeXuatViewModel>();
+    ViewBag.Title = "Xét Duyệt Yêu Cầu - BGH";
+    var choDuyet = ViewBag.ChoDuyet as List<DeXuatViewModel> ?? new List<DeXuatViewModel>();
+    var lichSu   = ViewBag.LichSu   as List<DeXuatViewModel> ?? new List<DeXuatViewModel>();
 }
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<style>
+.page-hdr h2 { color:#1a237e; font-weight:700; font-size:22px; margin:0; }
+.page-hdr p  { color:#666; font-size:13px; margin:3px 0 0; }
+.tab-bar { display:flex; gap:4px; margin-bottom:18px; background:#fff; border-radius:10px; padding:6px; box-shadow:0 2px 8px rgba(0,0,0,.06); width:fit-content; }
+.tab-btn { padding:7px 20px; border-radius:7px; border:none; cursor:pointer; font-size:13px; font-weight:600; background:transparent; color:#666; transition:all .2s; }
+.tab-btn.active { background:#1a237e; color:#fff; }
+.tab-btn:hover:not(.active) { background:#e8eaf6; color:#1a237e; }
+.proposal-card { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); overflow:hidden; border-left:4px solid #6a1b9a; margin-bottom:14px; }
+.proposal-card.approved { border-color:#43a047; }
+.proposal-card.rejected { border-color:#e53935; }
+.card-head { padding:14px 20px; display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid #f0f2f8; }
+.card-id { font-size:12px; color:#888; font-weight:600; }
+.card-title { font-size:15px; font-weight:700; color:#1a237e; margin:2px 0 4px; }
+.card-meta { font-size:12px; color:#666; }
+.card-meta span { margin-right:14px; }
+.badge-p { display:inline-block; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap; }
+.badge-p.pending  { background:#f3e5f5; color:#6a1b9a; }
+.badge-p.approved { background:#e8f5e9; color:#2e7d32; }
+.badge-p.rejected { background:#fce4ec; color:#c62828; }
+.items-table { width:100%; border-collapse:collapse; margin:12px 0; }
+.items-table th { background:#e8eaf6; color:#1a237e; font-size:11px; font-weight:700; text-transform:uppercase; padding:8px 12px; text-align:left; }
+.items-table td { padding:8px 12px; font-size:12px; border-bottom:1px solid #f0f2f8; }
+.items-table tfoot td { font-weight:700; color:#1a237e; background:#f5f6ff; }
+.card-body { padding:14px 20px; }
+.card-foot { padding:12px 20px; background:#fafbff; border-top:1px solid #f0f2f8; display:flex; justify-content:space-between; align-items:center; }
+.foot-note { font-size:12px; color:#888; max-width:60%; }
+.action-group { display:flex; gap:8px; }
+.btn-approve { background:#43a047; color:#fff; border:none; border-radius:7px; padding:7px 16px; font-size:12px; font-weight:600; cursor:pointer; }
+.btn-approve:hover { background:#2e7d32; }
+.btn-reject  { background:#fce4ec; color:#c62828; border:none; border-radius:7px; padding:7px 16px; font-size:12px; font-weight:600; cursor:pointer; }
+.btn-detail  { background:#e8eaf6; color:#1a237e; border:none; border-radius:7px; padding:7px 14px; font-size:12px; font-weight:600; cursor:pointer; }
+.timeline { display:flex; align-items:center; padding:14px 24px 8px; }
+.tl-step { display:flex; flex-direction:column; align-items:center; flex:1; position:relative; }
+.tl-step:not(:last-child)::after { content:''; position:absolute; top:12px; left:calc(50% + 12px); width:calc(100% - 24px); height:2px; background:#e0e0e0; z-index:0; }
+.tl-step.done:not(:last-child)::after { background:#43a047; }
+.tl-dot { width:24px; height:24px; border-radius:50%; border:2px solid #e0e0e0; background:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; z-index:1; position:relative; }
+.tl-step.done .tl-dot   { background:#43a047; border-color:#43a047; color:#fff; }
+.tl-step.active .tl-dot { background:#6a1b9a; border-color:#6a1b9a; color:#fff; }
+.tl-step.reject .tl-dot { background:#e53935; border-color:#e53935; color:#fff; }
+.tl-label { font-size:10px; color:#999; margin-top:4px; text-align:center; font-weight:600; }
+.tl-step.done .tl-label   { color:#43a047; }
+.tl-step.active .tl-label { color:#6a1b9a; }
+.tl-step.reject .tl-label { color:#e53935; }
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; align-items:center; justify-content:center; }
+.modal-overlay.active { display:flex; }
+.modal-box { background:#fff; border-radius:14px; padding:28px 30px; width:460px; max-width:95vw; box-shadow:0 20px 60px rgba(0,0,0,.25); }
+.modal-title { font-size:18px; font-weight:700; color:#1a237e; margin-bottom:12px; }
+.form-lbl { font-size:12px; font-weight:600; color:#555; margin-bottom:4px; display:block; }
+.form-inp { width:100%; padding:9px 12px; border:1px solid #d0d5e8; border-radius:8px; font-size:13px; background:#f8f9fe; box-sizing:border-box; margin-bottom:14px; }
+.btn-ok { background:#43a047; color:#fff; border:none; border-radius:8px; padding:9px 24px; font-size:13px; font-weight:600; cursor:pointer; }
+.btn-ok.red { background:#e53935; }
+.btn-cancel { background:#f5f5f5; color:#555; border:none; border-radius:8px; padding:9px 20px; font-size:13px; font-weight:600; cursor:pointer; }
+.empty-state { text-align:center; padding:40px; color:#aaa; font-size:14px; }
+</style>
 
-<div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold mb-0">✅ Xét Duyệt Yêu Cầu</h2>
-        <a href="@Url.Action("Index","BGH")" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-chevron-left"></i> Quay lại
-        </a>
-    </div>
-
-    @if (ViewBag.Error != null)
-    {
-        <div class="alert alert-warning">⚠️ @ViewBag.Error</div>
-    }
-
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm text-center p-3">
-                <p class="text-muted small mb-1">⏳ Chờ duyệt</p>
-                <h3 class="text-warning fw-bold">@choDuyet.Count</h3>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm text-center p-3">
-                <p class="text-muted small mb-1">✅ Đã duyệt</p>
-                <h3 class="text-success fw-bold">@lichSu.FindAll(x => x.TrangThai == "Đã duyệt").Count</h3>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm text-center p-3">
-                <p class="text-muted small mb-1">❌ Từ chối</p>
-                <h3 class="text-danger fw-bold">@lichSu.FindAll(x => x.TrangThai.Contains("Từ chối")).Count</h3>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm text-center p-3">
-                <p class="text-muted small mb-1">📋 Tổng cộng</p>
-                <h3 class="text-primary fw-bold">@(choDuyet.Count + lichSu.Count)</h3>
-            </div>
-        </div>
-    </div>
-
-    <div class="card shadow border-0 mb-4">
-        <div class="card-header bg-white border-0 pt-3">
-            <h5 class="fw-bold text-warning mb-0"><i class="bi bi-clock-history me-2"></i>Danh Sách Chờ Phê Duyệt</h5>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Mã ĐX</th>
-                            <th>Nội dung</th>
-                            <th>Đơn vị</th>
-                            <th>Ngân sách</th>
-                            <th>Ngày gửi</th>
-                            <th class="text-end">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (!choDuyet.Any())
-                        {
-                            <tr><td colspan="6" class="text-center py-4 text-muted">Hiện tại không có yêu cầu nào cần xử lý.</td></tr>
-                        }
-                        else
-                        {
-                            foreach (var dx in choDuyet)
-                            {
-                                <tr>
-                                    <td class="fw-bold text-primary">#@dx.ID_DeXuat</td>
-                                    <td>@dx.MoTa</td>
-                                    <td><span class="badge bg-light text-dark">@dx.KhoaPhongBan</span></td>
-                                    <td class="fw-bold">@dx.TongGiaDuKien.ToString("N0") đ</td>
-                                    <td class="text-muted">@dx.NgayDeXuat.ToString("dd/MM/yyyy")</td>
-                                    <td class="text-end">
-                                        <button class="btn btn-sm btn-outline-success me-1" onclick="showModal('@dx.ID_DeXuat','@dx.MoTa','duyet')">Duyệt</button>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="showModal('@dx.ID_DeXuat','@dx.MoTa','tuchoi')">Từ chối</button>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div class="card shadow border-0">
-        <div class="card-header bg-white border-0 pt-3">
-            <h5 class="fw-bold text-primary mb-0"><i class="bi bi-journal-check me-2"></i>Lịch Sử Đã Xử Lý</h5>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Mã ĐX</th>
-                            <th>Nội dung</th>
-                            <th>Ngân sách</th>
-                            <th>Kết quả</th>
-                            <th>Ngày xử lý</th>
-                            <th>Ghi chú</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var dx in lichSu)
-                        {
-                            <tr>
-                                <td class="fw-bold">#@dx.ID_DeXuat</td>
-                                <td>@dx.MoTa <br><small class="text-muted">@dx.KhoaPhongBan</small></td>
-                                <td class="small">@dx.TongGiaDuKien.ToString("N0")</td>
-                                <td>
-                                    @if (dx.TrangThai == "Đã duyệt")
-                                    {
-                                        <span class="badge bg-success">@dx.TrangThai</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-danger">@dx.TrangThai</span>
-                                    }
-                                </td>
-                                <td class="text-muted small">@dx.NgayDeXuat.ToString("dd/MM/yyyy")</td>
-                                <td class="small text-muted">@(string.IsNullOrEmpty(dx.LyDoTuChoi) ? "—" : dx.LyDoTuChoi)</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+<div class="page-hdr mb-3">
+    <h2>🏛️ Xét Duyệt Yêu Cầu Mua Sắm</h2>
+    <p>Phê duyệt cuối cùng các đề xuất mua sắm thiết bị đã qua CSVC và KHTC</p>
 </div>
 
-<!-- Modal xác nhận -->
-<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="fw-bold" id="modalTitle">Xác nhận</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p id="modalBody" class="mb-3"></p>
-                <div class="mb-3">
-                    <label class="form-label small fw-bold text-muted">Ghi chú hoặc lý do:</label>
-                    <textarea class="form-control" id="modalNote" rows="3" placeholder="Nhập tại đây..."></textarea>
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-warning" style="border-radius:8px;font-size:13px;">⚠️ @ViewBag.Error</div>
+}
+
+<div class="tab-bar">
+    <button class="tab-btn active" onclick="setTab(this,'all')">Tất cả (@(choDuyet.Count + lichSu.Count))</button>
+    <button class="tab-btn" onclick="setTab(this,'pending')">⏳ Chờ xử lý (@choDuyet.Count)</button>
+    <button class="tab-btn" onclick="setTab(this,'history')">📋 Lịch sử (@lichSu.Count)</button>
+</div>
+
+<div id="sec-pending">
+    @if (!choDuyet.Any())
+    {
+        <div class="empty-state">🎉 Không có đề xuất nào đang chờ xử lý.</div>
+    }
+    else
+    {
+        foreach (var dx in choDuyet)
+        {
+            <div class="proposal-card">
+                <div class="card-head">
+                    <div>
+                        <div class="card-id">@dx.ID_DeXuat &nbsp;|&nbsp; Ngày gửi: @dx.NgayDeXuat.ToString("dd/MM/yyyy")</div>
+                        <div class="card-title">Phiếu đề xuất mua sắm thiết bị</div>
+                        <div class="card-meta">
+                            <span>👤 @dx.NguoiDeXuat</span>
+                            <span>🏢 @dx.KhoaPhongBan</span>
+                            <span>💰 @dx.TongGiaDuKien.ToString("N0") đ</span>
+                        </div>
+                    </div>
+                    <span class="badge-p pending">⏳ Chờ BGH duyệt</span>
+                </div>
+                <div class="timeline">
+                    <div class="tl-step done"><div class="tl-dot">✓</div><div class="tl-label">Đã gửi</div></div>
+                    <div class="tl-step done"><div class="tl-dot">✓</div><div class="tl-label">CSVC</div></div>
+                    <div class="tl-step done"><div class="tl-dot">✓</div><div class="tl-label">KHTC</div></div>
+                    <div class="tl-step active"><div class="tl-dot">●</div><div class="tl-label">BGH</div></div>
+                    <div class="tl-step"><div class="tl-dot"></div><div class="tl-label">Hoàn tất</div></div>
+                </div>
+                <div class="card-body">
+                    <div id="detail-@dx.ID_DeXuat" style="display:none;">
+                        <table class="items-table">
+                            <thead><tr><th>STT</th><th>Tên thiết bị</th><th>SL</th><th>ĐVT</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+                            <tbody class="detail-body"></tbody>
+                            <tfoot><tr><td colspan="5" style="text-align:right">Tổng cộng:</td><td class="detail-total"></td></tr></tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-foot">
+                    <div class="foot-note">@if (!string.IsNullOrEmpty(dx.MoTa)) { <span>💬 @dx.MoTa</span> }</div>
+                    <div class="action-group">
+                        <button class="btn-detail" onclick="toggleDetail('@dx.ID_DeXuat', this)">📄 Xem chi tiết</button>
+                        <button class="btn-reject"  onclick="openModal('@dx.ID_DeXuat', 'tuchoi')">❌ Từ chối</button>
+                        <button class="btn-approve" onclick="openModal('@dx.ID_DeXuat', 'duyet')">✅ Phê duyệt cuối</button>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-primary" id="modalConfirmBtn" onclick="confirmAction()">Xác nhận</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="position-fixed bottom-0 end-0 p-4" style="z-index:9999">
-    <div id="toastMsg" class="toast align-items-center text-white border-0" role="alert">
-        <div class="d-flex">
-            <div class="toast-body fw-bold" id="toastText"></div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-        </div>
-    </div>
-</div>
-
-@section scripts {
-<script>
-    var currentId = '', currentAction = '';
-
-    function showModal(id, name, action) {
-        currentId = id; currentAction = action;
-        var btn = document.getElementById('modalConfirmBtn');
-        var title = document.getElementById('modalTitle');
-        if (action === 'duyet') {
-            title.innerHTML = '<i class="bi bi-check-circle-fill text-success me-2"></i>Phê Duyệt Đề Xuất';
-            document.getElementById('modalBody').innerHTML = 'Bạn chắc chắn muốn phê duyệt đề xuất <b>#' + id + '</b>?';
-            btn.className = 'btn btn-success'; btn.textContent = 'Xác nhận Duyệt';
-        } else {
-            title.innerHTML = '<i class="bi bi-x-circle-fill text-danger me-2"></i>Từ Chối Đề Xuất';
-            document.getElementById('modalBody').innerHTML = 'Xác nhận từ chối đề xuất <b>#' + id + '</b>?';
-            btn.className = 'btn btn-danger'; btn.textContent = 'Xác nhận Từ chối';
         }
-        new bootstrap.Modal(document.getElementById('confirmModal')).show();
     }
+</div>
 
-    function confirmAction() {
-        var note = document.getElementById('modalNote').value;
-        bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
-        $.post('@Url.Action("DuyetDeXuat","BGH")',
-            { id: currentId, action: currentAction, ghiChu: note },
-            function (res) {
-                if (res.ok) {
-                    showToast(currentAction === 'duyet' ? '✅ Đã phê duyệt thành công!' : '❌ Đã từ chối đề xuất!',
-                        currentAction === 'duyet' ? 'success' : 'danger');
-                    setTimeout(function () { location.reload(); }, 1200);
-                } else {
-                    showToast('⚠️ Lỗi: ' + (res.msg || 'Không xác định'), 'warning');
+<div id="sec-history" style="display:none;">
+    @if (!lichSu.Any())
+    {
+        <div class="empty-state">Chưa có lịch sử xử lý.</div>
+    }
+    else
+    {
+        foreach (var dx in lichSu)
+        {
+            string cardCls = dx.TrangThai.Contains("Từ chối") ? "rejected" : "approved";
+            string badgeCls = dx.TrangThai.Contains("Từ chối") ? "rejected" : "approved";
+            string s0="done", s1="", s2="", s3="", s4="";
+            if (dx.TrangThai == "Đã duyệt")            { s1="done"; s2="done"; s3="done"; s4="done"; }
+            else if (dx.TrangThai == "CSVC Từ chối")   { s1="reject"; }
+            else if (dx.TrangThai == "KHTC Từ chối")   { s1="done"; s2="reject"; }
+            else if (dx.TrangThai == "BGH Từ chối")    { s1="done"; s2="done"; s3="reject"; }
+
+            <div class="proposal-card @cardCls">
+                <div class="card-head">
+                    <div>
+                        <div class="card-id">@dx.ID_DeXuat &nbsp;|&nbsp; @dx.NgayDeXuat.ToString("dd/MM/yyyy")</div>
+                        <div class="card-title">Phiếu đề xuất mua sắm thiết bị</div>
+                        <div class="card-meta">
+                            <span>👤 @dx.NguoiDeXuat</span>
+                            <span>🏢 @dx.KhoaPhongBan</span>
+                            <span>💰 @dx.TongGiaDuKien.ToString("N0") đ</span>
+                        </div>
+                    </div>
+                    <span class="badge-p @badgeCls">@dx.TrangThai</span>
+                </div>
+                <div class="timeline">
+                    <div class="tl-step @s0"><div class="tl-dot">✓</div><div class="tl-label">Đã gửi</div></div>
+                    <div class="tl-step @s1"><div class="tl-dot">@(s1=="done"?"✓":s1=="reject"?"✕":"1")</div><div class="tl-label">CSVC</div></div>
+                    <div class="tl-step @s2"><div class="tl-dot">@(s2=="done"?"✓":s2=="reject"?"✕":"2")</div><div class="tl-label">KHTC</div></div>
+                    <div class="tl-step @s3"><div class="tl-dot">@(s3=="done"?"✓":s3=="reject"?"✕":"3")</div><div class="tl-label">BGH</div></div>
+                    <div class="tl-step @s4"><div class="tl-dot">@(s4=="done"?"✓":"✓")</div><div class="tl-label">Hoàn tất</div></div>
+                </div>
+                @if (!string.IsNullOrEmpty(dx.LyDoTuChoi))
+                {
+                    <div class="card-foot"><div class="foot-note" style="color:#c62828;">❌ Lý do từ chối: @dx.LyDoTuChoi</div></div>
                 }
-            });
+            </div>
+        }
     }
+</div>
 
-    function showToast(msg, type) {
-        var el = document.getElementById('toastMsg');
-        el.className = 'toast align-items-center text-white border-0 bg-' + type;
-        document.getElementById('toastText').textContent = msg;
-        new bootstrap.Toast(el, { delay: 3000 }).show();
+<div class="modal-overlay" id="actionModal">
+    <div class="modal-box">
+        <div class="modal-title" id="modalTitle"></div>
+        <p id="modalBody" style="font-size:13px;color:#555;margin-bottom:12px;"></p>
+        <label class="form-lbl" id="modalLabel"></label>
+        <textarea class="form-inp" id="modalNote" rows="3" placeholder="Nhập ghi chú..."></textarea>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+            <button class="btn-cancel" onclick="closeModal()">Hủy</button>
+            <button class="btn-ok" id="modalConfirm" onclick="submitAction()"></button>
+        </div>
+    </div>
+</div>
+
+<script>
+    var _id = '', _act = '';
+    function setTab(el, tab) {
+        document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+        el.classList.add('active');
+        document.getElementById('sec-pending').style.display = (tab==='all'||tab==='pending') ? '' : 'none';
+        document.getElementById('sec-history').style.display = (tab==='all'||tab==='history') ? '' : 'none';
     }
+    function toggleDetail(id, btn) {
+        var box = document.getElementById('detail-' + id);
+        if (box.style.display === 'none') {
+            if (!box.dataset.loaded) {
+                $.get('@Url.Action("GetChiTietDeXuat","BGH")', { id: id }, function(res) {
+                    if (res.ok) {
+                        var html = '', tong = 0;
+                        res.data.forEach(function(item, i) {
+                            var tt = item.SoLuong * item.Gia;
+                            tong += tt;
+                            html += '<tr><td>'+(i+1)+'</td><td><b>'+item.Ten+'</b></td><td>'+item.SoLuong+'</td><td>'+(item.DVT||'')+'</td><td>'+Number(item.Gia).toLocaleString('vi-VN')+' đ</td><td><b>'+Number(tt).toLocaleString('vi-VN')+' đ</b></td></tr>';
+                        });
+                        box.querySelector('.detail-body').innerHTML = html || '<tr><td colspan="6" style="text-align:center;color:#aaa">Không có dữ liệu</td></tr>';
+                        box.querySelector('.detail-total').textContent = Number(tong).toLocaleString('vi-VN') + ' đ';
+                        box.dataset.loaded = '1';
+                    }
+                });
+            }
+            box.style.display = ''; btn.textContent = '🔼 Ẩn chi tiết';
+        } else { box.style.display = 'none'; btn.textContent = '📄 Xem chi tiết'; }
+    }
+    function openModal(id, action) {
+        _id = id; _act = action;
+        var ok = action === 'duyet';
+        document.getElementById('modalTitle').textContent = ok ? '✅ Phê duyệt cuối' : '❌ Từ chối đề xuất';
+        document.getElementById('modalBody').textContent  = ok ? 'Xác nhận phê duyệt cuối đề xuất '+id+'? Quy trình sẽ hoàn tất.' : 'Nhập lý do từ chối để thông báo cho các bên liên quan.';
+        document.getElementById('modalLabel').textContent = ok ? 'Ghi chú (tùy chọn)' : 'Lý do từ chối *';
+        document.getElementById('modalNote').value = '';
+        var btn = document.getElementById('modalConfirm');
+        btn.textContent = ok ? '✅ Phê duyệt cuối' : '❌ Từ chối';
+        btn.className = ok ? 'btn-ok' : 'btn-ok red';
+        document.getElementById('actionModal').classList.add('active');
+    }
+    function closeModal() { document.getElementById('actionModal').classList.remove('active'); }
+    function submitAction() {
+        var note = document.getElementById('modalNote').value.trim();
+        if (_act === 'tuchoi' && !note) { alert('Vui lòng nhập lý do từ chối.'); return; }
+        closeModal();
+        $.post('@Url.Action("DuyetDeXuat","BGH")', { id: _id, action: _act, ghiChu: note }, function(res) {
+            if (res.ok) { alert(_act==='duyet' ? '✅ Đã phê duyệt cuối thành công!' : '❌ Đã từ chối!'); location.reload(); }
+            else { alert('⚠️ Lỗi: ' + (res.msg||'Không xác định')); }
+        });
+    }
+    document.getElementById('actionModal').addEventListener('click', function(e) { if (e.target===this) closeModal(); });
 </script>
-}

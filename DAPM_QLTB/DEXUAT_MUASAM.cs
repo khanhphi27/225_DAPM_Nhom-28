@@ -18,6 +18,8 @@ namespace DAPM_QLTB
         public DEXUAT_MUASAM()
         {
             this.CHITIET_DEXUAT = new HashSet<CHITIET_DEXUAT>();
+            this.LICHSUDUYETs = new HashSet<LICHSUDUYET>();
+            this.THIETBIs = new HashSet<THIETBI>();
         }
     
         public string ID_DeXuat { get; set; }
@@ -34,5 +36,9 @@ namespace DAPM_QLTB
         public virtual ICollection<CHITIET_DEXUAT> CHITIET_DEXUAT { get; set; }
         public virtual NGUOIDUNG NGUOIDUNG { get; set; }
         public virtual NGUOIDUNG NGUOIDUNG1 { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<LICHSUDUYET> LICHSUDUYETs { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<THIETBI> THIETBIs { get; set; }
     }
 }

@@ -58,6 +58,11 @@
         <AssociationConnector Association="QuanLyThietBiModel.FK_PTB_PHONG" ManuallyRouted="false" />
         <AssociationConnector Association="QuanLyThietBiModel.FK_PTB_THIETBI" ManuallyRouted="false" />
         <AssociationConnector Association="QuanLyThietBiModel.FK_VTN_VAITRO" ManuallyRouted="false" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.LICHSUDUYET" Width="1.5" PointX="10.5" PointY="17.875" />
+        <EntityTypeShape EntityType="QuanLyThietBiModel.View_LichSuDuyet" Width="1.5" PointX="10.375" PointY="0.75" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_LICHSUDUYET_DEXUAT" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_THIETBI_DEXUAT" />
+        <AssociationConnector Association="QuanLyThietBiModel.FK_LICHSUDUYET_NGUOIDUNG" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

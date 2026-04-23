@@ -173,7 +173,11 @@
     <Compile Include="KIEMKE.cs">
       <DependentUpon>QLTB.tt</DependentUpon>
     </Compile>
+    <Compile Include="LICHSUDUYET.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
     <Compile Include="Models\DbHelper.cs" />
+    <Compile Include="Models\ThietBiViewModel.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\ViewModels.cs" />
     <Compile Include="NGUOIDUNG.cs">
@@ -237,6 +241,9 @@
     <Compile Include="View_KeHoach_ChiTiet.cs">
       <DependentUpon>QLTB.tt</DependentUpon>
     </Compile>
+    <Compile Include="View_LichSuDuyet.cs">
+      <DependentUpon>QLTB.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bgh.css" />
@@ -259,6 +266,7 @@
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
     <Content Include="Content\login.css" />
+    <Content Include="Content\Logo_Đại_học_Sư_phạm_Kỹ_thuật_Đà_Nẵng.png" />
     <Content Include="Content\notifications.css" />
     <Content Include="Content\profile.css" />
     <Content Include="favicon.ico" />

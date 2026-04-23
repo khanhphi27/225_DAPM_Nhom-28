@@ -1,631 +1,195 @@
-﻿@{
-    ViewBag.Title = "Kiểm Kê Tài Sản Thiết Bị - Phòng CSVC";
+﻿@model QLTB.Models.KiemKeTaiSanViewModel
+@using System.Linq
+@{
+    ViewBag.Title = "Kiểm Kê Tài Sản - Phòng CSVC";
+    int phanTram = Model.TongThietBi > 0 ? (int)((double)Model.DaKiemKe / Model.TongThietBi * 100) : 0;
 }
 
 <style>
-    .page-hdr {
-        margin-bottom: 22px;
-    }
+    body, td, th, select, input, button, a { font-size: 15px; }
 
-        .page-hdr h2 {
-            color: #1a237e;
-            font-weight: 700;
-            font-size: 22px;
-            margin: 0;
-        }
+    .page-hdr h2 { color:#1a237e; font-weight:700; font-size:24px; margin:0; }
+    .page-hdr p  { color:#666; font-size:14px; margin:3px 0 0; }
 
-        .page-hdr p {
-            color: #666;
-            font-size: 13px;
-            margin: 3px 0 0;
-        }
-
-    /* Progress kiểm kê -->*/
     .kk-progress-card {
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-        padding: 20px 24px;
-        margin-bottom: 18px;
+        background:#fff; border-radius:12px;
+        box-shadow:0 2px 10px rgba(0,0,0,.07);
+        padding:22px 26px; margin-bottom:20px;
     }
+    .kk-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:18px; }
+    .kk-stat { text-align:center; }
+    .kk-stat .num { font-size:32px; font-weight:800; }
+    .kk-stat .lbl { font-size:13px; color:#888; font-weight:600; margin-top:3px; }
+    .kk-stat.total .num   { color:#1a237e; }
+    .kk-stat.done .num    { color:#43a047; }
+    .kk-stat.pending .num { color:#fb8c00; }
 
-    .kk-progress-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 16px;
+    .progress-bar-wrap { background:#f0f2f8; border-radius:8px; height:12px; overflow:hidden; }
+    .progress-bar { height:100%; background:linear-gradient(90deg,#43a047,#66bb6a); border-radius:8px; transition:width .6s; }
+    .progress-label { display:flex; justify-content:space-between; font-size:13px; color:#888; margin-top:7px; }
+
+    .toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+    .btn-primary   { background:#1a237e; color:#fff; border:none; border-radius:8px; padding:10px 20px; font-size:14px; font-weight:600; cursor:pointer; text-decoration:none; display:inline-block; }
+    .btn-secondary { background:#e8eaf6; color:#1a237e; border:none; border-radius:8px; padding:10px 20px; font-size:14px; font-weight:600; cursor:pointer; }
+
+    .card-table { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); overflow:hidden; }
+    .card-table table { width:100%; border-collapse:collapse; }
+    .card-table thead th {
+        background:#e8eaf6; color:#1a237e; font-size:13px; font-weight:700;
+        text-transform:uppercase; letter-spacing:.4px; padding:14px 16px;
+        border:none; white-space:nowrap;
     }
+    .card-table tbody td { padding:13px 16px; font-size:14px; color:#333; border-bottom:1px solid #f0f2f8; vertical-align:middle; }
+    .card-table tbody tr:last-child td { border-bottom:none; }
+    .card-table tbody tr:hover td { background:#f5f6ff; }
 
-    .kk-title {
-        font-size: 15px;
-        font-weight: 700;
-        color: #1a237e;
-    }
+    .group-header td { background:#f0f2ff; padding:10px 16px; font-size:13px; font-weight:700; color:#1a237e; }
 
-    .kk-period {
-        font-size: 13px;
-        color: #888;
-    }
+    .kk-status { display:inline-flex; align-items:center; gap:5px; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:700; }
+    .kk-status.done    { background:#e8f5e9; color:#2e7d32; }
+    .kk-status.pending { background:#fff3e0; color:#e65100; }
 
-    .kk-stats {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 14px;
-        margin-bottom: 16px;
-    }
+    .tb-status { display:inline-block; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600; }
+    .tb-status.hoatdong { background:#e8f5e9; color:#2e7d32; }
+    .tb-status.baotri   { background:#fff3e0; color:#e65100; }
+    .tb-status.hong     { background:#fce4ec; color:#c62828; }
+    .tb-status.other    { background:#f5f5f5; color:#555; }
 
-    .kk-stat {
-        text-align: center;
-    }
+    .alert-error { background:#fce4ec; border:1px solid #ef9a9a; border-radius:10px; padding:14px 18px; color:#c62828; font-size:14px; margin-bottom:16px; }
 
-        .kk-stat .num {
-            font-size: 24px;
-            font-weight: 800;
-        }
-
-        .kk-stat .lbl {
-            font-size: 11px;
-            color: #888;
-            font-weight: 600;
-            margin-top: 2px;
-        }
-
-        .kk-stat.total .num {
-            color: #1a237e;
-        }
-
-        .kk-stat.done .num {
-            color: #43a047;
-        }
-
-        .kk-stat.pending .num {
-            color: #fb8c00;
-        }
-
-        .kk-stat.missing .num {
-            color: #e53935;
-        }
-
-        .kk-stat.extra .num {
-            color: #8e24aa;
-        }
-
-    .progress-bar-wrap {
-        background: #f0f2f8;
-        border-radius: 8px;
-        height: 10px;
-        overflow: hidden;
-    }
-
-    .progress-bar {
-        height: 100%;
-        background: linear-gradient(90deg, #43a047, #66bb6a);
-        border-radius: 8px;
-        transition: width 0.6s ease;
-    }
-
-    .progress-label {
-        display: flex;
-        justify-content: space-between;
-        font-size: 12px;
-        color: #888;
-        margin-top: 6px;
-    }
-
-    /* Toolbar -->*/
-    .toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 14px;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-    .toolbar-left {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    .filter-sel {
-        padding: 8px 14px;
-        border: 1px solid #d0d5e8;
-        border-radius: 8px;
-        font-size: 13px;
-        background: #fff;
-    }
-
-    .btn-primary {
-        background: #1a237e;
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        padding: 9px 18px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-    }
-
-    .btn-secondary {
-        background: #e8eaf6;
-        color: #1a237e;
-        border: none;
-        border-radius: 8px;
-        padding: 9px 18px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-    }
-
-    .btn-export {
-        background: #43a047;
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        padding: 9px 18px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-    }
-
-    /* Bảng kiểm kê -->*/
-    .card-table {
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-        overflow: hidden;
-    }
-
-        .card-table table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .card-table thead th {
-            background: #e8eaf6;
-            color: #1a237e;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            padding: 12px 14px;
-            border: none;
-            white-space: nowrap;
-        }
-
-        .card-table tbody td {
-            padding: 11px 14px;
-            font-size: 13px;
-            color: #333;
-            border-bottom: 1px solid #f0f2f8;
-            vertical-align: middle;
-        }
-
-        .card-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        .card-table tbody tr:hover td {
-            background: #f5f6ff;
-        }
-
-    .kk-status {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 700;
-    }
-
-        .kk-status.match {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .kk-status.pending {
-            background: #fff3e0;
-            color: #e65100;
-        }
-
-        .kk-status.missing {
-            background: #fce4ec;
-            color: #c62828;
-        }
-
-        .kk-status.extra {
-            background: #f3e5f5;
-            color: #6a1b9a;
-        }
-
-    /* Inline ghi nhận -->*/
-    .inline-check {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .qty-input {
-        width: 70px;
-        padding: 5px 8px;
-        border: 1px solid #d0d5e8;
-        border-radius: 6px;
-        font-size: 13px;
-        text-align: center;
-    }
-
-        .qty-input:focus {
-            border-color: #3949ab;
-            outline: none;
-        }
-
-    .btn-confirm {
-        background: #43a047;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        padding: 5px 12px;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-    }
-
-    .btn-note {
-        background: #e8eaf6;
-        color: #1a237e;
-        border: none;
-        border-radius: 6px;
-        padding: 5px 12px;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-    }
-
-    /* Phân nhóm theo khoa -->*/
-    .group-header {
-        background: #f5f6ff;
-    }
-
-        .group-header td {
-            padding: 8px 14px;
-            font-size: 12px;
-            font-weight: 700;
-            color: #1a237e;
-        }
-
-    /* Modal ghi chú -->*/
-    .modal-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.45);
-        z-index: 1000;
-        align-items: center;
-        justify-content: center;
-    }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-    .modal-box {
-        background: #fff;
-        border-radius: 14px;
-        padding: 28px 30px;
-        width: 460px;
-        max-width: 95vw;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-    }
-
-    .modal-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: #1a237e;
-        margin-bottom: 14px;
-    }
-
-    .form-lbl {
-        font-size: 12px;
-        font-weight: 600;
-        color: #555;
-        margin-bottom: 4px;
-        display: block;
-    }
-
-    .form-inp {
-        width: 100%;
-        padding: 9px 12px;
-        border: 1px solid #d0d5e8;
-        border-radius: 8px;
-        font-size: 13px;
-        background: #f8f9fe;
-        box-sizing: border-box;
-        margin-bottom: 12px;
-    }
-
-        .form-inp:focus {
-            border-color: #3949ab;
-            outline: none;
-        }
-
-    .radio-group {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-bottom: 14px;
-    }
-
-    .radio-opt {
-        padding: 6px 14px;
-        border-radius: 20px;
-        border: 2px solid #d0d5e8;
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: 700;
-        color: #666;
-    }
-
-        .radio-opt.sel {
-            border-color: #1a237e;
-            background: #e8eaf6;
-            color: #1a237e;
-        }
-
-    .modal-footer {
-        display: flex;
-        gap: 10px;
-        justify-content: flex-end;
-    }
-
-    .btn-cancel {
-        background: #f5f5f5;
-        color: #555;
-        border: none;
-        border-radius: 8px;
-        padding: 9px 20px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-    }
-
-    .btn-save {
-        background: #1a237e;
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        padding: 9px 24px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-    }
+    .sl-cell { text-align:center; font-size:15px; font-weight:700; }
+    .sl-he-thong { color:#1a237e; }
+    .sl-thuc-te  { color:#43a047; }
 </style>
 
-<div class="page-hdr">
+<div class="page-hdr" style="margin-bottom:22px">
     <h2>📊 Kiểm Kê Tài Sản Thiết Bị</h2>
-    <p>Thực hiện kiểm kê định kỳ và ghi nhận tình trạng thực tế của thiết bị</p>
+    <p>Xem tình trạng kiểm kê toàn bộ thiết bị trong hệ thống</p>
 </div>
 
-<!-- Tiến độ kiểm kê -->
+@if (ViewBag.Error != null)
+{
+    <div class="alert-error">⚠️ @ViewBag.Error</div>
+}
+
 <div class="kk-progress-card">
-    <div class="kk-progress-head">
-        <div class="kk-title">📋 Đợt kiểm kê tháng 4/2024 — Kiểm kê toàn trường</div>
-        <div class="kk-period">📅 01/04/2024 → 30/04/2024 &nbsp;|&nbsp; Người phụ trách: Trần Thị B</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+        <div style="font-size:16px;font-weight:700;color:#1a237e">📋 Tổng quan kiểm kê tài sản</div>
+        <div style="font-size:13px;color:#888">Cập nhật: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</div>
     </div>
     <div class="kk-stats">
-        <div class="kk-stat total">   <div class="num">124</div><div class="lbl">Tổng TB cần kiểm</div></div>
-        <div class="kk-stat done">    <div class="num">87</div> <div class="lbl">Đã kiểm xong</div></div>
-        <div class="kk-stat pending"> <div class="num">37</div> <div class="lbl">Chưa kiểm</div></div>
-        <div class="kk-stat missing"> <div class="num">3</div>  <div class="lbl">Thiếu/Mất</div></div>
-        <div class="kk-stat extra">   <div class="num">2</div>  <div class="lbl">Phát sinh thêm</div></div>
+        <div class="kk-stat total">
+            <div class="num">@Model.TongThietBi</div>
+            <div class="lbl">Tổng thiết bị</div>
+        </div>
+        <div class="kk-stat done">
+            <div class="num">@Model.DaKiemKe</div>
+            <div class="lbl">Đã kiểm kê</div>
+        </div>
+        <div class="kk-stat pending">
+            <div class="num">@Model.ChuaKiemKe</div>
+            <div class="lbl">Chưa kiểm kê</div>
+        </div>
     </div>
     <div class="progress-bar-wrap">
-        <div class="progress-bar" style="width: 70.2%"></div>
+        <div class="progress-bar" style="width:@(phanTram)%"></div>
     </div>
     <div class="progress-label">
-        <span>Tiến độ: <strong>70.2%</strong> (87/124 thiết bị)</span>
-        <span>Còn lại: <strong>37 thiết bị</strong></span>
+        <span>Tiến độ: <strong>@phanTram%</strong> (@Model.DaKiemKe/@Model.TongThietBi thiết bị)</span>
+        <span>Còn lại: <strong>@Model.ChuaKiemKe thiết bị</strong></span>
     </div>
 </div>
 
-<!-- Toolbar -->
 <div class="toolbar">
-    <div class="toolbar-left">
-        <select class="filter-sel">
-            <option>Tất cả đơn vị</option>
-            <option>Khoa Công nghệ số</option>
-            <option>Khoa Điện - Điện tử</option>
-            <option>Khoa Cơ khí</option>
-        </select>
-        <select class="filter-sel">
-            <option>Tất cả trạng thái KK</option>
-            <option>Đã kiểm</option>
-            <option>Chưa kiểm</option>
-            <option>Thiếu / Mất</option>
-            <option>Phát sinh thêm</option>
-        </select>
-        <select class="filter-sel">
-            <option>Tất cả loại thiết bị</option>
-            <option>Máy tính</option>
-            <option>Máy chiếu</option>
-            <option>Thiết bị thực hành</option>
-        </select>
+    <div style="font-size:15px;color:#555">
+        Danh sách <strong>@Model.TongThietBi</strong> thiết bị trong hệ thống
     </div>
     <div style="display:flex;gap:10px">
-        <button class="btn-secondary">📄 Tạo biên bản KK</button>
-        <button class="btn-export">📥 Xuất Excel</button>
+        @if (Model.ChuaKiemKe > 0)
+        {
+            <a href="@Url.Action("TaoPhieuKiemKe","CSVC")" class="btn-primary">📝 Tạo phiếu kiểm kê (@Model.ChuaKiemKe chưa kiểm)</a>
+        }
+        else
+        {
+            <button class="btn-secondary" disabled>✅ Tất cả đã kiểm kê</button>
+        }
     </div>
 </div>
 
-<!-- Bảng kiểm kê -->
 <div class="card-table">
     <table>
         <thead>
             <tr>
+                <th>#</th>
                 <th>Mã TB</th>
                 <th>Tên thiết bị</th>
+                <th>Danh mục</th>
                 <th>Đơn vị quản lý</th>
+                <th>Trạng thái TB</th>
                 <th>SL Sổ sách</th>
                 <th>SL Thực tế</th>
-                <th>Tình trạng thực tế</th>
-                <th>KQ Kiểm kê</th>
-                <th>Người kiểm</th>
+                <th>Tình trạng KK</th>
+                <th>Ngày kiểm kê</th>
                 <th>Ghi chú</th>
+                <th>KQ Kiểm kê</th>
             </tr>
         </thead>
         <tbody>
-            <!-- Group: Khoa Công nghệ số -->
-            <tr class="group-header">
-                <td colspan="9">🏢 Khoa Công nghệ số — 42 thiết bị (đã kiểm 32/42)</td>
-            </tr>
-            <tr>
-                <td><strong>TB001</strong></td>
-                <td>Máy tính Dell OptiPlex 7090</td>
-                <td>P. B201</td>
-                <td style="text-align:center">30</td>
-                <td style="text-align:center">
-                    <div class="inline-check">
-                        <input type="number" class="qty-input" value="30" />
-                    </div>
-                </td>
-                <td>
-                    <select style="font-size:12px;border:1px solid #d0d5e8;border-radius:6px;padding:4px 8px">
-                        <option selected>Hoạt động tốt</option>
-                        <option>Một phần hỏng</option>
-                        <option>Hỏng toàn bộ</option>
-                    </select>
-                </td>
-                <td><span class="kk-status match">✅ Khớp</span></td>
-                <td style="font-size:12px;color:#888">Nguyễn Văn Minh</td>
-                <td><button class="btn-note" onclick="openNote()">📝</button></td>
-            </tr>
-            <tr>
-                <td><strong>TB004</strong></td>
-                <td>Máy in HP LaserJet Pro M404n</td>
-                <td>P. KT Mạng</td>
-                <td style="text-align:center">3</td>
-                <td style="text-align:center">
-                    <div class="inline-check">
-                        <input type="number" class="qty-input" value="2" style="border-color:#e53935" />
-                    </div>
-                </td>
-                <td>
-                    <select style="font-size:12px;border:1px solid #d0d5e8;border-radius:6px;padding:4px 8px">
-                        <option>Hoạt động tốt</option>
-                        <option selected>Một phần hỏng</option>
-                        <option>Hỏng toàn bộ</option>
-                    </select>
-                </td>
-                <td><span class="kk-status missing">❌ Thiếu 1</span></td>
-                <td style="font-size:12px;color:#888">Nguyễn Văn Minh</td>
-                <td><button class="btn-note" onclick="openNote()">📝 Ghi chú</button></td>
-            </tr>
-            <tr>
-                <td><strong>TB006</strong></td>
-                <td>Máy tính xách tay Lenovo ThinkPad</td>
-                <td>P. Demo</td>
-                <td style="text-align:center">5</td>
-                <td style="text-align:center">
-                    <div class="inline-check">
-                        <input type="number" class="qty-input" value="" placeholder="..." />
-                        <button class="btn-confirm">✓</button>
-                    </div>
-                </td>
-                <td>
-                    <select style="font-size:12px;border:1px solid #d0d5e8;border-radius:6px;padding:4px 8px">
-                        <option>Hoạt động tốt</option>
-                    </select>
-                </td>
-                <td><span class="kk-status pending">⏳ Chưa kiểm</span></td>
-                <td style="font-size:12px;color:#aaa">—</td>
-                <td><button class="btn-note" onclick="openNote()">📝</button></td>
-            </tr>
-
-            <!-- Group: Khoa Điện - Điện tử -->
-            <tr class="group-header">
-                <td colspan="9">🏢 Khoa Điện - Điện tử — 38 thiết bị (đã kiểm 30/38)</td>
-            </tr>
-            <tr>
-                <td><strong>TB002</strong></td>
-                <td>Máy chiếu Epson EB-X51</td>
-                <td>P. Học A305</td>
-                <td style="text-align:center">8</td>
-                <td style="text-align:center">
-                    <div class="inline-check">
-                        <input type="number" class="qty-input" value="8" />
-                    </div>
-                </td>
-                <td>
-                    <select style="font-size:12px;border:1px solid #d0d5e8;border-radius:6px;padding:4px 8px">
-                        <option>Hoạt động tốt</option>
-                        <option selected>Một phần hỏng</option>
-                    </select>
-                </td>
-                <td><span class="kk-status match">✅ Khớp</span></td>
-                <td style="font-size:12px;color:#888">Trần Thanh Hùng</td>
-                <td><button class="btn-note" onclick="openNote()">📝</button></td>
-            </tr>
-            <tr>
-                <td><strong>TB005</strong></td>
-                <td>Oscilloscope Rigol DS1054Z</td>
-                <td>P. TH Điện tử</td>
-                <td style="text-align:center">10</td>
-                <td style="text-align:center">
-                    <div class="inline-check">
-                        <input type="number" class="qty-input" value="12" style="border-color:#8e24aa" />
-                    </div>
-                </td>
-                <td>
-                    <select style="font-size:12px;border:1px solid #d0d5e8;border-radius:6px;padding:4px 8px">
-                        <option selected>Hoạt động tốt</option>
-                    </select>
-                </td>
-                <td><span class="kk-status extra">🟣 Thừa 2</span></td>
-                <td style="font-size:12px;color:#888">Trần Thanh Hùng</td>
-                <td><button class="btn-note" onclick="openNote()">📝 Ghi chú</button></td>
-            </tr>
+            @{
+                string currentKhoa = null;
+                int stt = 0;
+            }
+            @foreach (var tb in Model.DanhSachThietBi)
+            {
+                if (tb.TenKhoa != currentKhoa)
+                {
+                    currentKhoa = tb.TenKhoa;
+                    int soTBKhoa  = Model.DanhSachThietBi.Count(x => x.TenKhoa == currentKhoa);
+                    int daKKKhoa  = Model.DanhSachThietBi.Count(x => x.TenKhoa == currentKhoa && x.NgayKiemKe.HasValue);
+                    <tr class="group-header">
+                        <td colspan="12">🏢 @currentKhoa — @soTBKhoa thiết bị (đã kiểm @daKKKhoa/@soTBKhoa)</td>
+                    </tr>
+                }
+                stt++;
+                string trangThaiClass = tb.TrangThaiTB == "Hoạt động" ? "hoatdong"
+                                      : tb.TrangThaiTB == "Bảo trì"   ? "baotri"
+                                      : tb.TrangThaiTB == "Hỏng"      ? "hong" : "other";
+                <tr>
+                    <td style="color:#aaa;font-size:13px">@stt</td>
+                    <td><strong style="color:#1a237e">@tb.ID_ThietBi</strong></td>
+                    <td>@tb.TenTB</td>
+                    <td style="color:#666">@tb.TenDanhMuc</td>
+                    <td>@tb.TenKhoa</td>
+                    <td><span class="tb-status @trangThaiClass">@tb.TrangThaiTB</span></td>
+                    <td class="sl-cell">
+                        <span class="sl-he-thong">@tb.SoLuongHeThong</span>
+                    </td>
+                    <td class="sl-cell">
+                        @if (tb.SoLuongThucTe.HasValue)
+                        { <span class="sl-thuc-te">@tb.SoLuongThucTe</span> }
+                        else
+                        { <span style="color:#aaa">—</span> }
+                    </td>
+                    <td style="color:#555">@(tb.TinhTrangThucTe ?? "—")</td>
+                    <td style="color:#666">
+                        @if (tb.NgayKiemKe.HasValue)
+                        { @tb.NgayKiemKe.Value.ToString("dd/MM/yyyy") }
+                        else
+                        { <span style="color:#aaa">—</span> }
+                    </td>
+                    <td style="color:#666;max-width:160px">@(tb.GhiChu ?? "")</td>
+                    <td>
+                        @if (tb.NgayKiemKe.HasValue)
+                        { <span class="kk-status done">✅ Đã kiểm</span> }
+                        else
+                        { <span class="kk-status pending">⏳ Chưa kiểm</span> }
+                    </td>
+                </tr>
+            }
+            @if (!Model.DanhSachThietBi.Any())
+            {
+                <tr><td colspan="12" style="text-align:center;padding:30px;color:#aaa">Chưa có thiết bị nào trong hệ thống</td></tr>
+            }
         </tbody>
     </table>
 </div>
-
-<!-- Modal ghi chú kiểm kê -->
-<div class="modal-overlay" id="noteModal">
-    <div class="modal-box">
-        <div class="modal-title">📝 Ghi Chú Kiểm Kê — TB004</div>
-
-        <label class="form-lbl">Lý do chênh lệch *</label>
-        <div class="radio-group">
-            <div class="radio-opt sel" onclick="selRadio(this)">Mất / Thất lạc</div>
-            <div class="radio-opt" onclick="selRadio(this)">Đang sửa chữa bên ngoài</div>
-            <div class="radio-opt" onclick="selRadio(this)">Chuyển đơn vị khác</div>
-            <div class="radio-opt" onclick="selRadio(this)">Lý do khác</div>
-        </div>
-
-        <label class="form-lbl">Ghi chú chi tiết</label>
-        <textarea class="form-inp" rows="3" placeholder="Mô tả chi tiết tình trạng, vị trí, hoặc lý do chênh lệch...">Máy in số 3 đã gửi sửa chữa tại cơ sở bên ngoài từ ngày 01/04/2024, chưa nhận lại.</textarea>
-
-        <label class="form-lbl">Đề xuất xử lý</label>
-        <select class="form-inp">
-            <option>Chờ nhận lại sau sửa chữa</option>
-            <option>Lập biên bản mất tài sản</option>
-            <option>Đề xuất thanh lý</option>
-            <option>Điều tra thêm</option>
-        </select>
-
-        <div class="modal-footer">
-            <button class="btn-cancel" onclick="closeModal()">Hủy</button>
-            <button class="btn-save" onclick="closeModal()">💾 Lưu ghi chú</button>
-        </div>
-    </div>
-</div>
-
-<script>
-function openNote()  { document.getElementById('noteModal').classList.add('active'); }
-function closeModal(){ document.getElementById('noteModal').classList.remove('active'); }
-function selRadio(el) {
-    document.querySelectorAll('.radio-opt').forEach(r => r.classList.remove('sel'));
-    el.classList.add('sel');
-}
-document.getElementById('noteModal').addEventListener('click', e => { if (e.target === document.getElementById('noteModal')) closeModal(); });
-</script>

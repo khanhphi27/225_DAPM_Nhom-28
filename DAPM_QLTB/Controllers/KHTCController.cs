@@ -225,6 +225,21 @@ namespace QLTB.Controllers
                             }
                             catch { }
                         }
+                        // Ghi lịch sử duyệt KHTC
+                        try
+                        {
+                            using (var cmd = new SqlCommand(@"INSERT INTO LICHSUDUYET (ID_LichSu,DeXuatNo,CapDuyet,NguoiDuyetNo,ThoiGianDuyet,TrangThaiSauDuyet,GhiChu)
+                                VALUES (LEFT(REPLACE(NEWID(),'-',''),10),@DX,3,@ND,GETDATE(),@TT,@GC)", conn, tran))
+                            {
+                                cmd.Parameters.AddWithValue("@DX", id);
+                                cmd.Parameters.AddWithValue("@ND", Session["UserId"]?.ToString() ?? "");
+                                cmd.Parameters.AddWithValue("@TT", trangThai);
+                                cmd.Parameters.AddWithValue("@GC", (object)ghiChu ?? DBNull.Value);
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                        catch { }
+
                         tran.Commit();
                     }
                 }

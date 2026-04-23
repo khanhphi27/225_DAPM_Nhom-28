@@ -52,6 +52,8 @@ namespace DAPM_QLTB
         public virtual DbSet<View_BaoCaoTaiChinh> View_BaoCaoTaiChinh { get; set; }
         public virtual DbSet<View_BaoHong_TrangThai> View_BaoHong_TrangThai { get; set; }
         public virtual DbSet<View_KeHoach_ChiTiet> View_KeHoach_ChiTiet { get; set; }
+        public virtual DbSet<LICHSUDUYET> LICHSUDUYETs { get; set; }
+        public virtual DbSet<View_LichSuDuyet> View_LichSuDuyet { get; set; }
     
         public virtual int sp_alterdiagram(string diagramname, Nullable<int> owner_id, Nullable<int> version, byte[] definition)
         {
