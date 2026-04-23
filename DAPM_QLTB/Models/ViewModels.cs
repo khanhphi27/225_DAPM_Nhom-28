@@ -47,6 +47,7 @@ namespace QLTB.Models
         public string   MoTa            { get; set; }
         public string   LyDoTuChoi      { get; set; }
         public decimal  TongGiaDuKien   { get; set; }
+        public bool     DaNhapThietBi   { get; set; }
         public List<ChiTietDeXuatViewModel> ChiTiet { get; set; }
     }
 

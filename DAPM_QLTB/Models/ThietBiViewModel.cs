@@ -12,5 +12,6 @@ namespace QLTB.Models
         public int? SoSeri { get; set; }
         public decimal? Gia { get; set; }
         public string TrangThaiTB { get; set; }
+        public string DeXuatNo { get; set; }
     }
 }

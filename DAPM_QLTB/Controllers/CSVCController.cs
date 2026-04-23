@@ -16,9 +16,12 @@ namespace QLTB.Controllers
         }
         private string CurrentUser => Session["UserId"]?.ToString() ?? "csvc";
 
-        public ActionResult QuanLyThietBi()
+        public ActionResult QuanLyThietBi(string deXuatNo = null)
         {
             var r = CheckAuth(); if (r != null) return r;
+
+            if (!string.IsNullOrWhiteSpace(deXuatNo))
+                ViewBag.ImportDeXuatNo = deXuatNo.Trim();
 
             var list = new List<ThietBiViewModel>();
             using (var conn = DbHelper.GetConnection())
@@ -29,7 +32,7 @@ namespace QLTB.Controllers
                            dm.TenDanhMuc,
                            kp.TenPhongBanKhoa,
                            ncc.TenNhaCC,
-                           tb.SoSeri, tb.Gia, tb.TrangThaiTB
+                          tb.SoSeri, tb.Gia, tb.TrangThaiTB, tb.DeXuatNo
                     FROM THIETBI tb
                     LEFT JOIN DANHMUC dm ON tb.DanhMucNo = dm.ID_DanhMuc
                     LEFT JOIN KHOA_PHONGBAN kp ON tb.KhoaPhongBan = kp.ID_KhoaPhongBan
@@ -49,12 +52,63 @@ namespace QLTB.Controllers
                             NhaCungCap = rd["TenNhaCC"]?.ToString() ?? "",
                             SoSeri = rd["SoSeri"] == DBNull.Value ? (int?)null : Convert.ToInt32(rd["SoSeri"]),
                             Gia = rd["Gia"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(rd["Gia"]),
-                            TrangThaiTB = rd["TrangThaiTB"]?.ToString() ?? ""
+                            TrangThaiTB = rd["TrangThaiTB"]?.ToString() ?? "",
+                            DeXuatNo = rd["DeXuatNo"] == DBNull.Value ? "" : rd["DeXuatNo"].ToString()
                         });
                     }
                 }
             }
             return View(list);
+        }
+
+        [HttpGet]
+        public JsonResult GetApprovedFinalDeXuat()
+        {
+            var r = CheckAuth();
+            if (r != null) return Json(new { ok = false, msg = "Chưa đăng nhập." }, JsonRequestBehavior.AllowGet);
+
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    const string sql = @"
+                        SELECT dx.ID_DeXuat, dx.NgayDeXuat, ISNULL(dx.MoTa,'') AS MoTa
+                        FROM DEXUAT_MUASAM dx
+                        WHERE LTRIM(RTRIM(dx.TrangThai)) = N'Đã duyệt'
+                          AND EXISTS (
+                              SELECT 1
+                              FROM LICHSUDUYET ls
+                              JOIN VAITRO_NGUOIDUNG vn ON vn.NguoiDungNo = ls.NguoiDuyetNo AND vn.VaiTroNo = N'VT_BGH'
+                              WHERE ls.DeXuatNo = dx.ID_DeXuat
+                                AND ls.ThoiGianDuyet = (
+                                    SELECT MAX(ls2.ThoiGianDuyet)
+                                    FROM LICHSUDUYET ls2
+                                    WHERE ls2.DeXuatNo = dx.ID_DeXuat
+                                )
+                                AND ls.CapDuyet = 4
+                                AND LTRIM(RTRIM(ls.TrangThaiSauDuyet)) = N'Đã duyệt'
+                          )
+                        ORDER BY dx.NgayDuyetCuoi DESC, dx.NgayDeXuat DESC";
+
+                    var list = new List<object>();
+                    using (var cmd = new SqlCommand(sql, conn))
+                    using (var rd = cmd.ExecuteReader())
+                        while (rd.Read())
+                            list.Add(new
+                            {
+                                ID_DeXuat = rd["ID_DeXuat"].ToString(),
+                                NgayDeXuat = Convert.ToDateTime(rd["NgayDeXuat"]).ToString("dd/MM/yyyy"),
+                                MoTa = rd["MoTa"].ToString()
+                            });
+
+                    return Json(new { ok = true, data = list }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
         }
         // ══ KIỂM KÊ TÀI SẢN ════════════════════════════════════
         public ActionResult KiemKeTaiSan()
@@ -765,7 +819,12 @@ namespace QLTB.Controllers
                     const string sql = @"
                         SELECT dx.ID_DeXuat,dx.NgayDeXuat,dx.TrangThai,dx.MoTa,dx.LyDoTuChoi,
                                nd.HoTen AS NguoiDeXuat,ISNULL(kp.TenPhongBanKhoa,N'') AS KhoaPhongBan,
-                               ISNULL((SELECT SUM(ct.SoLuong*ISNULL(ct.GiaDuKien,0)) FROM CHITIET_DEXUAT ct WHERE ct.DeXuatNo=dx.ID_DeXuat),0) AS TongGia
+                                                             ISNULL((SELECT SUM(ct.SoLuong*ISNULL(ct.GiaDuKien,0)) FROM CHITIET_DEXUAT ct WHERE ct.DeXuatNo=dx.ID_DeXuat),0) AS TongGia,
+                                                             CASE WHEN EXISTS (
+                                                                     SELECT 1 FROM LICHSUDUYET ls
+                                                                     WHERE ls.DeXuatNo = dx.ID_DeXuat
+                                                                         AND LTRIM(RTRIM(ls.TrangThaiSauDuyet)) = N'Đã nhập thiết bị'
+                                                             ) THEN 1 ELSE 0 END AS DaNhapThietBi
                         FROM DEXUAT_MUASAM dx JOIN NGUOIDUNG nd ON nd.ID_NguoiDung=dx.NguoiDeXuatNo
                         LEFT JOIN KHOA_PHONGBAN kp ON kp.ID_KhoaPhongBan=nd.Khoa_BanNo
                         ORDER BY dx.NgayDeXuat DESC";
@@ -782,7 +841,8 @@ namespace QLTB.Controllers
                                 TrangThai = rd["TrangThai"].ToString(),
                                 MoTa = rd["MoTa"] == DBNull.Value ? "" : rd["MoTa"].ToString(),
                                 LyDoTuChoi = rd["LyDoTuChoi"] == DBNull.Value ? "" : rd["LyDoTuChoi"].ToString(),
-                                TongGiaDuKien = Convert.ToDecimal(rd["TongGia"])
+                                TongGiaDuKien = Convert.ToDecimal(rd["TongGia"]),
+                                DaNhapThietBi = Convert.ToInt32(rd["DaNhapThietBi"]) == 1
                             };
                             if (item.TrangThai == "Chờ CSVC duyệt") choDuyet.Add(item);
                             else lichSu.Add(item);
@@ -812,7 +872,7 @@ namespace QLTB.Controllers
 
                         // Ghi lịch sử duyệt
                         using (var cmd = new SqlCommand(@"INSERT INTO LICHSUDUYET (ID_LichSu,DeXuatNo,CapDuyet,NguoiDuyetNo,ThoiGianDuyet,TrangThaiSauDuyet,GhiChu)
-                            VALUES (LEFT(REPLACE(NEWID(),'-',''),10),@DX,N'CSVC',@ND,GETDATE(),@TT,@GC)", conn, tran))
+                            VALUES (LEFT(REPLACE(NEWID(),'-',''),10),@DX,1,@ND,GETDATE(),@TT,@GC)", conn, tran))
                         {
                             cmd.Parameters.AddWithValue("@DX", id);
                             cmd.Parameters.AddWithValue("@ND", Session["UserId"]?.ToString() ?? "");
@@ -856,6 +916,69 @@ namespace QLTB.Controllers
             }
             catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
         }
+
+        [HttpPost]
+        public ActionResult HoanTatNhapThietBi(string id)
+        {
+            var r = CheckAuth(); if (r != null) return Json(new { ok = false, msg = "Chưa đăng nhập." });
+            if (string.IsNullOrWhiteSpace(id)) return Json(new { ok = false, msg = "Thiếu mã đề xuất." });
+
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+
+                    // Chỉ chốt nhập với đề xuất đã được duyệt hoàn tất bởi BGH.
+                    const string sqlCheck = @"
+                        SELECT COUNT(1)
+                        FROM DEXUAT_MUASAM dx
+                        WHERE dx.ID_DeXuat = @dx
+                          AND LTRIM(RTRIM(dx.TrangThai)) = N'Đã duyệt'
+                          AND EXISTS (
+                              SELECT 1
+                              FROM LICHSUDUYET ls
+                              JOIN VAITRO_NGUOIDUNG vn ON vn.NguoiDungNo = ls.NguoiDuyetNo AND vn.VaiTroNo = N'VT_BGH'
+                              WHERE ls.DeXuatNo = dx.ID_DeXuat
+                                AND ls.ThoiGianDuyet = (
+                                    SELECT MAX(ls2.ThoiGianDuyet)
+                                    FROM LICHSUDUYET ls2
+                                    WHERE ls2.DeXuatNo = dx.ID_DeXuat
+                                )
+                                AND ls.CapDuyet = 4
+                                AND LTRIM(RTRIM(ls.TrangThaiSauDuyet)) = N'Đã duyệt'
+                          )";
+
+                    using (var cmd = new SqlCommand(sqlCheck, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@dx", id.Trim());
+                        if (Convert.ToInt32(cmd.ExecuteScalar()) == 0)
+                            return Json(new { ok = false, msg = "Đề xuất chưa ở trạng thái đã duyệt hoàn tất bởi BGH." });
+                    }
+
+                    const string sqlDone = @"
+                        IF NOT EXISTS (
+                            SELECT 1 FROM LICHSUDUYET
+                            WHERE DeXuatNo = @DX AND LTRIM(RTRIM(TrangThaiSauDuyet)) = N'Đã nhập thiết bị'
+                        )
+                        INSERT INTO LICHSUDUYET (ID_LichSu,DeXuatNo,CapDuyet,NguoiDuyetNo,ThoiGianDuyet,TrangThaiSauDuyet,GhiChu)
+                        VALUES (LEFT(REPLACE(NEWID(),'-',''),10),@DX,1,@ND,GETDATE(),N'Đã nhập thiết bị',N'CSVC hoàn tất nhập thiết bị từ đề xuất.');";
+
+                    using (var cmd = new SqlCommand(sqlDone, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@DX", id.Trim());
+                        cmd.Parameters.AddWithValue("@ND", Session["UserId"]?.ToString() ?? "");
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                return Json(new { ok = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { ok = false, msg = ex.Message });
+            }
+        }
         [HttpGet]
         public JsonResult GetThietBiById(string id)
         {
@@ -866,7 +989,7 @@ namespace QLTB.Controllers
                     conn.Open();
                     const string sql = @"
                         SELECT ID_ThietBi, TenTB, DanhMucNo, KhoaPhongBan, NhaCCNo,
-                               SoSeri, Gia, TrangThaiTB
+                               SoSeri, Gia, TrangThaiTB, DeXuatNo
                         FROM THIETBI
                         WHERE ID_ThietBi = @id";
 
@@ -887,7 +1010,8 @@ namespace QLTB.Controllers
                                     NhaCungCap = rd["NhaCCNo"]?.ToString() ?? "",
                                     SoSeri = rd["SoSeri"] == DBNull.Value ? (int?)null : Convert.ToInt32(rd["SoSeri"]),
                                     Gia = rd["Gia"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(rd["Gia"]),
-                                    TrangThaiTB = rd["TrangThaiTB"]?.ToString() ?? ""
+                                    TrangThaiTB = rd["TrangThaiTB"]?.ToString() ?? "",
+                                    DeXuatNo = rd["DeXuatNo"] == DBNull.Value ? "" : rd["DeXuatNo"].ToString()
                                 };
 
                                 return Json(new { ok = true, data = data }, JsonRequestBehavior.AllowGet);
@@ -924,12 +1048,41 @@ namespace QLTB.Controllers
                         return Json(new { ok = false, msg = "Không tìm thấy thiết bị để sửa" });
                     }
 
+                    var deXuatNo = string.IsNullOrWhiteSpace(tb.DeXuatNo) ? null : tb.DeXuatNo.Trim();
+                    if (!string.IsNullOrEmpty(deXuatNo))
+                    {
+                        const string sqlCheck = @"
+                            SELECT COUNT(1)
+                            FROM DEXUAT_MUASAM dx
+                            WHERE dx.ID_DeXuat = @dx
+                              AND LTRIM(RTRIM(dx.TrangThai)) = N'Đã duyệt'
+                              AND EXISTS (
+                                  SELECT 1
+                                  FROM LICHSUDUYET ls
+                                  JOIN VAITRO_NGUOIDUNG vn ON vn.NguoiDungNo = ls.NguoiDuyetNo AND vn.VaiTroNo = N'VT_BGH'
+                                  WHERE ls.DeXuatNo = dx.ID_DeXuat
+                                    AND ls.ThoiGianDuyet = (
+                                        SELECT MAX(ls2.ThoiGianDuyet)
+                                        FROM LICHSUDUYET ls2
+                                        WHERE ls2.DeXuatNo = dx.ID_DeXuat
+                                    )
+                                    AND ls.CapDuyet = 4
+                                    AND LTRIM(RTRIM(ls.TrangThaiSauDuyet)) = N'Đã duyệt'
+                              )";
+                        using (var cmdCheck = new SqlCommand(sqlCheck, conn))
+                        {
+                            cmdCheck.Parameters.AddWithValue("@dx", deXuatNo);
+                            if (Convert.ToInt32(cmdCheck.ExecuteScalar()) == 0)
+                                return Json(new { ok = false, msg = "Mã đề xuất không hợp lệ. Chỉ chấp nhận đề xuất đã duyệt cuối bởi BGH." });
+                        }
+                    }
+
                     string sql = isUpdate
                         ? @"UPDATE THIETBI SET TenTB=@ten, DanhMucNo=@dm, KhoaPhongBan=@khoa,
-                               NhaCCNo=@ncc, SoSeri=@seri, Gia=@gia, TrangThaiTB=@tt
+                               NhaCCNo=@ncc, SoSeri=@seri, Gia=@gia, TrangThaiTB=@tt, DeXuatNo=@dx
                             WHERE ID_ThietBi = @id"
-                        : @"INSERT INTO THIETBI (ID_ThietBi, TenTB, DanhMucNo, KhoaPhongBan, NhaCCNo, SoSeri, Gia, TrangThaiTB)
-                            VALUES (@id, @ten, @dm, @khoa, @ncc, @seri, @gia, @tt)";
+                        : @"INSERT INTO THIETBI (ID_ThietBi, TenTB, DanhMucNo, KhoaPhongBan, NhaCCNo, SoSeri, Gia, TrangThaiTB, DeXuatNo)
+                            VALUES (@id, @ten, @dm, @khoa, @ncc, @seri, @gia, @tt, @dx)";
 
                     using (var cmd = new SqlCommand(sql, conn))
                     {
@@ -941,6 +1094,7 @@ namespace QLTB.Controllers
                         cmd.Parameters.AddWithValue("@seri", (object)tb.SoSeri ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@gia", (object)tb.Gia ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@tt", tb.TrangThaiTB ?? "Mới nhập");
+                        cmd.Parameters.AddWithValue("@dx", (object)deXuatNo ?? DBNull.Value);
                         cmd.ExecuteNonQuery();
                     }
                 }
