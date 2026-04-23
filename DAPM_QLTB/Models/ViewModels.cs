@@ -140,13 +140,19 @@ namespace QLTB.Models
 
     public class BaoCaoTaiSanViewModel
     {
-        public string  ID_ThietBi        { get; set; }
-        public string  TenTB             { get; set; }
-        public string  TenDanhMuc        { get; set; }
-        public string  TenPhongBanKhoa   { get; set; }
-        public decimal Gia               { get; set; }
-        public string  TrangThaiTB       { get; set; }
-        public decimal TongChiPhiSuaChua { get; set; }
+        public string ID_ThietBi { get; set; }
+        public string TenTB { get; set; }
+        public string SoSeri { get; set; }
+        public string ThongSoKT { get; set; }
+        public string TenDanhMuc { get; set; }
+        public string TenPhongBanKhoa { get; set; }
+        public decimal Gia { get; set; } // Nguyên giá
+        public string TrangThaiTB { get; set; }
+        public decimal TongChiPhiSuaChua { get; set; } // Tổng tiền đã chi sửa chữa
+
+        // Các trường tính toán (Logic kế toán)
+        public decimal KhauHao { get { return Gia * 0.2m; } } // Giả định khấu hao 20% cho demo
+        public decimal GiaTriConLai { get { return Gia - KhauHao; } }
     }
     // ── Báo hỏng thiết bị ────────────────────────────────────
     public class BaoHongViewModel
