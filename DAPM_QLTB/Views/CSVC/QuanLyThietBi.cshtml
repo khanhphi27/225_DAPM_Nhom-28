@@ -2,6 +2,8 @@
 @model List<QLTB.Models.ThietBiViewModel>
 @{
     ViewBag.Title = "Quản Lý Thiết Bị - Phòng CSVC";
+    var importDeXuatNo = (ViewBag.ImportDeXuatNo ?? "").ToString();
+    bool importMode = !string.IsNullOrWhiteSpace(importDeXuatNo);
 }
 <style>
     .tb-header {
@@ -386,6 +388,16 @@
     <button class="btn-add" onclick="openAdd()">+ Thêm Thiết Bị Mới</button>
 </div>
 
+@if (importMode)
+{
+    <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+        <div style="font-size:13px;color:#2e7d32;">
+            📥 Đang nhập thiết bị từ đề xuất: <b>@importDeXuatNo</b>. Mã đề xuất sẽ tự động gắn vào thiết bị mới.
+        </div>
+        <button class="btn-add" style="background:#1a237e" onclick="completeImport()">✅ Hoàn tất nhập thiết bị</button>
+    </div>
+}
+
 <!-- Thống kê — ánh xạ TrangThaiTB trong THIETBI -->
 <div class="stats-row">
     <div class="stat-box total">
@@ -413,7 +425,7 @@
         <input type="text" class="form-control" placeholder="Tên thiết bị, mã TB, số seri..." />
     </div>
     <div class="form-group">
-        <label>Danh mục (DANHMUC)</label>
+        <label>Danh mục</label>
         <select class="form-select">
             <option value="">Tất cả danh mục</option>
             <option>Máy tính &amp; Laptop</option>
@@ -423,7 +435,7 @@
         </select>
     </div>
     <div class="form-group">
-        <label>Tình trạng (TrangThaiTB)</label>
+        <label>Tình trạng</label>
         <select class="form-select">
             <option value="">Tất cả</option>
             <option>Đang sử dụng</option>
@@ -446,6 +458,7 @@
                 <th>Số seri</th>
                 <th>Giá</th>
                 <th>Tình trạng</th>
+                <th>Mã đề xuất</th>
                 <th>Thao tác</th>
             </tr>
         </thead>
@@ -459,6 +472,7 @@
                     <td>@d.SoSeri</td>
                     <td>@d.Gia</td>
                     <td>@d.TrangThaiTB</td>
+                    <td>@(string.IsNullOrEmpty(d.DeXuatNo) ? "Ngoài đề xuất" : d.DeXuatNo)</td>
                     <td>
                         <button onclick="editDevice('@d.ID_ThietBi')">Sửa</button>
                         <button onclick="deleteDevice('@d.ID_ThietBi')">Xóa</button>
@@ -479,21 +493,21 @@
     <div class="modal-box">
         <div class="modal-title" id="modalTitle">➕ Thêm Thiết Bị Mới</div>
         <div class="modal-grid">
-            <div class="section-label">Thông tin cơ bản (THIETBI)</div>
+            <div class="section-label">Thông tin cơ bản</div>
             <div>
-                <label class="form-lbl">ID_ThietBi *</label>
-                <input type="text" class="form-inp" id="fCode" placeholder="VD: TB008" />
+                <label class="form-lbl">Mã thiết bị</label>
+                <input type="text" class="form-inp" id="fCode" readonly style="background:#eef1f6;color:#8a93a7;" />
             </div>
             <div>
-                <label class="form-lbl">Số Seri (SoSeri)</label>
+                <label class="form-lbl">Số seri</label>
                 <input type="number" class="form-inp" id="fSeri" placeholder="VD: 1008" />
             </div>
             <div class="full">
-                <label class="form-lbl">Tên thiết bị (TenTB) *</label>
+                <label class="form-lbl">Tên thiết bị</label>
                 <input type="text" class="form-inp" id="fName" placeholder="Nhập tên thiết bị đầy đủ" />
             </div>
             <div>
-                <label class="form-lbl">Danh mục (DanhMucNo → DANHMUC)</label>
+                <label class="form-lbl">Danh mục</label>
                 <select class="form-inp" id="fCat">
                     <option value="DM_MT">Máy tính &amp; Laptop</option>
                     <option value="DM_MC">Máy chiếu</option>
@@ -502,7 +516,7 @@
                 </select>
             </div>
             <div>
-                <label class="form-lbl">Tình trạng (TrangThaiTB)</label>
+                <label class="form-lbl">Tình trạng</label>
                 <select class="form-inp" id="fStatus">
                     <option value="Mới nhập">Mới nhập</option>
                     <option value="Đang sử dụng">Đang sử dụng</option>
@@ -513,12 +527,17 @@
 
             <div class="section-label">Phân bổ & Nguồn gốc</div>
             <div>
-                <label class="form-lbl">Giá trị (Gia — VNĐ)</label>
+                <label class="form-lbl">Giá trị</label>
                 <input type="text" class="form-inp" id="fPrice" placeholder="VD: 15,000,000" />
             </div>
             <div class="full">
-                <label class="form-lbl">Thông số kỹ thuật (ThongSoKT)</label>
+                <label class="form-lbl">Thông số kỹ thuật</label>
                 <textarea class="form-inp" id="fSpec" rows="2" placeholder="CPU, RAM, dung lượng, model..."></textarea>
+            </div>
+            <input type="hidden" id="fDeXuat" value="" />
+            <div class="full" id="importCodeBox" style="display:none;">
+                <label class="form-lbl">Mã đề xuất đang nhập</label>
+                <input type="text" class="form-inp" id="fDeXuatReadonly" readonly />
             </div>
         </div>
         <div class="modal-footer">
@@ -567,6 +586,9 @@
 </div>
 
 <script>
+    var importDeXuatNo = '@importDeXuatNo';
+    var importMode = '@(importMode ? "1" : "0")' === '1';
+
     function openModal(mode) {
         var m = document.getElementById('deviceModal');
         document.getElementById('modalTitle').textContent = mode === 'add' ? '➕ Thêm Thiết Bị Mới' : '✏️ Cập Nhật Thông Tin Thiết Bị';
@@ -603,14 +625,36 @@
         $('#modalTitle').text('➕ Thêm Thiết Bị Mới');
         $('.btn-save').text('💾 Thêm');
 
-        $('#fCode').val('').prop('readonly', false);
+        $('#fCode').val('').prop('readonly', true);
         $('#fName').val('');
         $('#fSeri').val('');
         $('#fPrice').val('');
         $('#fStatus').val('Mới nhập');
         $('#fCat').val('DM_MT');
+        $('#fDeXuat').val('');
+        $('#importCodeBox').hide();
+        $('#fDeXuatReadonly').val('');
+
+        $.get('/CSVC/GetNextThietBiId', function (res) {
+            if (res.ok && res.id) {
+                $('#fCode').val(res.id);
+            } else {
+                alert('Không tạo được mã thiết bị tự động: ' + (res.msg || 'Lỗi không xác định'));
+            }
+        }).fail(function () {
+            alert('Không tạo được mã thiết bị tự động do lỗi kết nối server.');
+        });
 
         $('#deviceModal').addClass('active');
+    }
+
+    function openAddFromDeXuat(deXuatNo) {
+        deXuatNo = (deXuatNo || '').trim();
+        openAdd();
+        $('#fDeXuat').val(deXuatNo);
+        $('#importCodeBox').show();
+        $('#fDeXuatReadonly').val(deXuatNo);
+        $('#modalTitle').text('📥 Nhập Thiết Bị Từ Đề Xuất ' + deXuatNo);
     }
 
     function editDevice(id) {
@@ -629,11 +673,30 @@
                 $('#fPrice').val(d.Gia ? Number(d.Gia).toLocaleString('vi-VN') : '');
                 $('#fStatus').val(d.TrangThaiTB || 'Đang sử dụng');
                 $('#fCat').val(d.DanhMuc || '');
+                $('#fDeXuat').val(d.DeXuatNo || '');
+                $('#importCodeBox').hide();
+                $('#fDeXuatReadonly').val('');
 
                 $('#deviceModal').addClass('active');
             } else {
                 alert('Không lấy được dữ liệu: ' + (res.msg || ''));
             }
+        });
+    }
+
+    function completeImport() {
+        if (!importMode || !importDeXuatNo) return;
+        if (!confirm('Xác nhận hoàn tất nhập thiết bị cho đề xuất ' + importDeXuatNo + '?')) return;
+
+        $.post('/CSVC/HoanTatNhapThietBi', { id: importDeXuatNo }, function (res) {
+            if (res.ok) {
+                alert('✅ Đã hoàn tất nhập thiết bị.');
+                window.location.href = '@Url.Action("PheDuyetDeXuat", "CSVC")';
+            } else {
+                alert('❌ Lỗi: ' + (res.msg || 'Không xác định'));
+            }
+        }).fail(function () {
+            alert('Lỗi kết nối server!');
         });
     }
 
@@ -643,6 +706,12 @@
         let giaValue = priceStr ? parseFloat(priceStr) : null;
 
         let seriVal = $('#fSeri').val().trim(); // 🔥 ĐẶT Ở ĐÂY
+        let deXuatNoValue = ($('#fDeXuat').val() || '').trim();
+
+        // Trong chế độ nhập từ đề xuất, luôn ưu tiên mã đề xuất của luồng import.
+        if (!isEdit && importMode) {
+            deXuatNoValue = (importDeXuatNo || $('#fDeXuatReadonly').val() || deXuatNoValue).trim();
+        }
 
         $.post('/CSVC/SaveThietBi', {
             ID_ThietBi: isEdit ? $('#fCode').val().trim() : '',
@@ -650,7 +719,8 @@
             DanhMuc: $('#fCat').val(),
             SoSeri: seriVal === '' ? null : parseInt(seriVal), // 🔥 OK
             Gia: giaValue,
-            TrangThaiTB: $('#fStatus').val()
+            TrangThaiTB: $('#fStatus').val(),
+            DeXuatNo: deXuatNoValue
         }, function (res) {
             if (res.ok) {
                 alert('✅ ' + res.message);
@@ -675,4 +745,10 @@
             alert('Lỗi kết nối server!');
         });
     }
+
+    $(function () {
+        if (importMode && importDeXuatNo) {
+            openAddFromDeXuat(importDeXuatNo);
+        }
+    });
 </script>

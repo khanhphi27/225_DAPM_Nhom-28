@@ -228,7 +228,7 @@ namespace QLTB.Controllers
                         try
                         {
                             using (var cmd = new SqlCommand(@"INSERT INTO LICHSUDUYET (ID_LichSu,DeXuatNo,CapDuyet,NguoiDuyetNo,ThoiGianDuyet,TrangThaiSauDuyet,GhiChu)
-                                VALUES (LEFT(REPLACE(NEWID(),'-',''),10),@DX,N'BGH',@ND,GETDATE(),@TT,@GC)", conn, tran))
+                                VALUES (LEFT(REPLACE(NEWID(),'-',''),10),@DX,4,@ND,GETDATE(),@TT,@GC)", conn, tran))
                             {
                                 cmd.Parameters.AddWithValue("@DX", id);
                                 cmd.Parameters.AddWithValue("@ND", Session["UserId"]?.ToString() ?? "");

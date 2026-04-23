@@ -169,10 +169,28 @@
                     <div class="tl-step @s3"><div class="tl-dot">@(s3=="done"?"✓":s3=="reject"?"✕":"3")</div><div class="tl-label">BGH</div></div>
                     <div class="tl-step @s4"><div class="tl-dot">@(s4=="done"?"✓":"✓")</div><div class="tl-label">Hoàn tất</div></div>
                 </div>
-                @if (!string.IsNullOrEmpty(dx.LyDoTuChoi))
-                {
-                    <div class="card-foot"><div class="foot-note" style="color:#c62828;">❌ Lý do từ chối: @dx.LyDoTuChoi</div></div>
-                }
+                <div class="card-foot">
+                    <div class="foot-note">
+                        @if (!string.IsNullOrEmpty(dx.LyDoTuChoi))
+                        {
+                            <span style="color:#c62828;">❌ Lý do từ chối: @dx.LyDoTuChoi</span>
+                        }
+                        else if (dx.TrangThai == "Đã duyệt" && dx.DaNhapThietBi)
+                        {
+                            <span style="color:#2e7d32;">✅ Đề xuất đã hoàn tất nhập thiết bị.</span>
+                        }
+                        else
+                        {
+                            <span>—</span>
+                        }
+                    </div>
+                    <div class="action-group">
+                        @if (dx.TrangThai == "Đã duyệt" && !dx.DaNhapThietBi)
+                        {
+                            <a class="btn-approve" href="@Url.Action("QuanLyThietBi", "CSVC", new { deXuatNo = dx.ID_DeXuat })">📥 Nhập thiết bị</a>
+                        }
+                    </div>
+                </div>
             </div>
         }
     }
