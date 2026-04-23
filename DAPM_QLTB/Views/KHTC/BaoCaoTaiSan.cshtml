@@ -1,333 +1,300 @@
 ﻿@model List<QLTB.Models.BaoCaoTaiSanViewModel>
 @{
-    ViewBag.Title = "Báo Cáo Tài Sản";
+    ViewBag.Title = "Báo Cáo Tài Sản Tổng Hợp";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    decimal tongGiaTri = Model != null ? Model.Sum(x => x.Gia) : 0;
-}
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    // Tính toán tổng số cho Dashboard
+    decimal tongNguyenGia = Model.Sum(x => x.Gia);
+    decimal tongSuaChua = Model.Sum(x => x.TongChiPhiSuaChua);
+    decimal tongGiaTriConLai = Model.Sum(x => x.GiaTriConLai);
+}
 
 <style>
     :root {
-        --primary-blue: #3b82f6;
-        --hover-blue: #2563eb;
-        --excel-green: #16a34a;
-        --text-main: #1e293b;
-        --text-muted: #64748b;
-        --border-color: #e2e8f0;
+        --primary: #4e73df;
+        --success: #1cc88a;
+        --warning: #f6c23e;
+        --danger: #e74a3b;
     }
 
     body {
-        background-color: #f1f5f9;
-        font-family: 'Inter', sans-serif;
+        background-color: #f8f9fc;
     }
 
-    /* Header & Badge Tổng */
-    .header-section {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .page-title {
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: #1e293b;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .total-badge-blue {
-        background-color: var(--primary-blue);
-        color: white;
-        padding: 8px 20px;
-        border-radius: 10px;
-        font-weight: 600;
-        font-size: 1.05rem;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    /* Filter Card */
-    .modern-card {
-        background: white;
-        border-radius: 16px;
-        border: 1px solid var(--border-color);
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-
-    .filter-label {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #94a3b8;
-        margin-bottom: 8px;
-        display: block;
-    }
-
-    .form-control, .form-select {
-        border-radius: 8px;
-        border: 1px solid var(--border-color);
-        padding: 8px 12px;
-        font-size: 0.85rem;
-        height: 40px;
-    }
-
-    /* Button Tinh chỉnh */
-    .btn-action {
-        height: 40px;
-        padding: 0 18px;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
+    /* 1. Dashboard Cards */
+    .stat-card {
+        border-radius: 15px;
         border: none;
-        transition: all 0.2s;
+        transition: 0.3s;
+        border-left: 5px solid var(--primary);
     }
 
-    .btn-submit {
-        background: var(--primary-blue);
-        color: white;
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+    .stat-label {
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #858796;
     }
 
-    .btn-refresh {
-        width: 40px;
-        padding: 0;
+    .stat-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #5a5c69;
+    }
+
+    /* 2. Table Modernization */
+    .table-container {
         background: white;
-        border: 1px solid var(--border-color);
-        color: var(--text-muted);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 0.15rem 1.75rem rgba(58, 59, 69, 0.1);
     }
 
-    .btn-excel {
-        background: var(--excel-green);
-        color: white;
-    }
-
-    /* Table */
     .custom-table thead th {
-        background-color: #f8fafc;
-        color: #64748b;
-        font-weight: 600;
+        background: #f8fafc;
+        color: #4e73df;
         font-size: 0.75rem;
         text-transform: uppercase;
-        padding: 15px 20px;
-        border-bottom: 1px solid var(--border-color);
+        border: none;
     }
 
-    .custom-table tbody td {
-        padding: 14px 20px;
+    .custom-table td {
         vertical-align: middle;
+        font-size: 0.9rem;
         border-bottom: 1px solid #f1f5f9;
-        font-size: 0.88rem;
-        color: #475569;
     }
 
-    .data-row:hover {
-        background-color: #f8fbff;
-        cursor: pointer;
+    /* 3. Analysis Badge */
+    .analysis-badge {
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 0.7rem;
+        font-weight: 700;
     }
 
-    /* Status Badges chuẩn ảnh */
-    .st-badge {
-        padding: 4px 12px;
-        border-radius: 50px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .st-using {
-        background-color: #dcfce7;
-        color: #15803d;
-    }
-
-    .st-repair {
-        background-color: #fef9c3;
-        color: #a16207;
-    }
-
-    .st-broken {
-        background-color: #fee2e2;
-        color: #b91c1c;
-    }
-
-    .st-badge::before {
-        content: '●';
-        font-size: 8px;
-    }
-
-    .footer-info {
-        padding: 15px 20px;
-        color: var(--primary-blue);
-        font-size: 0.85rem;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+    .warning-bg {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
     }
 </style>
 
 <div class="container-fluid px-4 mt-3">
-    <div class="header-section">
-        <div class="page-title">
-            <i class="bi bi-grid-3x3-gap-fill text-primary"></i>
-            <span>Báo Cáo Tài Sản</span>
-        </div>
-        <div class="total-badge-blue">
-            <i class="bi bi-wallet2"></i>
-            <span>Tổng: @tongGiaTri.ToString("N0") VNĐ</span>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-dark m-0">Hệ Thống Theo Dõi & Báo Cáo Tài Chính</h3>
+        <button class="btn btn-success fw-bold px-4 rounded-3" onclick="xuatExcel()">
+            <i class="bi bi-file-earmark-excel me-2"></i> Xuất Báo Cáo Kiểm Toán
+        </button>
     </div>
 
-    <div class="card modern-card mb-4">
-        <div class="card-body p-4">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <label class="filter-label">Tên thiết bị:</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                        <input type="text" id="filterTen" class="form-control border-start-0" placeholder="Nhập từ khóa...">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <label class="filter-label">Trạng thái:</label>
-                    <select id="filterTrangThai" class="form-select">
-                        <option value="">-- Tất cả trạng thái --</option>
-                        <option value="Đang sử dụng">Đang sử dụng</option>
-                        <option value="Cần bảo trì">Cần bảo trì</option>
-                        <option value="Báo hỏng">Báo hỏng</option>
-                    </select>
-                </div>
-                <div class="col-md-5 d-flex gap-2">
-                    <button class="btn-action btn-submit flex-grow-1" onclick="filterTable()">
-                        <i class="bi bi-funnel-fill"></i> Thống kê
-                    </button>
-                    <button class="btn-action btn-refresh" onclick="location.reload()">
-                        <i class="bi bi-arrow-counterclockwise"></i>
-                    </button>
-                    <button class="btn-action btn-excel" onclick="xuatExcel('tableBaoCao', 'BaoCaoTaiSan')">
-                        <i class="bi bi-file-earmark-excel-fill"></i> Xuất Excel
-                    </button>
-                </div>
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card stat-card p-3" style="border-left-color: var(--primary)">
+                <div class="stat-label">Tổng Nguyên Giá (Sổ sách)</div>
+                <div class="stat-value text-primary">@tongNguyenGia.ToString("N0") đ</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card p-3" style="border-left-color: var(--danger)">
+                <div class="stat-label">Tổng Chi Phí Bảo Trì Tích Lũy</div>
+                <div class="stat-value text-danger">@tongSuaChua.ToString("N0") đ</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card p-3" style="border-left-color: var(--success)">
+                <div class="stat-label">Giá Trị Tài Sản Còn Lại</div>
+                <div class="stat-value text-success">@tongGiaTriConLai.ToString("N0") đ</div>
             </div>
         </div>
     </div>
 
-    <div class="card modern-card overflow-hidden">
+    <div class="table-container">
+        <div class="row g-3 mb-3">
+            <div class="col-md-5">
+                <input type="text" id="filterInput" class="form-control rounded-3" placeholder="Tìm tên thiết bị, số Seri hoặc mã đơn vị...">
+            </div>
+            <div class="col-md-3">
+                <select id="filterStatus" class="form-select rounded-3">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="Đang sử dụng">Đang sử dụng</option>
+                    <option value="Cần bảo trì">Cần bảo trì</option>
+                    <option value="Báo hỏng">Báo hỏng</option>
+                </select>
+            </div>
+        </div>
+
         <div class="table-responsive">
-            <table class="table custom-table mb-0" id="tableBaoCao">
+            <table class="table custom-table" id="mainTable">
                 <thead>
                     <tr>
-                        <th width="100">Mã TB</th>
-                        <th>Tên Thiết Bị</th>
-                        <th>Danh Mục</th>
-                        <th>Khoa / Phòng</th>
-                        <th>Trạng Thái</th>
-                        <th class="text-end">Nguyên Giá (VNĐ)</th>
+                        <th>Thiết bị / Seri</th>
+                        <th>Đơn vị</th>
+                        <th class="text-end">Nguyên giá</th>
+                        <th class="text-end">Đã chi bảo trì</th>
+                        <th class="text-end">Khấu hao</th>
+                        <th class="text-end">Giá trị còn lại</th>
+                        <th class="text-center">Phân tích</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var item in Model)
                     {
-                        var stClass = item.TrangThaiTB == "Đang sử dụng" ? "st-using" : (item.TrangThaiTB == "Cần bảo trì" ? "st-repair" : "st-broken");
-                        <tr class="data-row" onclick="showAssetDetail(this)"
+                        // Logic cảnh báo ảnh 4: Nếu sửa > 50% giá mua
+                        bool nenThanhLy = item.TongChiPhiSuaChua > (item.Gia * 0.5m);
+
+                        <tr class="data-row" onclick="viewDetail(this)" style="cursor:pointer"
                             data-id="@item.ID_ThietBi"
                             data-ten="@item.TenTB"
-                            data-dm="@item.TenDanhMuc"
-                            data-khoa="@item.TenPhongBanKhoa"
-                            data-st="@item.TrangThaiTB"
-                            data-gia="@item.Gia.ToString("N0")"
-                            data-cp="@item.TongChiPhiSuaChua.ToString("N0")">
-                            <td class="fw-bold">TB@(item.ID_ThietBi.ToString().PadLeft(3, '0'))</td>
-                            <td class="fw-semibold">@item.TenTB</td>
-                            <td><i class="bi bi-tag me-1 text-muted"></i> @item.TenDanhMuc</td>
-                            <td>@item.TenPhongBanKhoa</td>
-                            <td><span class="st-badge @stClass">@item.TrangThaiTB</span></td>
+                            data-seri="@(item.SoSeri ?? "Trống")"
+                            data-specs="@item.ThongSoKT"
+                            data-cp="@item.TongChiPhiSuaChua"
+                            data-gia="@item.Gia">
+                            <td>
+                                <div class="fw-bold">@item.TenTB</div>
+                                <div class="small text-muted">S/N: @(item.SoSeri ?? "N/A")</div>
+                            </td>
+                            <td><span class="badge bg-light text-dark">@item.TenPhongBanKhoa</span></td>
                             <td class="text-end fw-bold">@item.Gia.ToString("N0")</td>
+                            <td class="text-end text-danger fw-bold">@item.TongChiPhiSuaChua.ToString("N0")</td>
+                            <td class="text-end text-muted small">@item.KhauHao.ToString("N0")</td>
+                            <td class="text-end text-success fw-bold">@item.GiaTriConLai.ToString("N0")</td>
+                            <td class="text-center">
+                                @if (nenThanhLy)
+                                {
+                                    <span class="analysis-badge warning-bg"><i class="bi bi-exclamation-triangle"></i> Nên thanh lý</span>
+                                }
+                                else
+                                {
+                                    <span class="analysis-badge bg-light text-muted">Ổn định</span>
+                                }
+                            </td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
-        <div class="footer-info">
-            <i class="bi bi-info-circle-fill"></i>
-            <span>Bấm vào bất kỳ dòng nào để xem lịch sử bảo trì & chi phí chi tiết.</span>
-        </div>
     </div>
 </div>
 
-<div class="modal fade" id="assetDetailModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
-            <div class="modal-header border-0 pb-0 pt-4 px-4">
-                <h5 class="fw-bold"><i class="bi bi-info-circle text-primary me-2"></i>Chi Tiết Tài Sản</h5>
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
+            <div class="modal-header border-0 p-4 pb-0">
+                <h5 class="fw-bold">Hồ sơ phân tích chi tiết: <span id="md-ten" class="text-primary"></span></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
-                <div class="text-center mb-4">
-                    <h3 id="md-ten" class="fw-bold mb-1"></h3>
-                    <span id="md-id" class="badge bg-light text-muted border px-3"></span>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-4 h-100">
+                            <label class="small text-muted fw-bold text-uppercase">Cấu hình kỹ thuật</label>
+                            <div id="md-specs" class="small text-dark mt-2"></div>
+                            <hr>
+                            <label class="small text-muted fw-bold text-uppercase">Mã hệ thống</label>
+                            <div id="md-id" class="fw-bold"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 border border-2 rounded-4 h-100 d-flex flex-column justify-content-center">
+                            <div class="text-center">
+                                <div class="small text-muted mb-1">Tổng chi phí đã tiêu tốn</div>
+                                <h3 id="md-cp" class="text-danger fw-800"></h3>
+                                <div id="md-compare" class="small mt-2 px-3 py-1 rounded-pill d-inline-block"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="row g-3">
-                    <div class="col-6"><small class="text-muted d-block">Danh mục</small><strong id="md-dm"></strong></div>
-                    <div class="col-6"><small class="text-muted d-block">Đơn vị quản lý</small><strong id="md-khoa"></strong></div>
-                    <div class="col-6"><small class="text-muted d-block">Trạng thái</small><div id="md-st"></div></div>
-                    <div class="col-6"><small class="text-muted d-block">Nguyên giá</small><strong class="text-primary" id="md-gia"></strong></div>
+
+                <div class="mt-4">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-clock-history me-2"></i>Chi tiết các lần phát sinh chi phí:</h6>
+                    <div class="border rounded-4 overflow-hidden">
+                        <table class="table table-sm mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-3">Ngày</th>
+                                    <th>Nội dung</th>
+                                    <th class="text-end pe-3">Số tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyBody"></tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="mt-4 p-3 bg-light rounded-3 border border-dashed">
-                    <small class="text-muted d-block">Tổng chi phí bảo trì tích lũy:</small>
-                    <h4 class="text-danger fw-bold mb-0" id="md-cp"></h4>
-                </div>
-            </div>
-            <div class="modal-footer border-0">
-                <button class="btn btn-primary w-100 fw-bold py-2" data-bs-dismiss="modal">ĐÓNG</button>
             </div>
         </div>
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
 <script>
-    // Hàm hiện Modal Chi tiết
-    function showAssetDetail(row) {
-        $('#md-id').text('Mã TB: TB' + $(row).data('id').toString().padStart(3, '0'));
+    function viewDetail(row) {
+        const id = $(row).data('id');
+        const giaMua = parseFloat($(row).data('gia'));
+        const tongCP = parseFloat($(row).data('cp'));
+
         $('#md-ten').text($(row).data('ten'));
-        $('#md-dm').text($(row).data('dm'));
-        $('#md-khoa').text($(row).data('khoa'));
-        $('#md-gia').text($(row).data('gia') + ' VNĐ');
-        $('#md-cp').text($(row).data('cp') + ' VNĐ');
+        $('#md-id').text(id);
+        $('#md-specs').text($(row).data('specs') || "Chưa cập nhật thông số.");
+        $('#md-cp').text(tongCP.toLocaleString('vi-VN') + ' đ');
 
-        let st = $(row).data('st');
-        let badge = st === "Đang sử dụng" ? '<span class="st-badge st-using">Đang sử dụng</span>' : (st === "Cần bảo trì" ? '<span class="st-badge st-repair">Cần bảo trì</span>' : '<span class="st-badge st-broken">Báo hỏng</span>');
-        $('#md-st').html(badge);
+        // Logic so sánh (Ảnh 4)
+        const tile = (tongCP / giaMua) * 100;
+        let compareText = `Chiếm ${tile.toFixed(1)}% nguyên giá`;
+        let compareClass = tile > 50 ? "bg-danger text-white" : "bg-info text-white";
+        if (tile > 50) compareText += " - KHÔNG NÊN SỬA THÊM";
 
-        new bootstrap.Modal(document.getElementById('assetDetailModal')).show();
-    }
+        $('#md-compare').text(compareText).attr('class', 'small mt-2 px-3 py-1 rounded-pill d-inline-block ' + compareClass);
 
-    // Hàm lọc
-    function filterTable() {
-        let ten = $('#filterTen').val().toLowerCase();
-        let st = $('#filterTrangThai').val().toLowerCase();
-        $('.data-row').each(function () {
-            let rowTen = $(this).data('ten').toLowerCase();
-            let rowSt = $(this).data('st').toLowerCase();
-            if (rowTen.includes(ten) && (st === "" || rowSt === st)) { $(this).show(); }
-            else { $(this).hide(); }
+        // Load AJAX lịch sử sửa chữa
+        $('#historyBody').html('<tr><td colspan="3" class="text-center py-3">Đang tải...</td></tr>');
+        $.get('@Url.Action("GetLichSuSuaChua", "KHTC")', { id: id }, function(res) {
+            if(res.ok && res.data.length > 0) {
+                let html = "";
+                res.data.forEach(h => {
+                    html += `<tr>
+                        <td class="ps-3">${h.Ngay}</td>
+                        <td>${h.NoiDung}</td>
+                        <td class="text-end pe-3 fw-bold text-danger">${Number(h.Tien).toLocaleString('vi-VN')} đ</td>
+                    </tr>`;
+                });
+                $('#historyBody').html(html);
+            } else {
+                $('#historyBody').html('<tr><td colspan="3" class="text-center py-3 text-muted">Chưa có lịch sử sửa chữa.</td></tr>');
+            }
         });
+
+        new bootstrap.Modal(document.getElementById('detailModal')).show();
     }
 
-    function xuatExcel(tableId, fileName) {
-        let table = document.getElementById(tableId);
-        var wb = XLSX.utils.table_to_book(table, { sheet: "Báo Cáo" });
-        XLSX.writeFile(wb, fileName + ".xlsx");
+    // Xuất báo cáo (Ảnh 6)
+    function xuatExcel() {
+        var rows = [["BÁO CÁO TÀI CHÍNH TÀI SẢN - NĂM @DateTime.Now.Year"]];
+        rows.push(["Mã TB", "Tên TB", "Số Seri", "Đơn vị", "Nguyên giá", "Tiền bảo trì", "Giá trị còn lại"]);
+
+        $("#mainTable tbody tr:visible").each(function() {
+            var r = [];
+            $(this).find("td").each(function(i) {
+                if(i < 6) r.push($(this).text().trim());
+            });
+            rows.push(r);
+        });
+
+        var ws = XLSX.utils.aoa_to_sheet(rows);
+        var wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "BaoCaoTaiChinh");
+        XLSX.writeFile(wb, "Bao_Cao_Tai_San_KHTC.xlsx");
     }
+
+    // Filter tìm kiếm
+    $('#filterInput').on('keyup', function() {
+        var value = $(this).val().toLowerCase();
+        $("#mainTable tbody tr").filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+        });
+    });
 </script>
