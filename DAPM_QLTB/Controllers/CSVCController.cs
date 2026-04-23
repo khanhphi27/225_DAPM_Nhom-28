@@ -1107,6 +1107,22 @@ namespace QLTB.Controllers
             }
         }
 
+        [HttpGet]
+        public JsonResult GetNextThietBiId()
+        {
+            var r = CheckAuth();
+            if (r != null) return Json(new { ok = false, msg = "Chưa đăng nhập." }, JsonRequestBehavior.AllowGet);
+
+            try
+            {
+                return Json(new { ok = true, id = GenerateNewThietBiID() }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
         [HttpPost]
         public JsonResult XoaThietBi(string id)
         {

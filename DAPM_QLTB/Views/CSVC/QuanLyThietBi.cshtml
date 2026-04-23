@@ -425,7 +425,7 @@
         <input type="text" class="form-control" placeholder="Tên thiết bị, mã TB, số seri..." />
     </div>
     <div class="form-group">
-        <label>Danh mục (DANHMUC)</label>
+        <label>Danh mục</label>
         <select class="form-select">
             <option value="">Tất cả danh mục</option>
             <option>Máy tính &amp; Laptop</option>
@@ -435,7 +435,7 @@
         </select>
     </div>
     <div class="form-group">
-        <label>Tình trạng (TrangThaiTB)</label>
+        <label>Tình trạng</label>
         <select class="form-select">
             <option value="">Tất cả</option>
             <option>Đang sử dụng</option>
@@ -493,21 +493,21 @@
     <div class="modal-box">
         <div class="modal-title" id="modalTitle">➕ Thêm Thiết Bị Mới</div>
         <div class="modal-grid">
-            <div class="section-label">Thông tin cơ bản (THIETBI)</div>
+            <div class="section-label">Thông tin cơ bản</div>
             <div>
-                <label class="form-lbl">ID_ThietBi *</label>
-                <input type="text" class="form-inp" id="fCode" placeholder="VD: TB008" />
+                <label class="form-lbl">Mã thiết bị</label>
+                <input type="text" class="form-inp" id="fCode" readonly style="background:#eef1f6;color:#8a93a7;" />
             </div>
             <div>
-                <label class="form-lbl">Số Seri (SoSeri)</label>
+                <label class="form-lbl">Số seri</label>
                 <input type="number" class="form-inp" id="fSeri" placeholder="VD: 1008" />
             </div>
             <div class="full">
-                <label class="form-lbl">Tên thiết bị (TenTB) *</label>
+                <label class="form-lbl">Tên thiết bị</label>
                 <input type="text" class="form-inp" id="fName" placeholder="Nhập tên thiết bị đầy đủ" />
             </div>
             <div>
-                <label class="form-lbl">Danh mục (DanhMucNo → DANHMUC)</label>
+                <label class="form-lbl">Danh mục</label>
                 <select class="form-inp" id="fCat">
                     <option value="DM_MT">Máy tính &amp; Laptop</option>
                     <option value="DM_MC">Máy chiếu</option>
@@ -516,7 +516,7 @@
                 </select>
             </div>
             <div>
-                <label class="form-lbl">Tình trạng (TrangThaiTB)</label>
+                <label class="form-lbl">Tình trạng</label>
                 <select class="form-inp" id="fStatus">
                     <option value="Mới nhập">Mới nhập</option>
                     <option value="Đang sử dụng">Đang sử dụng</option>
@@ -527,11 +527,11 @@
 
             <div class="section-label">Phân bổ & Nguồn gốc</div>
             <div>
-                <label class="form-lbl">Giá trị (Gia — VNĐ)</label>
+                <label class="form-lbl">Giá trị</label>
                 <input type="text" class="form-inp" id="fPrice" placeholder="VD: 15,000,000" />
             </div>
             <div class="full">
-                <label class="form-lbl">Thông số kỹ thuật (ThongSoKT)</label>
+                <label class="form-lbl">Thông số kỹ thuật</label>
                 <textarea class="form-inp" id="fSpec" rows="2" placeholder="CPU, RAM, dung lượng, model..."></textarea>
             </div>
             <input type="hidden" id="fDeXuat" value="" />
@@ -625,7 +625,7 @@
         $('#modalTitle').text('➕ Thêm Thiết Bị Mới');
         $('.btn-save').text('💾 Thêm');
 
-        $('#fCode').val('').prop('readonly', false);
+        $('#fCode').val('').prop('readonly', true);
         $('#fName').val('');
         $('#fSeri').val('');
         $('#fPrice').val('');
@@ -634,6 +634,16 @@
         $('#fDeXuat').val('');
         $('#importCodeBox').hide();
         $('#fDeXuatReadonly').val('');
+
+        $.get('/CSVC/GetNextThietBiId', function (res) {
+            if (res.ok && res.id) {
+                $('#fCode').val(res.id);
+            } else {
+                alert('Không tạo được mã thiết bị tự động: ' + (res.msg || 'Lỗi không xác định'));
+            }
+        }).fail(function () {
+            alert('Không tạo được mã thiết bị tự động do lỗi kết nối server.');
+        });
 
         $('#deviceModal').addClass('active');
     }
