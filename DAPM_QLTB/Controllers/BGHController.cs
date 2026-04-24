@@ -488,5 +488,129 @@ namespace QLTB.Controllers
                 NguoiBaoHong = r["NguoiBaoHong"] == DBNull.Value ? null : r["NguoiBaoHong"].ToString()
             };
         }
+
+        // Ajax: lịch sử duyệt theo tên thiết bị
+        [HttpGet]
+        public JsonResult GetLichSuDuyetTheoThietBi(string tenTB)
+        {
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    var words = (tenTB ?? "").Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
+                    if (words.Length == 0)
+                        return Json(new { ok = true, data = new List<object>() }, JsonRequestBehavior.AllowGet);
+
+                    var likes = new List<string>();
+                    for (int i = 0; i < words.Length; i++) likes.Add("ct.TenThietBiDeXuat LIKE @W" + i);
+
+                    string sql = @"
+                        SELECT ls.CapDuyet, ls.ThoiGianDuyet, ls.TrangThaiSauDuyet, ls.GhiChu,
+                               nd.HoTen AS NguoiDuyet,
+                               dx.ID_DeXuat, dx.TrangThai AS TrangThaiDeXuat,
+                               dx.NgayDeXuat, dx.MoTa,
+                               ct.TenThietBiDeXuat
+                        FROM LICHSUDUYET ls
+                        JOIN NGUOIDUNG nd ON nd.ID_NguoiDung = ls.NguoiDuyetNo
+                        JOIN DEXUAT_MUASAM dx ON dx.ID_DeXuat = ls.DeXuatNo
+                        JOIN CHITIET_DEXUAT ct ON ct.DeXuatNo = dx.ID_DeXuat
+                        WHERE (" + string.Join(" OR ", likes) + @")
+                        ORDER BY dx.NgayDeXuat DESC, ls.ThoiGianDuyet";
+
+                    var list = new List<object>();
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        for (int i = 0; i < words.Length; i++)
+                            cmd.Parameters.AddWithValue("@W" + i, "%" + words[i] + "%");
+                        using (var r = cmd.ExecuteReader())
+                            while (r.Read())
+                                list.Add(new {
+                                    CapDuyet          = r["CapDuyet"].ToString(),
+                                    NguoiDuyet        = r["NguoiDuyet"].ToString(),
+                                    ThoiGian          = Convert.ToDateTime(r["ThoiGianDuyet"]).ToString("dd/MM/yyyy HH:mm"),
+                                    TrangThaiSauDuyet = r["TrangThaiSauDuyet"].ToString(),
+                                    GhiChu            = r["GhiChu"] == DBNull.Value ? "" : r["GhiChu"].ToString(),
+                                    ID_DeXuat         = r["ID_DeXuat"].ToString(),
+                                    TrangThaiDeXuat   = r["TrangThaiDeXuat"].ToString(),
+                                    NgayDeXuat        = Convert.ToDateTime(r["NgayDeXuat"]).ToString("dd/MM/yyyy"),
+                                    TenThietBi        = r["TenThietBiDeXuat"].ToString()
+                                });
+                    }
+                    return Json(new { ok = true, data = list }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
+        }
+
+        // Ajax: lịch sử duyệt của 1 đề xuất
+        [HttpGet]
+        public JsonResult GetLichSuDuyet(string idDX)
+        {
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    const string sql = @"
+                        SELECT ls.CapDuyet, ls.ThoiGianDuyet, ls.TrangThaiSauDuyet, ls.GhiChu,
+                               nd.HoTen AS NguoiDuyet
+                        FROM LICHSUDUYET ls
+                        JOIN NGUOIDUNG nd ON nd.ID_NguoiDung = ls.NguoiDuyetNo
+                        WHERE ls.DeXuatNo = @Id
+                        ORDER BY ls.ThoiGianDuyet";
+                    var list = new List<object>();
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Id", idDX);
+                        using (var r = cmd.ExecuteReader())
+                            while (r.Read())
+                                list.Add(new {
+                                    CapDuyet          = r["CapDuyet"].ToString(),
+                                    NguoiDuyet        = r["NguoiDuyet"].ToString(),
+                                    ThoiGian          = Convert.ToDateTime(r["ThoiGianDuyet"]).ToString("dd/MM/yyyy HH:mm"),
+                                    TrangThaiSauDuyet = r["TrangThaiSauDuyet"].ToString(),
+                                    GhiChu            = r["GhiChu"] == DBNull.Value ? "" : r["GhiChu"].ToString()
+                                });
+                    }
+                    return Json(new { ok = true, data = list }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
+        }
+
+        // Ajax: danh sách đề xuất
+        [HttpGet]
+        public JsonResult GetDanhSachDeXuat()
+        {
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    const string sql = @"
+                        SELECT dx.ID_DeXuat, dx.NgayDeXuat, dx.TrangThai,
+                               nd.HoTen AS NguoiDeXuat,
+                               ISNULL(kp.TenPhongBanKhoa,'') AS KhoaPhongBan
+                        FROM DEXUAT_MUASAM dx
+                        JOIN NGUOIDUNG nd ON nd.ID_NguoiDung = dx.NguoiDeXuatNo
+                        LEFT JOIN KHOA_PHONGBAN kp ON kp.ID_KhoaPhongBan = nd.Khoa_BanNo
+                        ORDER BY dx.NgayDeXuat DESC";
+                    var list = new List<object>();
+                    using (var cmd = new SqlCommand(sql, conn))
+                    using (var r = cmd.ExecuteReader())
+                        while (r.Read())
+                            list.Add(new {
+                                ID_DeXuat    = r["ID_DeXuat"].ToString(),
+                                NguoiDeXuat  = r["NguoiDeXuat"].ToString(),
+                                KhoaPhongBan = r["KhoaPhongBan"].ToString(),
+                                NgayDeXuat   = Convert.ToDateTime(r["NgayDeXuat"]).ToString("dd/MM/yyyy"),
+                                TrangThai    = r["TrangThai"].ToString()
+                            });
+                    return Json(new { ok = true, data = list }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
+        }
     }
 }
