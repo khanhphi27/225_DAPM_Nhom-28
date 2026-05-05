@@ -554,28 +554,35 @@ namespace QLTB.Controllers
         }
 
         [HttpPost]
-        public JsonResult TaoNguoiDung(string hoTen, string email, string matKhau, string vaiTroNo, string khoaBanNo)
+        public JsonResult TaoNguoiDung(string id, string hoTen, string email, string matKhau, string vaiTroNo, string khoaBanNo)
         {
             if (Session["UserId"] == null) return Json(new { ok = false, msg = "Chưa đăng nhập." });
             try
             {
+                if (string.IsNullOrWhiteSpace(id))
+                    return Json(new { ok = false, msg = "Vui lòng nhập ID người dùng." });
                 if (string.IsNullOrWhiteSpace(hoTen) || string.IsNullOrWhiteSpace(matKhau))
                     return Json(new { ok = false, msg = "Vui lòng nhập đầy đủ họ tên và mật khẩu." });
 
                 using (var conn = DbHelper.GetConnection())
                 {
                     conn.Open();
+
+                    // Kiểm tra ID đã tồn tại chưa
+                    using (var cmd = new SqlCommand("SELECT COUNT(*) FROM NGUOIDUNG WHERE ID_NguoiDung = @id", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", id.Trim());
+                        if ((int)cmd.ExecuteScalar() > 0)
+                            return Json(new { ok = false, msg = "ID người dùng '" + id.Trim() + "' đã tồn tại." });
+                    }
+
                     using (var tran = conn.BeginTransaction())
                     {
-                        string idND;
-                        using (var cmd = new SqlCommand("SELECT LEFT(REPLACE(NEWID(),'-',''),10)", conn, tran))
-                            idND = cmd.ExecuteScalar().ToString();
-
                         using (var cmd = new SqlCommand(@"
                             INSERT INTO NGUOIDUNG (ID_NguoiDung, HoTen, Email, MatKhau, Khoa_BanNo, TrangThaiTK)
                             VALUES (@id, @hoTen, @email, @mk, @khoa, 1)", conn, tran))
                         {
-                            cmd.Parameters.AddWithValue("@id",    idND);
+                            cmd.Parameters.AddWithValue("@id",    id.Trim());
                             cmd.Parameters.AddWithValue("@hoTen", hoTen.Trim());
                             cmd.Parameters.AddWithValue("@email", (object)email ?? DBNull.Value);
                             cmd.Parameters.AddWithValue("@mk",    matKhau);
@@ -588,7 +595,7 @@ namespace QLTB.Controllers
                                 INSERT INTO VAITRO_NGUOIDUNG (NguoiDungNo, VaiTroNo, NgayHieuLuc)
                                 VALUES (@nd, @vt, GETDATE())", conn, tran))
                             {
-                                cmd.Parameters.AddWithValue("@nd", idND);
+                                cmd.Parameters.AddWithValue("@nd", id.Trim());
                                 cmd.Parameters.AddWithValue("@vt", vaiTroNo);
                                 cmd.ExecuteNonQuery();
                             }
