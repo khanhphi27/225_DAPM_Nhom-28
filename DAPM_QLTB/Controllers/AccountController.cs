@@ -178,7 +178,7 @@ namespace QLTB.Controllers
         }
 
         // GET: Account/Profile
-        public ActionResult Profile()
+        public new ActionResult Profile()
         {
             if (Session["UserId"] == null) return RedirectToAction("Login");
             return View();
