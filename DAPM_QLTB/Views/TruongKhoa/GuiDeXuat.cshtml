@@ -1,4 +1,4 @@
-﻿@model System.Data.DataTable
+﻿﻿@model System.Data.DataTable
 @{
     ViewBag.Title = "Đề Xuất Mua Sắm";
 }
@@ -466,11 +466,13 @@
             position: absolute;
             top: 0;
             left: 0;
+            padding: 1.5cm 1cm 1.5cm 1.5cm; /* Tạo khoảng cách an toàn với mép giấy */
+}
         }
 
         @@page {
             size: A4;
-            margin: 1.5cm 1cm 1cm 1.5cm;
+            margin: 0;
         }
 
         .table-print {
@@ -812,7 +814,7 @@
                 <div class="text-bold" style="font-size: 13px; line-height: 1.5;">CỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
                 <div class="text-bold" style="font-size: 13px; text-decoration: underline; line-height: 1.5;">Độc lập - Tự do - Hạnh phúc</div>
                 <div style="font-size: 12px; font-style: italic; margin-top: 8px;">
-                    Đà Nẵng, ngày <span id="outNgay">...</span> tháng ... năm 2026
+                    Đà Nẵng, ngày ... tháng ... năm 2026
                 </div>
             </td>
         </tr>
@@ -829,7 +831,7 @@
         <p style="margin: 8px 0;"><strong>1. Đơn vị đề xuất:</strong> ............................................................................................................</p>
         <p style="margin: 8px 0;"><strong>2. Người lập:</strong> <span class="text-bold" style="text-transform: uppercase;">@Session["UserName"]</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Mã số:</strong> .................................................</p>
         <p style="margin: 8px 0;"><strong>3. Lý do mua sắm:</strong> <span id="outMoTa">............................................................................................</span></p>
-        <p style="margin: 8px 0;"><strong>4. Danh mục thiết bị:</strong> (Phòng mua sắm, ký tầng đầu bị, nngs3mội cvả tuan com sắm)</p>
+        <p style="margin: 8px 0;"><strong>4. Danh sách thiết bị:</strong></p>
 
         <table class="table-items" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
             <thead>
@@ -995,7 +997,7 @@
         row.querySelector('.gia-input').addEventListener('input', tinhTongEdit);
     }
     function printPhieuMoi() {
-        document.getElementById('outNgay').innerText = new Date().toLocaleDateString('vi-VN');
+       
         document.getElementById('outMoTa').innerText = document.getElementById('newMota').value || "...";
         let html = "";
         document.querySelectorAll('#tbBody .tb-row').forEach((row, idx) => {
@@ -1009,7 +1011,7 @@
     }
 
     function printLichSu(btn, mota, ngay) {
-        document.getElementById('outNgay').innerText = ngay;
+       
         document.getElementById('outMoTa').innerText = mota || "...";
         const rows = btn.closest('.dx-card').querySelectorAll('.dx-items tbody tr');
         let html = "";
@@ -1023,7 +1025,7 @@
     function printPhieuMoi() {
         // Cập nhật ngày tháng
         const d = new Date();
-        document.getElementById('outNgay').innerText = d.getDate();
+        
         document.getElementById('outMoTa').innerText = document.getElementById('newMota').value || "...................................................";
 
         let html = "";
@@ -1057,7 +1059,6 @@
     }
 
     function printLichSu(btn, mota, ngay) {
-        document.getElementById('outNgay').innerText = ngay.split('/')[0];
         document.getElementById('outMoTa').innerText = mota || "...................................................";
 
         const card = btn.closest('.dx-card');
