@@ -488,5 +488,346 @@ namespace QLTB.Controllers
                 NguoiBaoHong = r["NguoiBaoHong"] == DBNull.Value ? null : r["NguoiBaoHong"].ToString()
             };
         }
+
+        // ══ QUẢN LÝ KHOA / PHÒNG BAN ════════════════════════════
+        public ActionResult QuanLyKhoa()
+        {
+            var redirect = RequireRole(4);
+            if (redirect != null) return redirect;
+
+            var list = new List<KhoaPhongBanViewModel>();
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    const string sql = @"
+                        SELECT kp.ID_KhoaPhongBan, kp.TenPhongBanKhoa,
+                               COUNT(DISTINCT nd.ID_NguoiDung) AS SoNguoiDung,
+                               COUNT(DISTINCT tb.ID_ThietBi)   AS SoThietBi
+                        FROM KHOA_PHONGBAN kp
+                        LEFT JOIN NGUOIDUNG nd ON nd.Khoa_BanNo    = kp.ID_KhoaPhongBan
+                        LEFT JOIN THIETBI   tb ON tb.KhoaPhongBan  = kp.ID_KhoaPhongBan
+                        GROUP BY kp.ID_KhoaPhongBan, kp.TenPhongBanKhoa
+                        ORDER BY kp.TenPhongBanKhoa";
+                    using (var cmd = new SqlCommand(sql, conn))
+                    using (var rd = cmd.ExecuteReader())
+                        while (rd.Read())
+                            list.Add(new KhoaPhongBanViewModel
+                            {
+                                ID_KhoaPhongBan = rd["ID_KhoaPhongBan"].ToString(),
+                                TenPhongBanKhoa = rd["TenPhongBanKhoa"].ToString(),
+                                SoNguoiDung     = Convert.ToInt32(rd["SoNguoiDung"]),
+                                SoThietBi       = Convert.ToInt32(rd["SoThietBi"])
+                            });
+                }
+            }
+            catch (Exception ex) { ViewBag.Error = ex.Message; }
+            return View(list);
+        }
+
+        [HttpPost]
+        public JsonResult TaoKhoa(string id, string ten)
+        {
+            if (Session["UserId"] == null) return Json(new { ok = false, msg = "Chưa đăng nhập." });
+            try
+            {
+                if (string.IsNullOrWhiteSpace(id))
+                    return Json(new { ok = false, msg = "Vui lòng nhập ID khoa." });
+                if (string.IsNullOrWhiteSpace(ten))
+                    return Json(new { ok = false, msg = "Vui lòng nhập tên khoa." });
+
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT COUNT(*) FROM KHOA_PHONGBAN WHERE ID_KhoaPhongBan = @id", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", id.Trim());
+                        if ((int)cmd.ExecuteScalar() > 0)
+                            return Json(new { ok = false, msg = "ID '" + id.Trim() + "' đã tồn tại." });
+                    }
+                    using (var cmd = new SqlCommand("INSERT INTO KHOA_PHONGBAN (ID_KhoaPhongBan, TenPhongBanKhoa) VALUES (@id, @ten)", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id",  id.Trim());
+                        cmd.Parameters.AddWithValue("@ten", ten.Trim());
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                return Json(new { ok = true, msg = "Tạo khoa thành công!" });
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
+        }
+
+        [HttpGet]
+        public JsonResult GetKhoa(string id)
+        {
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT ID_KhoaPhongBan, TenPhongBanKhoa FROM KHOA_PHONGBAN WHERE ID_KhoaPhongBan = @id", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", id);
+                        using (var rd = cmd.ExecuteReader())
+                            if (rd.Read())
+                                return Json(new
+                                {
+                                    ok   = true,
+                                    data = new { id = rd["ID_KhoaPhongBan"].ToString(), ten = rd["TenPhongBanKhoa"].ToString() }
+                                }, JsonRequestBehavior.AllowGet);
+                    }
+                }
+                return Json(new { ok = false, msg = "Không tìm thấy khoa." }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
+        }
+
+        [HttpPost]
+        public JsonResult SuaKhoa(string id, string ten)
+        {
+            if (Session["UserId"] == null) return Json(new { ok = false, msg = "Chưa đăng nhập." });
+            try
+            {
+                if (string.IsNullOrWhiteSpace(ten))
+                    return Json(new { ok = false, msg = "Tên khoa không được để trống." });
+
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("UPDATE KHOA_PHONGBAN SET TenPhongBanKhoa = @ten WHERE ID_KhoaPhongBan = @id", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id",  id);
+                        cmd.Parameters.AddWithValue("@ten", ten.Trim());
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                return Json(new { ok = true, msg = "Cập nhật thành công!" });
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
+        }
+
+        [HttpPost]
+        public JsonResult XoaKhoa(string id)
+        {
+            if (Session["UserId"] == null) return Json(new { ok = false, msg = "Chưa đăng nhập." });
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    int soND = 0, soTB = 0;
+                    using (var cmd = new SqlCommand("SELECT COUNT(*) FROM NGUOIDUNG WHERE Khoa_BanNo = @id", conn))
+                    { cmd.Parameters.AddWithValue("@id", id); soND = (int)cmd.ExecuteScalar(); }
+                    using (var cmd = new SqlCommand("SELECT COUNT(*) FROM THIETBI WHERE KhoaPhongBan = @id", conn))
+                    { cmd.Parameters.AddWithValue("@id", id); soTB = (int)cmd.ExecuteScalar(); }
+
+                    if (soND > 0 || soTB > 0)
+                        return Json(new { ok = false, msg = "Không thể xóa: khoa đang có " + soND + " người dùng và " + soTB + " thiết bị." });
+
+                    using (var cmd = new SqlCommand("DELETE FROM KHOA_PHONGBAN WHERE ID_KhoaPhongBan = @id", conn))
+                    { cmd.Parameters.AddWithValue("@id", id); cmd.ExecuteNonQuery(); }
+                }
+                return Json(new { ok = true });
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
+        }
+
+        // ══ QUẢN LÝ NGƯỜI DÙNG ══════════════════════════════════
+        public ActionResult QuanLyNguoiDung()
+        {
+            var redirect = RequireRole(4);
+            if (redirect != null) return redirect;
+
+            var list = new List<NguoiDungViewModel>();
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    const string sql = @"
+                        SELECT nd.ID_NguoiDung, nd.HoTen, nd.Email, nd.TrangThaiTK,
+                               ISNULL(kp.TenPhongBanKhoa, N'') AS TenKhoa,
+                               ISNULL(vn.VaiTroNo, N'') AS VaiTroNo,
+                               ISNULL(vt.TenVaiTro, N'Chưa phân quyền') AS TenVaiTro
+                        FROM NGUOIDUNG nd
+                        LEFT JOIN KHOA_PHONGBAN kp ON kp.ID_KhoaPhongBan = nd.Khoa_BanNo
+                        LEFT JOIN VAITRO_NGUOIDUNG vn ON vn.NguoiDungNo = nd.ID_NguoiDung
+                        LEFT JOIN VAITRO vt ON vt.ID_VaiTro = vn.VaiTroNo
+                        ORDER BY nd.HoTen";
+                    using (var cmd = new SqlCommand(sql, conn))
+                    using (var rd = cmd.ExecuteReader())
+                        while (rd.Read())
+                            list.Add(new NguoiDungViewModel
+                            {
+                                ID_NguoiDung = rd["ID_NguoiDung"].ToString(),
+                                HoTen        = rd["HoTen"].ToString(),
+                                Email        = rd["Email"]?.ToString() ?? "",
+                                TrangThaiTK  = Convert.ToBoolean(rd["TrangThaiTK"]),
+                                TenKhoa      = rd["TenKhoa"].ToString(),
+                                VaiTroNo     = rd["VaiTroNo"].ToString(),
+                                TenVaiTro    = rd["TenVaiTro"].ToString()
+                            });
+
+                    var vaiTros = new List<System.Web.Mvc.SelectListItem>();
+                    using (var cmd = new SqlCommand("SELECT ID_VaiTro, TenVaiTro FROM VAITRO ORDER BY TenVaiTro", conn))
+                    using (var rd = cmd.ExecuteReader())
+                        while (rd.Read())
+                            vaiTros.Add(new System.Web.Mvc.SelectListItem { Value = rd["ID_VaiTro"].ToString(), Text = rd["TenVaiTro"].ToString() });
+
+                    var khoaList = new List<System.Web.Mvc.SelectListItem>();
+                    using (var cmd = new SqlCommand("SELECT ID_KhoaPhongBan, TenPhongBanKhoa FROM KHOA_PHONGBAN ORDER BY TenPhongBanKhoa", conn))
+                    using (var rd = cmd.ExecuteReader())
+                        while (rd.Read())
+                            khoaList.Add(new System.Web.Mvc.SelectListItem { Value = rd["ID_KhoaPhongBan"].ToString(), Text = rd["TenPhongBanKhoa"].ToString() });
+
+                    ViewBag.VaiTros  = vaiTros;
+                    ViewBag.KhoaList = khoaList;
+                }
+            }
+            catch (Exception ex) { ViewBag.Error = ex.Message; }
+            return View(list);
+        }
+
+        [HttpPost]
+        public JsonResult TaoNguoiDung(string id, string hoTen, string email, string matKhau, string vaiTroNo, string khoaBanNo)
+        {
+            if (Session["UserId"] == null) return Json(new { ok = false, msg = "Chưa đăng nhập." });
+            try
+            {
+                if (string.IsNullOrWhiteSpace(id))
+                    return Json(new { ok = false, msg = "Vui lòng nhập ID người dùng." });
+                if (string.IsNullOrWhiteSpace(hoTen) || string.IsNullOrWhiteSpace(matKhau))
+                    return Json(new { ok = false, msg = "Vui lòng nhập đầy đủ họ tên và mật khẩu." });
+
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT COUNT(*) FROM NGUOIDUNG WHERE ID_NguoiDung = @id", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", id.Trim());
+                        if ((int)cmd.ExecuteScalar() > 0)
+                            return Json(new { ok = false, msg = "ID '" + id.Trim() + "' đã tồn tại." });
+                    }
+                    using (var tran = conn.BeginTransaction())
+                    {
+                        using (var cmd = new SqlCommand(@"
+                            INSERT INTO NGUOIDUNG (ID_NguoiDung, HoTen, Email, MatKhau, Khoa_BanNo, TrangThaiTK)
+                            VALUES (@id, @hoTen, @email, @mk, @khoa, 1)", conn, tran))
+                        {
+                            cmd.Parameters.AddWithValue("@id",    id.Trim());
+                            cmd.Parameters.AddWithValue("@hoTen", hoTen.Trim());
+                            cmd.Parameters.AddWithValue("@email", (object)email ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@mk",    matKhau);
+                            cmd.Parameters.AddWithValue("@khoa",  string.IsNullOrWhiteSpace(khoaBanNo) ? (object)DBNull.Value : khoaBanNo);
+                            cmd.ExecuteNonQuery();
+                        }
+                        if (!string.IsNullOrWhiteSpace(vaiTroNo))
+                            using (var cmd = new SqlCommand("INSERT INTO VAITRO_NGUOIDUNG (NguoiDungNo, VaiTroNo, NgayHieuLuc) VALUES (@nd, @vt, GETDATE())", conn, tran))
+                            { cmd.Parameters.AddWithValue("@nd", id.Trim()); cmd.Parameters.AddWithValue("@vt", vaiTroNo); cmd.ExecuteNonQuery(); }
+                        tran.Commit();
+                    }
+                }
+                return Json(new { ok = true, msg = "Tạo tài khoản thành công!" });
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
+        }
+
+        [HttpGet]
+        public JsonResult GetNguoiDung(string id)
+        {
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    const string sql = @"
+                        SELECT nd.ID_NguoiDung, nd.HoTen, nd.Email, nd.TrangThaiTK,
+                               ISNULL(nd.Khoa_BanNo, '') AS Khoa_BanNo,
+                               ISNULL(vn.VaiTroNo, '') AS VaiTroNo
+                        FROM NGUOIDUNG nd
+                        LEFT JOIN VAITRO_NGUOIDUNG vn ON vn.NguoiDungNo = nd.ID_NguoiDung
+                        WHERE nd.ID_NguoiDung = @id";
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", id);
+                        using (var rd = cmd.ExecuteReader())
+                            if (rd.Read())
+                                return Json(new { ok = true, data = new {
+                                    id        = rd["ID_NguoiDung"].ToString(),
+                                    hoTen     = rd["HoTen"].ToString(),
+                                    email     = rd["Email"]?.ToString() ?? "",
+                                    trangThai = Convert.ToBoolean(rd["TrangThaiTK"]),
+                                    khoaBanNo = rd["Khoa_BanNo"].ToString(),
+                                    vaiTroNo  = rd["VaiTroNo"].ToString()
+                                }}, JsonRequestBehavior.AllowGet);
+                    }
+                }
+                return Json(new { ok = false, msg = "Không tìm thấy người dùng." }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
+        }
+
+        [HttpPost]
+        public JsonResult SuaNguoiDung(string id, string hoTen, string email, string vaiTroNo, string khoaBanNo, bool trangThai)
+        {
+            if (Session["UserId"] == null) return Json(new { ok = false, msg = "Chưa đăng nhập." });
+            try
+            {
+                if (string.IsNullOrWhiteSpace(hoTen))
+                    return Json(new { ok = false, msg = "Họ tên không được để trống." });
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    using (var tran = conn.BeginTransaction())
+                    {
+                        using (var cmd = new SqlCommand(@"
+                            UPDATE NGUOIDUNG SET HoTen=@hoTen, Email=@email, Khoa_BanNo=@khoa, TrangThaiTK=@tt
+                            WHERE ID_NguoiDung=@id", conn, tran))
+                        {
+                            cmd.Parameters.AddWithValue("@id",    id);
+                            cmd.Parameters.AddWithValue("@hoTen", hoTen.Trim());
+                            cmd.Parameters.AddWithValue("@email", (object)email ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@khoa",  string.IsNullOrWhiteSpace(khoaBanNo) ? (object)DBNull.Value : khoaBanNo);
+                            cmd.Parameters.AddWithValue("@tt",    trangThai);
+                            cmd.ExecuteNonQuery();
+                        }
+                        using (var cmd = new SqlCommand("DELETE FROM VAITRO_NGUOIDUNG WHERE NguoiDungNo=@id", conn, tran))
+                        { cmd.Parameters.AddWithValue("@id", id); cmd.ExecuteNonQuery(); }
+                        if (!string.IsNullOrWhiteSpace(vaiTroNo))
+                            using (var cmd = new SqlCommand("INSERT INTO VAITRO_NGUOIDUNG (NguoiDungNo, VaiTroNo, NgayHieuLuc) VALUES (@nd, @vt, GETDATE())", conn, tran))
+                            { cmd.Parameters.AddWithValue("@nd", id); cmd.Parameters.AddWithValue("@vt", vaiTroNo); cmd.ExecuteNonQuery(); }
+                        tran.Commit();
+                    }
+                }
+                return Json(new { ok = true, msg = "Cập nhật thành công!" });
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
+        }
+
+        [HttpPost]
+        public JsonResult XoaNguoiDung(string id)
+        {
+            if (Session["UserId"] == null) return Json(new { ok = false, msg = "Chưa đăng nhập." });
+            if (id == Session["UserId"]?.ToString())
+                return Json(new { ok = false, msg = "Không thể xóa tài khoản đang đăng nhập." });
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    using (var tran = conn.BeginTransaction())
+                    {
+                        using (var cmd = new SqlCommand("DELETE FROM VAITRO_NGUOIDUNG WHERE NguoiDungNo=@id", conn, tran))
+                        { cmd.Parameters.AddWithValue("@id", id); cmd.ExecuteNonQuery(); }
+                        using (var cmd = new SqlCommand("DELETE FROM NGUOIDUNG WHERE ID_NguoiDung=@id", conn, tran))
+                        { cmd.Parameters.AddWithValue("@id", id); cmd.ExecuteNonQuery(); }
+                        tran.Commit();
+                    }
+                }
+                return Json(new { ok = true });
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
+        }
     }
 }

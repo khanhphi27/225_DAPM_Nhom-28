@@ -278,6 +278,47 @@ namespace QLTB.Models
             LichSuGhiNhan = new List<GhiNhanViewModel>();
         }
     }
+
+    // ── Quản lý người dùng ───────────────────────────────────
+    public class NguoiDungViewModel
+    {
+        public string ID_NguoiDung { get; set; }
+        public string HoTen        { get; set; }
+        public string Email        { get; set; }
+        public bool   TrangThaiTK  { get; set; }
+        public string TenKhoa      { get; set; }
+        public string VaiTroNo     { get; set; }
+        public string TenVaiTro    { get; set; }
+    }
+
+    // ── Quản lý khoa / phòng ban ─────────────────────────────
+    public class KhoaPhongBanViewModel
+    {
+        public string ID_KhoaPhongBan { get; set; }
+        public string TenPhongBanKhoa { get; set; }
+        public int    SoNguoiDung     { get; set; }
+        public int    SoThietBi       { get; set; }
+    }
+
+    // ── Quản lý nhà cung cấp ────────────────────────────────
+    public class NhaCungCapViewModel
+    {
+        public string ID_NhaCC   { get; set; }
+        public string TenNhaCC   { get; set; }
+        public int?   LoaiDichVu { get; set; }
+        public string DiaChi     { get; set; }
+        public string Sdt        { get; set; }
+        public int     SoThietBi  { get; set; }
+    }
+
+    // ── Quản lý danh mục ────────────────────────────────────
+    public class DanhMucViewModel
+    {
+        public string ID_DanhMuc { get; set; }
+        public string TenDanhMuc { get; set; }
+        public string MoTa       { get; set; }
+        public int    SoThietBi  { get; set; }
+    }
 }
 
 // ViewModels kiểm kê — thêm vào namespace chính
