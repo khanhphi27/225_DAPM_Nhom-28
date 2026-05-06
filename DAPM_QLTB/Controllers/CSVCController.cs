@@ -798,6 +798,7 @@ namespace QLTB.Controllers
                 }
             }
             catch (Exception ex) { ViewBag.Error = ex.Message; }
+            ViewBag.SoBaoHongChoXuLy = vm.BaoHongChoCho.Count;
             return View(vm);
         }
 

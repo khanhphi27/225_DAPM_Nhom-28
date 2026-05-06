@@ -223,18 +223,71 @@ namespace QLTB.Controllers
                         }
                     }
 
-                    using (var cmd = new SqlCommand(
-                        @"INSERT INTO BAOHONG_THIETBI (ID_BaoHong, ThietBiNo, NguoiBaoHongNo, MoTaHong, NgayBao, MucDoUuTien, TrangThai)
-                          VALUES (@id, @tb, @user, @mota, GETDATE(), N'Cao', N'Chờ xử lý')", conn))
+                    // Lấy tên thiết bị để dùng trong thông báo
+                    string tenTB = tbId;
+                    using (var cmd = new SqlCommand("SELECT TenTB FROM THIETBI WHERE RTRIM(ID_ThietBi)=@tb", conn))
                     {
-                        cmd.Parameters.AddWithValue("@id",   "BH" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpperInvariant());
-                        cmd.Parameters.AddWithValue("@tb",   tbId);
-                        cmd.Parameters.AddWithValue("@user", Session["UserId"]?.ToString() ?? "");
-                        cmd.Parameters.AddWithValue("@mota", mota ?? "");
-                        cmd.ExecuteNonQuery();
+                        cmd.Parameters.AddWithValue("@tb", tbId);
+                        var val = cmd.ExecuteScalar();
+                        if (val != null) tenTB = val.ToString();
                     }
+
+                    string idBaoHong = "BH" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpperInvariant();
+
+                    using (var tran = conn.BeginTransaction())
+                    {
+                        try
+                        {
+                            // 1. INSERT BAOHONG_THIETBI
+                            using (var cmd = new SqlCommand(
+                                @"INSERT INTO BAOHONG_THIETBI (ID_BaoHong, ThietBiNo, NguoiBaoHongNo, MoTaHong, NgayBao, MucDoUuTien, TrangThai)
+                                  VALUES (@id, @tb, @user, @mota, GETDATE(), N'Cao', N'Chờ xử lý')", conn, tran))
+                            {
+                                cmd.Parameters.AddWithValue("@id",   idBaoHong);
+                                cmd.Parameters.AddWithValue("@tb",   tbId);
+                                cmd.Parameters.AddWithValue("@user", Session["UserId"]?.ToString() ?? "");
+                                cmd.Parameters.AddWithValue("@mota", mota ?? "");
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            // 2. UPDATE THIETBI trong cùng transaction
+                            using (var cmd = new SqlCommand(
+                                "UPDATE THIETBI SET TrangThaiTB=N'Báo hỏng' WHERE RTRIM(ID_ThietBi)=@tb", conn, tran))
+                            {
+                                cmd.Parameters.AddWithValue("@tb", tbId);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            tran.Commit();
+                            TempData["Success"] = "Đã gửi báo cáo hỏng!";
+                        }
+                        catch (Exception ex)
+                        {
+                            tran.Rollback();
+                            TempData["Error"] = "Lỗi báo hỏng: " + ex.Message;
+                            return RedirectToAction("DanhSachThietBi");
+                        }
+                    }
+
+                    // 3. Gửi THONGBAO sau commit (lỗi không ảnh hưởng kết quả chính)
+                    try
+                    {
+                        using (var conn2 = new SqlConnection(connStr))
+                        {
+                            conn2.Open();
+                            using (var cmd = new SqlCommand(
+                                @"INSERT INTO THONGBAO (ID_ThongBao, NguoiNhanNo, TieuDe, NoiDung, NgayTao, LoaiThongBao, DaDoc)
+                                  SELECT NEWID(), vn.NguoiDungNo, @TieuDe, @NoiDung, GETDATE(), N'pending', 0
+                                  FROM VAITRO_NGUOIDUNG vn WHERE vn.VaiTroNo = N'VT_CSVC'", conn2))
+                            {
+                                cmd.Parameters.AddWithValue("@TieuDe",  "🔧 Báo hỏng thiết bị: " + tenTB + " (" + idBaoHong + ")");
+                                cmd.Parameters.AddWithValue("@NoiDung", mota ?? "");
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                    catch { /* bỏ qua lỗi thông báo */ }
                 }
-                TempData["Success"] = "Đã gửi báo cáo hỏng!";
             }
             catch (Exception ex)
             {

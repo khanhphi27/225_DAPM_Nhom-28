@@ -529,7 +529,9 @@
 @if (Model.BaoHongChoCho.Count > 0)
 {
 <div class="alert-box">
-    <h4>⚠️ Có @Model.BaoHongChoCho.Count báo hỏng đang chờ xử lý — cần lập kế hoạch sửa chữa</h4>
+    <h4>⚠️ Có @Model.BaoHongChoCho.Count báo hỏng đang chờ xử lý — cần lập kế hoạch sửa chữa
+        <span class="badge badge-danger" style="font-size:13px;margin-left:6px;vertical-align:middle">@ViewBag.SoBaoHongChoXuLy</span>
+    </h4>
     @foreach (var bh in Model.BaoHongChoCho)
     {
         var mdCls = bh.MucDoUuTien == "Khẩn cấp" ? "khan" : bh.MucDoUuTien == "Cao" ? "cao" : bh.MucDoUuTien == "Trung bình" ? "tb" : "thap";
