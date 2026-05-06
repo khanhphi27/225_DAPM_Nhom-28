@@ -58,7 +58,7 @@ namespace QLTB.Controllers
                 }
             }
             catch (Exception ex) { ViewBag.Error = "Lỗi tải dữ liệu: " + ex.Message; }
-            return View(dt);
+            return View("GuiDeXuat",dt);
         }
 
         [HttpPost]
