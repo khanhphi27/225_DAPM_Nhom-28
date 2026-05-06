@@ -61,6 +61,179 @@ namespace QLTB.Controllers
             return View(list);
         }
 
+        public ActionResult QuanLyNhaCungCap()
+        {
+            var r = CheckAuth(); if (r != null) return r;
+
+            var list = new List<NhaCungCapViewModel>();
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    const string sql = @"
+                        SELECT ncc.ID_NhaCC, ncc.TenNhaCC, ncc.LoaiDichVu, ncc.DiaChi, ncc.Sdt,
+                               COUNT(tb.ID_ThietBi) AS SoThietBi
+                        FROM NHACUNGCAP ncc
+                        LEFT JOIN THIETBI tb ON tb.NhaCCNo = ncc.ID_NhaCC
+                        GROUP BY ncc.ID_NhaCC, ncc.TenNhaCC, ncc.LoaiDichVu, ncc.DiaChi, ncc.Sdt
+                        ORDER BY ncc.TenNhaCC";
+
+                    using (var cmd = new SqlCommand(sql, conn))
+                    using (var rd = cmd.ExecuteReader())
+                        while (rd.Read())
+                            list.Add(new NhaCungCapViewModel
+                            {
+                                ID_NhaCC = rd["ID_NhaCC"].ToString(),
+                                TenNhaCC = rd["TenNhaCC"].ToString(),
+                                LoaiDichVu = rd["LoaiDichVu"] == DBNull.Value ? (int?)null : Convert.ToInt32(rd["LoaiDichVu"]),
+                                DiaChi = rd["DiaChi"]?.ToString() ?? "",
+                                Sdt = rd["Sdt"]?.ToString() ?? "",
+                                SoThietBi = Convert.ToInt32(rd["SoThietBi"])
+                            });
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = ex.Message;
+            }
+
+            return View(list);
+        }
+
+        [HttpGet]
+        public JsonResult GetNhaCungCap(string id)
+        {
+            var r = CheckAuth();
+            if (r != null) return Json(new { ok = false, msg = "Chưa đăng nhập." }, JsonRequestBehavior.AllowGet);
+
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    const string sql = @"
+                        SELECT ID_NhaCC, TenNhaCC, LoaiDichVu, DiaChi, Sdt
+                        FROM NHACUNGCAP
+                        WHERE ID_NhaCC = @id";
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", id);
+                        using (var rd = cmd.ExecuteReader())
+                            if (rd.Read())
+                                return Json(new { ok = true, data = new {
+                                    id = rd["ID_NhaCC"].ToString(),
+                                    ten = rd["TenNhaCC"].ToString(),
+                                    loaiDichVu = rd["LoaiDichVu"] == DBNull.Value ? (int?)null : Convert.ToInt32(rd["LoaiDichVu"]),
+                                    diaChi = rd["DiaChi"]?.ToString() ?? "",
+                                    sdt = rd["Sdt"]?.ToString() ?? ""
+                                } }, JsonRequestBehavior.AllowGet);
+                    }
+                }
+
+                return Json(new { ok = false, msg = "Không tìm thấy nhà cung cấp." }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpPost]
+        public JsonResult SaveNhaCungCap(string id, string ten, int? loaiDichVu, string diaChi, string sdt)
+        {
+            var r = CheckAuth();
+            if (r != null) return Json(new { ok = false, msg = "Chưa đăng nhập." });
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(id))
+                    return Json(new { ok = false, msg = "Vui lòng nhập mã nhà cung cấp." });
+                if (string.IsNullOrWhiteSpace(ten))
+                    return Json(new { ok = false, msg = "Vui lòng nhập tên nhà cung cấp." });
+
+                id = id.Trim();
+                ten = ten.Trim();
+
+                bool exists = false;
+
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT COUNT(*) FROM NHACUNGCAP WHERE ID_NhaCC = @id", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", id);
+                        exists = Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+                    }
+
+                    string sql = exists
+                        ? @"UPDATE NHACUNGCAP
+                            SET TenNhaCC = @ten,
+                                LoaiDichVu = @loai,
+                                DiaChi = @diaChi,
+                                Sdt = @sdt
+                            WHERE ID_NhaCC = @id"
+                        : @"INSERT INTO NHACUNGCAP (ID_NhaCC, TenNhaCC, LoaiDichVu, DiaChi, Sdt)
+                            VALUES (@id, @ten, @loai, @diaChi, @sdt)";
+
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", id);
+                        cmd.Parameters.AddWithValue("@ten", ten);
+                        cmd.Parameters.AddWithValue("@loai", (object)loaiDichVu ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@diaChi", string.IsNullOrWhiteSpace(diaChi) ? (object)DBNull.Value : diaChi.Trim());
+                        cmd.Parameters.AddWithValue("@sdt", string.IsNullOrWhiteSpace(sdt) ? (object)DBNull.Value : sdt.Trim());
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                return Json(new { ok = true, msg = exists ? "Cập nhật nhà cung cấp thành công!" : "Thêm nhà cung cấp thành công!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { ok = false, msg = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaNhaCungCap(string id)
+        {
+            var r = CheckAuth();
+            if (r != null) return Json(new { ok = false, msg = "Chưa đăng nhập." });
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(id))
+                    return Json(new { ok = false, msg = "Thiếu mã nhà cung cấp." });
+
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    int soTB;
+                    using (var cmd = new SqlCommand("SELECT COUNT(*) FROM THIETBI WHERE NhaCCNo = @id", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", id.Trim());
+                        soTB = Convert.ToInt32(cmd.ExecuteScalar());
+                    }
+
+                    if (soTB > 0)
+                        return Json(new { ok = false, msg = "Không thể xóa vì nhà cung cấp đang được gắn với thiết bị." });
+
+                    using (var cmd = new SqlCommand("DELETE FROM NHACUNGCAP WHERE ID_NhaCC = @id", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", id.Trim());
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                return Json(new { ok = true, msg = "Xóa nhà cung cấp thành công!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { ok = false, msg = ex.Message });
+            }
+        }
+
         [HttpGet]
         public JsonResult GetApprovedFinalDeXuat()
         {
