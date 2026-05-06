@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Web.Mvc;
 using QLTB.Models;
 
@@ -285,7 +286,7 @@ namespace QLTB.Controllers
                 {
                     conn.Open();
 
-                    // 1. Tổng quan - đếm theo từng giá trị TrangThaiTB thực tế
+                    // 1. Tổng quan
                     const string sqlTong = @"
                         SELECT COUNT(*) AS Tong,
                             ISNULL(SUM(Gia),0) AS TongGia
@@ -297,7 +298,7 @@ namespace QLTB.Controllers
                             vm.TongGiaTri  = Convert.ToDecimal(r["TongGia"]);
                         }
 
-                    // Đếm từng trạng thái - DB dùng 'Đang sử dụng', 'Bảo trì', 'Hỏng'
+                    // Đếm từng trạng thái
                     const string sqlDemTT = @"
                         SELECT TrangThaiTB, COUNT(*) AS SoLuong
                         FROM THIETBI
@@ -986,6 +987,157 @@ namespace QLTB.Controllers
                 return Json(new { ok = true });
             }
             catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
+        }
+
+        // ══ LỊCH SỬ DUYỆT (từ nhánh LSDuyet) ═══════════════════
+
+        // Ajax: lịch sử duyệt theo tên thiết bị
+        [HttpGet]
+        public JsonResult GetLichSuDuyetTheoThietBi(string tenTB)
+        {
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+
+                    // Tìm theo toàn bộ tên + từng từ riêng lẻ
+                    var allTerms = new List<string> { tenTB ?? "" };
+                    var words = (tenTB ?? "").Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var w in words)
+                        if (!allTerms.Contains(w)) allTerms.Add(w);
+
+                    var likes = new List<string>();
+                    for (int i = 0; i < allTerms.Count; i++)
+                        likes.Add("ct.TenThietBiDeXuat LIKE @W" + i);
+
+                    // Kiểm tra có cột ThietBiNo không (sau migration)
+                    bool hasThietBiNo = false;
+                    using (var chk = new SqlCommand("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='CHITIET_DEXUAT' AND COLUMN_NAME='ThietBiNo'", conn))
+                        hasThietBiNo = (int)chk.ExecuteScalar() > 0;
+
+                    // Lấy ID_ThietBi từ TenTB
+                    string idThietBi = null;
+                    using (var chk = new SqlCommand("SELECT TOP 1 ID_ThietBi FROM THIETBI WHERE TenTB=@Ten", conn))
+                    {
+                        chk.Parameters.AddWithValue("@Ten", tenTB ?? "");
+                        var v = chk.ExecuteScalar();
+                        if (v != null) idThietBi = v.ToString();
+                    }
+
+                    string whereClause = "(" + string.Join(" OR ", likes) + ")";
+                    if (hasThietBiNo && idThietBi != null)
+                        whereClause = "(ct.ThietBiNo=@ThietBiId OR " + string.Join(" OR ", likes) + ")";
+
+                    string sql = @"
+                        SELECT ls.CapDuyet, ls.ThoiGianDuyet, ls.TrangThaiSauDuyet, ls.GhiChu,
+                               nd.HoTen AS NguoiDuyet,
+                               dx.ID_DeXuat, dx.TrangThai AS TrangThaiDeXuat,
+                               dx.NgayDeXuat, dx.MoTa,
+                               ct.TenThietBiDeXuat
+                        FROM LICHSUDUYET ls
+                        JOIN NGUOIDUNG nd ON nd.ID_NguoiDung = ls.NguoiDuyetNo
+                        JOIN DEXUAT_MUASAM dx ON dx.ID_DeXuat = ls.DeXuatNo
+                        JOIN CHITIET_DEXUAT ct ON ct.DeXuatNo = dx.ID_DeXuat
+                        WHERE " + whereClause + @"
+                        ORDER BY dx.NgayDeXuat DESC, ls.ThoiGianDuyet";
+
+                    var list = new List<object>();
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        for (int i = 0; i < allTerms.Count; i++)
+                            cmd.Parameters.AddWithValue("@W" + i, "%" + allTerms[i] + "%");
+                        if (hasThietBiNo && idThietBi != null)
+                            cmd.Parameters.AddWithValue("@ThietBiId", idThietBi);
+
+                        using (var r = cmd.ExecuteReader())
+                            while (r.Read())
+                                list.Add(new {
+                                    CapDuyet          = r["CapDuyet"].ToString(),
+                                    NguoiDuyet        = r["NguoiDuyet"].ToString(),
+                                    ThoiGian          = Convert.ToDateTime(r["ThoiGianDuyet"]).ToString("dd/MM/yyyy HH:mm"),
+                                    TrangThaiSauDuyet = r["TrangThaiSauDuyet"].ToString(),
+                                    GhiChu            = r["GhiChu"] == DBNull.Value ? "" : r["GhiChu"].ToString(),
+                                    ID_DeXuat         = r["ID_DeXuat"].ToString(),
+                                    TrangThaiDeXuat   = r["TrangThaiDeXuat"].ToString(),
+                                    NgayDeXuat        = Convert.ToDateTime(r["NgayDeXuat"]).ToString("dd/MM/yyyy"),
+                                    TenThietBi        = r["TenThietBiDeXuat"].ToString()
+                                });
+                    }
+                    return Json(new { ok = true, data = list }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
+        }
+
+        // Ajax: lịch sử duyệt của 1 đề xuất
+        [HttpGet]
+        public JsonResult GetLichSuDuyet(string idDX)
+        {
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    const string sql = @"
+                        SELECT ls.CapDuyet, ls.ThoiGianDuyet, ls.TrangThaiSauDuyet, ls.GhiChu,
+                               nd.HoTen AS NguoiDuyet
+                        FROM LICHSUDUYET ls
+                        JOIN NGUOIDUNG nd ON nd.ID_NguoiDung = ls.NguoiDuyetNo
+                        WHERE ls.DeXuatNo = @Id
+                        ORDER BY ls.ThoiGianDuyet";
+                    var list = new List<object>();
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Id", idDX);
+                        using (var r = cmd.ExecuteReader())
+                            while (r.Read())
+                                list.Add(new {
+                                    CapDuyet          = r["CapDuyet"].ToString(),
+                                    NguoiDuyet        = r["NguoiDuyet"].ToString(),
+                                    ThoiGian          = Convert.ToDateTime(r["ThoiGianDuyet"]).ToString("dd/MM/yyyy HH:mm"),
+                                    TrangThaiSauDuyet = r["TrangThaiSauDuyet"].ToString(),
+                                    GhiChu            = r["GhiChu"] == DBNull.Value ? "" : r["GhiChu"].ToString()
+                                });
+                    }
+                    return Json(new { ok = true, data = list }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
+        }
+
+        // Ajax: danh sách đề xuất
+        [HttpGet]
+        public JsonResult GetDanhSachDeXuat()
+        {
+            try
+            {
+                using (var conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    const string sql = @"
+                        SELECT dx.ID_DeXuat, dx.NgayDeXuat, dx.TrangThai,
+                               nd.HoTen AS NguoiDeXuat,
+                               ISNULL(kp.TenPhongBanKhoa,'') AS KhoaPhongBan
+                        FROM DEXUAT_MUASAM dx
+                        JOIN NGUOIDUNG nd ON nd.ID_NguoiDung = dx.NguoiDeXuatNo
+                        LEFT JOIN KHOA_PHONGBAN kp ON kp.ID_KhoaPhongBan = nd.Khoa_BanNo
+                        ORDER BY dx.NgayDeXuat DESC";
+                    var list = new List<object>();
+                    using (var cmd = new SqlCommand(sql, conn))
+                    using (var r = cmd.ExecuteReader())
+                        while (r.Read())
+                            list.Add(new {
+                                ID_DeXuat    = r["ID_DeXuat"].ToString(),
+                                NguoiDeXuat  = r["NguoiDeXuat"].ToString(),
+                                KhoaPhongBan = r["KhoaPhongBan"].ToString(),
+                                NgayDeXuat   = Convert.ToDateTime(r["NgayDeXuat"]).ToString("dd/MM/yyyy"),
+                                TrangThai    = r["TrangThai"].ToString()
+                            });
+                    return Json(new { ok = true, data = list }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
         }
     }
 }
