@@ -300,6 +300,17 @@ namespace QLTB.Models
         public int    SoThietBi       { get; set; }
     }
 
+    // ── Quản lý phòng ────────────────────────────────────────
+    public class PhongViewModel
+    {
+        public string ID_Phong  { get; set; }
+        public string TenPhong  { get; set; }
+        public string KhuVucNo  { get; set; }
+        public string TenKhuVuc { get; set; }
+        public int?   SucChua   { get; set; }
+        public int    SoThietBi { get; set; }
+    }
+
     // ── Quản lý nhà cung cấp ────────────────────────────────
     public class NhaCungCapViewModel
     {
