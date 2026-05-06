@@ -224,6 +224,9 @@
         <label class="form-lbl">Email</label>
         <input type="email" id="e_email" class="form-inp" />
 
+        <label class="form-lbl">Mật khẩu mới <span style="color:#888;font-weight:400">(để trống nếu không đổi)</span></label>
+        <input type="password" id="e_matKhau" class="form-inp" placeholder="Nhập mật khẩu mới..." />
+
         <label class="form-lbl">Vai trò</label>
         <select id="e_vaiTro" class="form-inp">
             <option value="">-- Chưa phân quyền --</option>
@@ -324,13 +327,14 @@
         $.get('@Url.Action("GetNguoiDung", "BGH")', { id: id }, function (res) {
             if (!res.ok) { showAlert(res.msg, 'error'); return; }
             var d = res.data;
-            document.getElementById('e_id').value          = d.id;
-            document.getElementById('e_id_display').value  = d.id;
-            document.getElementById('e_hoTen').value    = d.hoTen;
-            document.getElementById('e_email').value    = d.email;
-            document.getElementById('e_vaiTro').value   = d.vaiTroNo;
-            document.getElementById('e_khoa').value     = d.khoaBanNo;
-            document.getElementById('e_trangThai').value= d.trangThai ? 'true' : 'false';
+            document.getElementById('e_id').value         = d.id;
+            document.getElementById('e_id_display').value = d.id;
+            document.getElementById('e_hoTen').value      = d.hoTen;
+            document.getElementById('e_email').value      = d.email;
+            document.getElementById('e_matKhau').value    = '';
+            document.getElementById('e_vaiTro').value     = d.vaiTroNo;
+            document.getElementById('e_khoa').value       = d.khoaBanNo;
+            document.getElementById('e_trangThai').value  = d.trangThai ? 'true' : 'false';
             document.getElementById('modalEdit').classList.add('active');
         });
     }
@@ -339,12 +343,13 @@
         if (!hoTen) { showAlert('Họ tên không được để trống.', 'error'); return; }
 
         $.post('@Url.Action("SuaNguoiDung", "BGH")', {
-            id:        document.getElementById('e_id').value,
-            hoTen:     hoTen,
-            email:     document.getElementById('e_email').value,
-            vaiTroNo:  document.getElementById('e_vaiTro').value,
-            khoaBanNo: document.getElementById('e_khoa').value,
-            trangThai: document.getElementById('e_trangThai').value === 'true'
+            id:         document.getElementById('e_id').value,
+            hoTen:      hoTen,
+            email:      document.getElementById('e_email').value,
+            matKhauMoi: document.getElementById('e_matKhau').value,
+            vaiTroNo:   document.getElementById('e_vaiTro').value,
+            khoaBanNo:  document.getElementById('e_khoa').value,
+            trangThai:  document.getElementById('e_trangThai').value === 'true'
         }, function (res) {
             if (res.ok) { showAlert(res.msg, 'success'); closeAll(); setTimeout(function(){ location.reload(); }, 1200); }
             else showAlert(res.msg, 'error');

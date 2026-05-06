@@ -649,7 +649,7 @@ namespace QLTB.Controllers
         }
 
         [HttpPost]
-        public JsonResult SuaNguoiDung(string id, string hoTen, string email, string vaiTroNo, string khoaBanNo, bool trangThai)
+        public JsonResult SuaNguoiDung(string id, string hoTen, string email, string matKhauMoi, string vaiTroNo, string khoaBanNo, bool trangThai)
         {
             if (Session["UserId"] == null) return Json(new { ok = false, msg = "Chưa đăng nhập." });
             try
@@ -662,17 +662,20 @@ namespace QLTB.Controllers
                     conn.Open();
                     using (var tran = conn.BeginTransaction())
                     {
-                        using (var cmd = new SqlCommand(@"
-                            UPDATE NGUOIDUNG
-                            SET HoTen = @hoTen, Email = @email,
-                                Khoa_BanNo = @khoa, TrangThaiTK = @tt
-                            WHERE ID_NguoiDung = @id", conn, tran))
+                        // Nếu có mật khẩu mới thì cập nhật, không thì giữ nguyên
+                        string sqlUpdate = string.IsNullOrWhiteSpace(matKhauMoi)
+                            ? @"UPDATE NGUOIDUNG SET HoTen=@hoTen, Email=@email, Khoa_BanNo=@khoa, TrangThaiTK=@tt WHERE ID_NguoiDung=@id"
+                            : @"UPDATE NGUOIDUNG SET HoTen=@hoTen, Email=@email, Khoa_BanNo=@khoa, TrangThaiTK=@tt, MatKhau=@mk WHERE ID_NguoiDung=@id";
+
+                        using (var cmd = new SqlCommand(sqlUpdate, conn, tran))
                         {
                             cmd.Parameters.AddWithValue("@id",    id);
                             cmd.Parameters.AddWithValue("@hoTen", hoTen.Trim());
                             cmd.Parameters.AddWithValue("@email", (object)email ?? DBNull.Value);
                             cmd.Parameters.AddWithValue("@khoa",  string.IsNullOrWhiteSpace(khoaBanNo) ? (object)DBNull.Value : khoaBanNo);
                             cmd.Parameters.AddWithValue("@tt",    trangThai);
+                            if (!string.IsNullOrWhiteSpace(matKhauMoi))
+                                cmd.Parameters.AddWithValue("@mk", matKhauMoi);
                             cmd.ExecuteNonQuery();
                         }
 
@@ -690,7 +693,8 @@ namespace QLTB.Controllers
                             }
 
                         tran.Commit();
-                        return Json(new { ok = true, msg = "Cập nhật thành công!" });
+                        string msg = "Cập nhật thành công!" + (string.IsNullOrWhiteSpace(matKhauMoi) ? "" : " (đã đổi mật khẩu)");
+                        return Json(new { ok = true, msg = msg });
                     }
                 }
             }
