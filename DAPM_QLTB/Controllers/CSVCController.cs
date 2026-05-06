@@ -27,6 +27,11 @@ namespace QLTB.Controllers
             using (var conn = DbHelper.GetConnection())
             {
                 conn.Open();
+
+                ViewBag.DanhMucList = LoadDropdownItems(conn, "SELECT ID_DanhMuc AS Value, TenDanhMuc AS Text FROM DANHMUC ORDER BY TenDanhMuc");
+                ViewBag.KhoaList = LoadDropdownItems(conn, "SELECT ID_KhoaPhongBan AS Value, TenPhongBanKhoa AS Text FROM KHOA_PHONGBAN ORDER BY TenPhongBanKhoa");
+                ViewBag.NhaCungCapList = LoadDropdownItems(conn, "SELECT ID_NhaCC AS Value, TenNhaCC AS Text FROM NHACUNGCAP ORDER BY TenNhaCC");
+
                 const string sql = @"
                     SELECT tb.ID_ThietBi, tb.TenTB,
                            dm.TenDanhMuc,
@@ -59,6 +64,20 @@ namespace QLTB.Controllers
                 }
             }
             return View(list);
+        }
+
+        private List<SelectListItem> LoadDropdownItems(SqlConnection conn, string sql)
+        {
+            var items = new List<SelectListItem>();
+            using (var cmd = new SqlCommand(sql, conn))
+            using (var rd = cmd.ExecuteReader())
+                while (rd.Read())
+                    items.Add(new SelectListItem
+                    {
+                        Value = rd["Value"].ToString(),
+                        Text = rd["Text"].ToString()
+                    });
+            return items;
         }
 
         public ActionResult QuanLyNhaCungCap()
