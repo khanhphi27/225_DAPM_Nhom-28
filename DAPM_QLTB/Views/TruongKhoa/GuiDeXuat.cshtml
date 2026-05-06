@@ -1,31 +1,1081 @@
-﻿<div class="container mt-4" style="max-width: 600px;">
-    <div class="card shadow p-4">
-        <h3 class="text-primary border-bottom pb-2">Phiếu Đề Xuất Mua Sắm</h3>
-        @using (Html.BeginForm())
+﻿@model System.Data.DataTable
+@{
+    ViewBag.Title = "Đề Xuất Mua Sắm";
+}
+
+<style>
+    .page-header h2 {
+        color: #1a237e;
+        font-weight: 700;
+        font-size: 22px;
+        margin: 0;
+    }
+
+    .page-header p {
+        color: #666;
+        font-size: 13px;
+        margin: 4px 0 0;
+    }
+
+    .form-card, .history-card {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.08);
+        margin-bottom: 28px;
+    }
+
+    .form-card {
+        padding: 28px 32px;
+    }
+
+    .section-title {
+        color: #1a237e;
+        font-weight: 700;
+        font-size: 15px;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e8eaf6;
+    }
+
+    .form-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #444;
+        margin-bottom: 5px;
+    }
+
+    .form-control {
+        border: 1px solid #d0d5e8;
+        border-radius: 8px;
+        font-size: 13px;
+        padding: 9px 12px;
+        background: #f8f9fe;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+        .form-control:focus {
+            border-color: #3949ab;
+            background: #fff;
+            box-shadow: none;
+            outline: none;
+        }
+
+    /* Bảng thiết bị */
+    .tb-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 12px;
+    }
+
+        .tb-table th {
+            background: #e8eaf6;
+            color: #1a237e;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 9px 12px;
+            text-align: left;
+        }
+
+        .tb-table td {
+            padding: 8px 6px;
+            border-bottom: 1px solid #f0f2f8;
+            vertical-align: middle;
+        }
+
+        .tb-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .tb-table input {
+            border: 1px solid #d0d5e8;
+            border-radius: 6px;
+            font-size: 13px;
+            padding: 7px 10px;
+            background: #f8f9fe;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+            .tb-table input:focus {
+                border-color: #3949ab;
+                background: #fff;
+                outline: none;
+            }
+
+    .btn-add-row {
+        background: #e8eaf6;
+        color: #1a237e;
+        border: none;
+        border-radius: 7px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .btn-add-row:hover {
+            background: #c5cae9;
+        }
+
+    .btn-del-row {
+        background: #fce4ec;
+        color: #c62828;
+        border: none;
+        border-radius: 6px;
+        padding: 5px 10px;
+        font-size: 13px;
+        cursor: pointer;
+        font-weight: 700;
+    }
+
+        .btn-del-row:hover {
+            background: #f8bbd0;
+        }
+
+    .btn-submit {
+        background: #1a237e;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 28px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-submit:hover {
+            background: #283593;
+        }
+
+    /* History */
+    .history-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid #f0f2f8;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+        .history-header h4 {
+            color: #1a237e;
+            font-weight: 700;
+            font-size: 15px;
+            margin: 0;
+        }
+
+    .dx-card {
+        border: 1px solid #e8eaf6;
+        border-radius: 12px;
+        margin: 16px;
+        overflow: hidden;
+        transition: box-shadow .2s;
+    }
+
+        .dx-card:hover {
+            box-shadow: 0 4px 16px rgba(26,35,126,.1);
+        }
+
+    .dx-card-head {
+        padding: 14px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        background: #fafbff;
+        border-bottom: 1px solid #f0f2f8;
+    }
+
+    .dx-id {
+        font-size: 11px;
+        color: #888;
+        font-weight: 600;
+    }
+
+    .dx-name {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1a237e;
+        margin: 3px 0;
+    }
+
+    .dx-meta {
+        font-size: 12px;
+        color: #666;
+    }
+
+        .dx-meta span {
+            margin-right: 16px;
+        }
+
+    .dx-mota {
+        padding: 0 20px 10px;
+        font-size: 12px;
+        color: #666;
+    }
+
+        .dx-mota b {
+            color: #444;
+        }
+
+    /* Chi tiết thiết bị trong lịch sử */
+    .dx-items {
+        margin: 0 20px 14px;
+        border: 1px solid #f0f2f8;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+        .dx-items table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .dx-items th {
+            background: #f5f6ff;
+            color: #1a237e;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 7px 12px;
+            text-align: left;
+        }
+
+        .dx-items td {
+            padding: 7px 12px;
+            font-size: 12px;
+            border-top: 1px solid #f5f6ff;
+            color: #333;
+        }
+
+    /* Timeline */
+    .timeline {
+        display: flex;
+        align-items: center;
+        padding: 14px 24px 8px;
+    }
+
+    .tl-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        position: relative;
+    }
+
+        .tl-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: calc(50% + 12px);
+            width: calc(100% - 24px);
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+
+        .tl-step.done:not(:last-child)::after {
+            background: #43a047;
+        }
+
+    .tl-dot {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 2px solid #e0e0e0;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        z-index: 1;
+        position: relative;
+    }
+
+    .tl-step.done .tl-dot {
+        background: #43a047;
+        border-color: #43a047;
+        color: #fff;
+    }
+
+    .tl-step.active .tl-dot {
+        background: #fb8c00;
+        border-color: #fb8c00;
+        color: #fff;
+    }
+
+    .tl-step.reject .tl-dot {
+        background: #e53935;
+        border-color: #e53935;
+        color: #fff;
+    }
+
+    .tl-label {
+        font-size: 10px;
+        color: #999;
+        margin-top: 4px;
+        text-align: center;
+        font-weight: 600;
+    }
+
+    .tl-step.done .tl-label {
+        color: #43a047;
+    }
+
+    .tl-step.active .tl-label {
+        color: #fb8c00;
+    }
+
+    .tl-step.reject .tl-label {
+        color: #e53935;
+    }
+
+    .badge-status {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .badge-csvc {
+        background: #fff3e0;
+        color: #e65100;
+    }
+
+    .badge-khtc {
+        background: #e3f2fd;
+        color: #1565c0;
+    }
+
+    .badge-bgh {
+        background: #f3e5f5;
+        color: #6a1b9a;
+    }
+
+    .badge-done {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .badge-reject {
+        background: #fce4ec;
+        color: #c62828;
+    }
+
+    .badge-default {
+        background: #f5f5f5;
+        color: #555;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 48px;
+        color: #aaa;
+    }
+
+        .empty-state span {
+            font-size: 44px;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+    .alert-ok {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid #a5d6a7;
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
+    .alert-err {
+        background: #fff3e0;
+        color: #e65100;
+        border: 1px solid #ffcc80;
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 13px;
+        margin-bottom: 20px;
+    }
+
+    .btn-edit {
+        background: #e3f2fd;
+        color: #1565c0;
+        border: none;
+        border-radius: 7px;
+        padding: 5px 12px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-edit:hover {
+            background: #bbdefb;
+        }
+
+    .edit-form-card {
+        background: #fff8e1;
+        border: 2px solid #fb8c00;
+        border-radius: 14px;
+        padding: 24px 28px;
+        margin-bottom: 28px;
+    }
+
+        .edit-form-card .section-title {
+            color: #e65100;
+            border-bottom-color: #ffe0b2;
+        }
+    /* Nút In trên giao diện Web */
+    .btn-print-pdf {
+        background: #f0f4f8;
+        color: #1a237e;
+        border: 1px solid #d0d5e8;
+        border-radius: 7px;
+        padding: 6px 14px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    /* Mẫu đơn chuẩn SPKT (Mặc định ẩn trên web) */
+    #mauInAn {
+        display: none;
+        font-family: "Times New Roman", Times, serif;
+        color: black;
+        line-height: 1.4;
+        background: white;
+    }
+
+    @@media print {
+        /* Ẩn toàn bộ giao diện Web khi in */
+        .no-print, .sidebar, .navbar, footer, button, .btn-edit, .page-header, .form-card, .history-card, .alert-ok, .alert-err {
+            display: none !important;
+        }
+        /* Hiện mẫu đơn chuẩn A4 */
+        #mauInAn {
+            display: block !important;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        @@page {
+            size: A4;
+            margin: 1.5cm 1cm 1cm 1.5cm;
+        }
+
+        .table-print {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+            .table-print th, .table-print td {
+                border: 1px solid black !important;
+                padding: 8px;
+                font-size: 14px;
+            }
+        /* Khung 3 ô ký tên tách rời chuẩn SPKT */
+        .sig-container {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+
+            .sig-container td {
+                border: 1px solid black !important;
+                padding: 10px;
+                text-align: center;
+                vertical-align: top;
+                height: 130px;
+                font-size: 13px;
+            }
+    }
+</style>
+
+<div class="page-header mb-4">
+    <h2>📋 Đề Xuất Mua Sắm Thiết Bị</h2>
+    <p>Tạo phiếu đề xuất mới và theo dõi trạng thái các đề xuất của bạn</p>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert-ok">✅ @TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert-err">⚠️ @TempData["Error"]</div>
+}
+@if (ViewBag.Error != null)
+{
+    <div class="alert-err">⚠️ @ViewBag.Error</div>
+}
+
+<!-- Form chỉnh sửa (ẩn, hiện khi click Chỉnh sửa) -->
+<div class="edit-form-card" id="editFormCard" style="display:none;">
+    <div class="section-title">✏️ Chỉnh Sửa Phiếu Đề Xuất — <span id="editIdLabel"></span></div>
+    <div style="background:#fff3e0;border-radius:8px;padding:10px 14px;font-size:12px;color:#e65100;margin-bottom:16px;">
+        ⚠️ Khi gửi lại, phiếu sẽ được reset về <b>Chờ CSVC duyệt</b> và các bên sẽ duyệt lại từ đầu.
+    </div>
+    @using (Html.BeginForm("ChinhSuaDeXuat", "TruongKhoa", FormMethod.Post, new { id = "formChinhSua" }))
+    {
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="idDX" id="editIdInput" />
+
+        <table class="tb-table" id="tbEditThietBi">
+            <thead>
+                <tr>
+                    <th style="width:35%">Tên thiết bị *</th>
+                    <th style="width:12%">Số lượng *</th>
+                    <th style="width:12%">Đơn vị tính</th>
+                    <th style="width:20%">Giá dự kiến (VNĐ) *</th>
+                    <th style="width:15%">Thành tiền</th>
+                    <th style="width:6%"></th>
+                </tr>
+            </thead>
+            <tbody id="tbEditBody"></tbody>
+        </table>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <button type="button" class="btn-add-row" onclick="themDongEdit()">＋ Thêm thiết bị</button>
+            <div class="tong-gia" style="margin:0;">Tổng dự kiến: <span id="tongGiaEdit">0</span> đ</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Lý do / Mô tả chung</label>
+            <textarea name="mota" id="editMota" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn-cancel-edit" onclick="dongFormEdit()"
+                    style="background:#f5f5f5;color:#555;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;">
+                Hủy
+            </button>
+            <button type="submit" class="btn-submit" style="background:#fb8c00;">📤 Gửi lại đề xuất</button>
+        </div>
+    }
+</div>
+
+<!-- Form tạo mới -->
+<div class="form-card">
+    <div class="section-title">➕ Tạo Phiếu Đề Xuất Mới</div>
+    @using (Html.BeginForm("GuiDeXuat", "TruongKhoa", FormMethod.Post, new { id = "formDeXuat" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <!-- Bảng danh sách thiết bị -->
+        <table class="tb-table" id="tbThietBi">
+            <thead>
+                <tr>
+                    <th style="width:35%">Tên thiết bị *</th>
+                    <th style="width:12%">Số lượng *</th>
+                    <th style="width:12%">Đơn vị tính</th>
+                    <th style="width:20%">Giá dự kiến (VNĐ) *</th>
+                    <th style="width:15%">Thành tiền</th>
+                    <th style="width:6%"></th>
+                </tr>
+            </thead>
+            <tbody id="tbBody">
+                <tr class="tb-row">
+                    <td><input type="text" name="tenTB[]" class="form-control" required placeholder="Ví dụ: Máy chiếu Sony" /></td>
+                    <td><input type="number" name="soluong[]" class="form-control sl-input" required min="1" value="1" /></td>
+                    <td><input type="text" name="donvi[]" class="form-control" placeholder="Cái, bộ..." /></td>
+                    <td><input type="number" name="gia[]" class="form-control gia-input" required min="0" value="0" /></td>
+                    <td class="thanh-tien" style="font-weight:600;color:#1a237e;font-size:13px;">0 đ</td>
+                    <td><button type="button" class="btn-del-row" onclick="xoaDong(this)" title="Xóa dòng">✕</button></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <button type="button" class="btn-add-row" onclick="themDong()">
+                ＋ Thêm thiết bị
+            </button>
+            <div class="tong-gia" style="margin:0;">
+                Tổng dự kiến: <span id="tongGia">0</span> đ
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Lý do / Mô tả chung</label>
+            <textarea name="mota" class="form-control" rows="3" placeholder="Mô tả lý do cần mua sắm thiết bị..."></textarea>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+            <button type="submit" class="btn-submit">📤 Gửi đề xuất</button>
+        </div>
+    }
+</div>
+
+<!-- Lịch sử đề xuất -->
+<div class="history-card">
+    <div class="history-header">
+        <h4>📂 Lịch Sử Đề Xuất Của Bạn</h4>
+        <span style="font-size:12px;color:#888;">@(Model != null ? Model.Rows.Count : 0) đề xuất</span>
+    </div>
+
+    @if (Model == null || Model.Rows.Count == 0)
+    {
+        <div class="empty-state">
+            <span>📭</span>
+            Bạn chưa có đề xuất nào. Hãy tạo đề xuất đầu tiên ở trên.
+        </div>
+    }
+    else
+    {
+        // Nhóm theo ID_DeXuat
+
+        var groups = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Data.DataRow>>();
+        foreach (System.Data.DataRow r in Model.Rows)
         {
-            @Html.AntiForgeryToken()
-            <div class="form-group mb-3">
-                <label>Tên thiết bị</label>
-                <input name="tenTB" class="form-control" required placeholder="Ví dụ: Máy chiếu Sony" />
-            </div>
-            <div class="row">
-                <div class="col-6 mb-3">
-                    <label>Số lượng</label>
-                    <input name="soluong" type="number" min="1" class="form-control" required value="1" />
+            string key = r["ID_DeXuat"].ToString();
+            if (!groups.ContainsKey(key))
+            {
+                groups[key] = new System.Collections.Generic.List<System.Data.DataRow>();
+            }
+            groups[key].Add(r);
+        }
+
+        foreach (var kv in groups)
+        {
+            var rows = kv.Value;
+            var first = rows[0];
+            string tt = first["TrangThai"].ToString();
+
+            string badgeClass;
+            string step1 = "done", step2 = "", step3 = "", step4 = "";
+            if (tt == "Chờ CSVC duyệt")
+            {
+                badgeClass = "badge-csvc"; step1 = "active";
+            }
+            else if (tt == "Chờ KHTC duyệt")
+            {
+                badgeClass = "badge-khtc"; step2 = "active";
+            }
+            else if (tt == "Chờ BGH duyệt")
+            {
+                badgeClass = "badge-bgh"; step2 = "done"; step3 = "active";
+            }
+            else if (tt == "Đã duyệt")
+            {
+                badgeClass = "badge-done"; step2 = "done"; step3 = "done"; step4 = "done";
+            }
+            else if (tt.Contains("Từ chối"))
+            {
+                badgeClass = "badge-reject";
+                if (tt.Contains("CSVC")) { step1 = "reject"; }
+                else if (tt.Contains("KHTC")) { step2 = "reject"; }
+                else { step2 = "done"; step3 = "done"; step4 = "reject"; }
+            }
+            else
+            {
+                badgeClass = "badge-default";
+            }
+
+            string moTa = first["MoTa"] == DBNull.Value ? "" : first["MoTa"].ToString();
+            string lyDo = first["LyDoTuChoi"] == DBNull.Value ? "" : first["LyDoTuChoi"].ToString();
+            string ngayDuyet = first["NgayDuyetCuoi"] == DBNull.Value ? "" : Convert.ToDateTime(first["NgayDuyetCuoi"]).ToString("dd/MM/yyyy");
+
+            decimal tongGia = 0;
+            foreach (var r in rows)
+            {
+                if (r["GiaDuKien"] != DBNull.Value && r["SoLuong"] != DBNull.Value)
+                {
+                    tongGia += Convert.ToDecimal(r["GiaDuKien"]) * Convert.ToInt32(r["SoLuong"]);
+                }
+            }
+
+            <div class="dx-card">
+                <div class="dx-card-head">
+                    <div>
+                        <div class="dx-id">Mã: @first["ID_DeXuat"] &nbsp;|&nbsp; Ngày gửi: @Convert.ToDateTime(first["NgayDeXuat"]).ToString("dd/MM/yyyy")</div>
+                        <div class="dx-name">Phiếu đề xuất — @rows.Count thiết bị</div>
+                        <div class="dx-meta">
+                            <span>💰 Tổng: @string.Format("{0:N0}", tongGia) đ</span>
+                            @if (!string.IsNullOrEmpty(ngayDuyet))
+                            {
+                                <span>✅ Duyệt: @ngayDuyet</span>
+                            }
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center;">
+                        <button class="btn-print-pdf" onclick="printLichSu(this, '@first["MoTa"]', '@Convert.ToDateTime(first["NgayDeXuat"]).ToString("dd/MM/yyyy")')">🖨️ In PDF</button>
+                        <span class="badge-status @badgeClass">@tt</span>
+                    </div>
                 </div>
-                <div class="col-6 mb-3">
-                    <label>Giá dự kiến (VNĐ)</label>
-                    <input name="gia" type="number" class="form-control" required placeholder="0" />
+                @{
+                    // Không cho chỉnh sửa khi đã duyệt hoàn tất
+                    bool daHoanTat = tt == "Đã duyệt";
+                }
+                @if (!daHoanTat)
+                {
+                    string moTaEscape = moTa.Replace("'", "\\'").Replace("\n", "\\n");
+                    <div style="padding:8px 20px 0;text-align:right;">
+                        <button class="btn-edit" onclick="moFormEdit('@first["ID_DeXuat"]', '@moTaEscape', this)">
+                            ✏️ Chỉnh sửa & Gửi lại
+                        </button>
+                    </div>
+                }
+
+                <!-- Timeline -->
+                <div class="timeline">
+                    <div class="tl-step done">
+                        <div class="tl-dot">✓</div>
+                        <div class="tl-label">Đã gửi</div>
+                    </div>
+                    <div class="tl-step @step1">
+                        <div class="tl-dot">@(step1=="done"?"✓":step1=="reject"?"✕":"1")</div>
+                        <div class="tl-label">CSVC</div>
+                    </div>
+                    <div class="tl-step @step2">
+                        <div class="tl-dot">@(step2=="done"?"✓":step2=="reject"?"✕":"2")</div>
+                        <div class="tl-label">KHTC</div>
+                    </div>
+                    <div class="tl-step @step3">
+                        <div class="tl-dot">@(step3=="done"?"✓":step3=="reject"?"✕":"3")</div>
+                        <div class="tl-label">BGH</div>
+                    </div>
+                    <div class="tl-step @step4">
+                        <div class="tl-dot">@(step4=="done"?"✓":step4=="reject"?"✕":"✓")</div>
+                        <div class="tl-label">Hoàn tất</div>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group mb-3">
-                <label>Lý do / Mô tả</label>
-                <textarea name="mota" class="form-control" rows="3"></textarea>
-            </div>
-            <div class="d-flex justify-content-between">
-                <a href="@Url.Action("Index")" class="btn btn-secondary">Quay lại</a>
-                <button type="submit" class="btn btn-primary px-4">Xác nhận gửi</button>
+
+                <!-- Danh sách thiết bị -->
+                <div class="dx-items">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tên thiết bị</th>
+                                <th style="text-align:center">SL</th>
+                                <th style="text-align:right">Đơn giá</th>
+                                <th style="text-align:right">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in rows)
+                            {
+                                decimal sl = r["SoLuong"] == DBNull.Value ? 0 : Convert.ToDecimal(r["SoLuong"]);
+                                decimal gia = r["GiaDuKien"] == DBNull.Value ? 0 : Convert.ToDecimal(r["GiaDuKien"]);
+                                <tr>
+                                    <td style="font-weight:600;">@r["TenThietBiDeXuat"]</td>
+                                    <td style="text-align:center;">@r["SoLuong"]</td>
+                                    <td style="text-align:right;">@string.Format("{0:N0}", gia) đ</td>
+                                    <td style="text-align:right;font-weight:600;color:#1a237e;">@string.Format("{0:N0}", sl * gia) đ</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr style="background:#f5f6ff;">
+                                <td colspan="3" style="text-align:right;font-weight:700;color:#1a237e;">Tổng cộng:</td>
+                                <td style="text-align:right;font-weight:700;color:#1a237e;">@string.Format("{0:N0}", tongGia) đ</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                @if (!string.IsNullOrEmpty(moTa) || !string.IsNullOrEmpty(lyDo))
+                {
+                    <div class="dx-mota">
+                        @if (!string.IsNullOrEmpty(moTa))
+                        {
+                            <b>💬 Mô tả:</b> @moTa <br />
+                        }
+                        @if (!string.IsNullOrEmpty(lyDo))
+                        {
+                            <b style="color:#c62828;">❌ Lý do từ chối:</b> <span style="color:#c62828;">@lyDo</span>
+                        }
+                    </div>
+                }
             </div>
         }
-    </div>
+    }
 </div>
+<div id="mauInAn">
+    <table width="100%" border="0" style="margin-bottom: 10px;">
+        <tr>
+            <td width="45%" class="text-center" style="vertical-align: top; padding-top: 0;">
+                <div class="text-bold" style="font-size: 13px; line-height: 1.5;">TRƯỜNG ĐH SƯ PHẠM KỸ THUẬT</div>
+                <div class="text-bold" style="font-size: 13px; text-decoration: underline; line-height: 1.5;">ĐẠI HỌC ĐÀ NẴNG</div>
+                <div style="font-size: 12px; margin-top: 5px;">Số: ......../ĐX-2026</div>
+            </td>
+            <td width="55%" class="text-center" style="vertical-align: top; padding-top: 0;">
+                <div class="text-bold" style="font-size: 13px; line-height: 1.5;">CỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                <div class="text-bold" style="font-size: 13px; text-decoration: underline; line-height: 1.5;">Độc lập - Tự do - Hạnh phúc</div>
+                <div style="font-size: 12px; font-style: italic; margin-top: 8px;">
+                    Đà Nẵng, ngày <span id="outNgay">...</span> tháng ... năm 2026
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <h2 class="text-center text-bold" style="margin-top: 30px; font-size: 17px; margin-bottom: 10px;">PHIẾU ĐỀ XUẤT MUA SẮM TRANG THIẾT BỊ, VẬT TƯ</h2>
+
+    <div class="text-center" style="font-size: 14px; margin-bottom: 25px;">
+        Kính gửi: &nbsp;&nbsp;&nbsp; <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Trường ĐH Sư Phạm Kỹ Thuật,Đại Học Đà Nẵng
+    </div>
+
+    <div style="font-size: 15px; padding: 0 10px;">
+        <p style="margin: 8px 0;"><strong>1. Đơn vị đề xuất:</strong> ............................................................................................................</p>
+        <p style="margin: 8px 0;"><strong>2. Người lập:</strong> <span class="text-bold" style="text-transform: uppercase;">@Session["UserName"]</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Mã số:</strong> .................................................</p>
+        <p style="margin: 8px 0;"><strong>3. Lý do mua sắm:</strong> <span id="outMoTa">............................................................................................</span></p>
+        <p style="margin: 8px 0;"><strong>4. Danh mục thiết bị:</strong> (Phòng mua sắm, ký tầng đầu bị, nngs3mội cvả tuan com sắm)</p>
+
+        <table class="table-items" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <thead>
+                <tr class="text-center text-bold">
+                    <th style="border: 1px solid black;" width="40">STT</th>
+                    <th style="border: 1px solid black;">Tên thiết bị, vật tư</th>
+                    <th style="border: 1px solid black;" width="80">Đơn vị</th>
+                    <th style="border: 1px solid black;" width="60">SL</th>
+                    <th style="border: 1px solid black;" width="140">Giá dự kiến</th>
+                </tr>
+            </thead>
+            <tbody id="outBody"></tbody>
+        </table>
+        <p style="font-style: italic; font-size: 13px; margin-top: 5px;">5. Khi ngân mã, ủy khoa gắn thực thiết bị (là phụ thêm)</p>
+    </div>
+
+    <table width="100%" style="margin-top: 20px; border: none;">
+        <tr>
+            <td width="50%" class="text-center">
+                <div class="text-bold" style="font-size: 14px;">NGƯỜI LẬP</div>
+                <div style="font-style: italic; font-size: 12px;">(Ký và ghi rõ họ tên)</div>
+                <br><br><br><br>
+                <div class="text-bold" style="text-transform: uppercase;">@Session["UserName"]</div>
+            </td>
+            <td width="50%" class="text-center">
+                <div class="text-bold" style="font-size: 14px;">TRƯỜNG ĐƠN VỊ ĐỀ XUẤT</div>
+                <div style="font-style: italic; font-size: 12px;">(Ký, ghi rõ họ tên và đóng dấu)</div>
+                <br><br><br><br>
+                <div>................................................</div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="sig-container" style="width: 100%; border-collapse: collapse; margin-top: 30px;">
+        <tr>
+            <td width="33.3%" style="border: 1px solid black; padding: 10px; text-align: center; vertical-align: top; height: 120px;">
+                <div class="text-bold" style="font-size: 13px;">1. PHÒNG QUẢN TRỊ CSVC</div>
+                <div style="font-style: italic; font-size: 11px;">(Ký, ghi rõ họ tên)</div>
+            </td>
+            <td width="33.3%" style="border: 1px solid black; padding: 10px; text-align: center; vertical-align: top; height: 120px;">
+                <div class="text-bold" style="font-size: 13px;">2. PHÒNG KẾ HOẠCH - TÀI CHÍNH</div>
+                <div style="font-style: italic; font-size: 11px;">(Ký, ghi rõ họ tên)</div>
+            </td>
+            <td width="33.4%" style="border: 1px solid black; padding: 10px; text-align: center; vertical-align: top; height: 120px;">
+                <div class="text-bold" style="font-size: 13px;">3. BAN GIÁM HIỆU</div>
+                <div style="font-style: italic; font-size: 11px;">(Ký, đóng dấu và ghi rõ họ tên)</div>
+            </td>
+        </tr>
+    </table>
+</div>
+<script>
+    // Thêm dòng thiết bị mới
+    function themDong() {
+        var tbody = document.getElementById('tbBody');
+        var row = document.createElement('tr');
+        row.className = 'tb-row';
+        row.innerHTML = `
+            <td><input type="text"   name="tenTB[]"   class="form-control" required placeholder="Tên thiết bị" /></td>
+            <td><input type="number" name="soluong[]" class="form-control sl-input" required min="1" value="1" /></td>
+            <td><input type="text"   name="donvi[]"   class="form-control" placeholder="Cái, bộ..." /></td>
+            <td><input type="number" name="gia[]"     class="form-control gia-input" required min="0" value="0" /></td>
+            <td class="thanh-tien" style="font-weight:600;color:#1a237e;font-size:13px;">0 đ</td>
+            <td><button type="button" class="btn-del-row" onclick="xoaDong(this)" title="Xóa dòng">✕</button></td>`;
+        tbody.appendChild(row);
+        bindRowEvents(row);
+    }
+
+    // Xóa dòng (giữ ít nhất 1 dòng)
+    function xoaDong(btn) {
+        var rows = document.querySelectorAll('#tbBody .tb-row');
+        if (rows.length <= 1) { alert('Phiếu đề xuất cần ít nhất 1 thiết bị.'); return; }
+        btn.closest('tr').remove();
+        tinhTong();
+    }
+
+    // Tính thành tiền từng dòng và tổng
+    function tinhTong() {
+        var tong = 0;
+        document.querySelectorAll('#tbBody .tb-row').forEach(function(row) {
+            var sl  = parseFloat(row.querySelector('.sl-input').value)  || 0;
+            var gia = parseFloat(row.querySelector('.gia-input').value) || 0;
+            var tt  = sl * gia;
+            tong += tt;
+            row.querySelector('.thanh-tien').textContent = tt.toLocaleString('vi-VN') + ' đ';
+        });
+        document.getElementById('tongGia').textContent = tong.toLocaleString('vi-VN');
+    }
+
+    function bindRowEvents(row) {
+        row.querySelector('.sl-input').addEventListener('input', tinhTong);
+        row.querySelector('.gia-input').addEventListener('input', tinhTong);
+    }
+
+    // Bind sự kiện cho dòng đầu tiên
+    document.querySelectorAll('#tbBody .tb-row').forEach(bindRowEvents);
+
+    // ===== CHỈNH SỬA =====
+    function moFormEdit(id, mota, btn) {
+        document.getElementById('editIdInput').value = id;
+        document.getElementById('editIdLabel').textContent = id;
+        document.getElementById('editMota').value = mota;
+        document.getElementById('tbEditBody').innerHTML = '';
+
+        // Load chi tiết thiết bị hiện tại qua Ajax
+        $.get('@Url.Action("GetChiTietDeXuat","TruongKhoa")', { id: id }, function(res) {
+            if (res.ok) {
+                res.data.forEach(function(item) {
+                    themDongEditData(item.Ten, item.SoLuong, item.DVT, item.Gia);
+                });
+                tinhTongEdit();
+            }
+        });
+
+        document.getElementById('editFormCard').style.display = '';
+        document.getElementById('editFormCard').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function dongFormEdit() {
+        document.getElementById('editFormCard').style.display = 'none';
+    }
+
+    function themDongEdit() {
+        themDongEditData('', 1, '', 0);
+    }
+
+    function themDongEditData(ten, sl, dvt, gia) {
+        var tbody = document.getElementById('tbEditBody');
+        var row = document.createElement('tr');
+        row.className = 'tb-row';
+        row.innerHTML = `
+            <td><input type="text"   name="tenTB[]"   class="form-control" required value="${ten}" placeholder="Tên thiết bị" /></td>
+            <td><input type="number" name="soluong[]" class="form-control sl-input" required min="1" value="${sl}" /></td>
+            <td><input type="text"   name="donvi[]"   class="form-control" value="${dvt}" placeholder="Cái, bộ..." /></td>
+            <td><input type="number" name="gia[]"     class="form-control gia-input" required min="0" value="${gia}" /></td>
+            <td class="thanh-tien" style="font-weight:600;color:#1a237e;font-size:13px;">0 đ</td>
+            <td><button type="button" class="btn-del-row" onclick="xoaDongEdit(this)">✕</button></td>`;
+        tbody.appendChild(row);
+        bindEditRowEvents(row);
+        tinhTongEdit();
+    }
+
+    function xoaDongEdit(btn) {
+        var rows = document.querySelectorAll('#tbEditBody .tb-row');
+        if (rows.length <= 1) { alert('Cần ít nhất 1 thiết bị.'); return; }
+        btn.closest('tr').remove();
+        tinhTongEdit();
+    }
+
+    function tinhTongEdit() {
+        var tong = 0;
+        document.querySelectorAll('#tbEditBody .tb-row').forEach(function(row) {
+            var sl  = parseFloat(row.querySelector('.sl-input').value)  || 0;
+            var gia = parseFloat(row.querySelector('.gia-input').value) || 0;
+            var tt  = sl * gia;
+            tong += tt;
+            row.querySelector('.thanh-tien').textContent = tt.toLocaleString('vi-VN') + ' đ';
+        });
+        document.getElementById('tongGiaEdit').textContent = tong.toLocaleString('vi-VN');
+    }
+
+    function bindEditRowEvents(row) {
+        row.querySelector('.sl-input').addEventListener('input', tinhTongEdit);
+        row.querySelector('.gia-input').addEventListener('input', tinhTongEdit);
+    }
+    function printPhieuMoi() {
+        document.getElementById('outNgay').innerText = new Date().toLocaleDateString('vi-VN');
+        document.getElementById('outMoTa').innerText = document.getElementById('newMota').value || "...";
+        let html = "";
+        document.querySelectorAll('#tbBody .tb-row').forEach((row, idx) => {
+            const ten = row.querySelector('input[name="tenTB[]"]').value;
+            const sl = row.querySelector('input[name="soluong[]"]').value;
+            const gia = Number(row.querySelector('input[name="gia[]"]').value).toLocaleString();
+            if(ten) html += `<tr><td align="center">${idx+1}</td><td>${ten}</td><td align="center">${sl}</td><td align="right">${gia} đ</td></tr>`;
+        });
+        document.getElementById('outBody').innerHTML = html;
+        window.print();
+    }
+
+    function printLichSu(btn, mota, ngay) {
+        document.getElementById('outNgay').innerText = ngay;
+        document.getElementById('outMoTa').innerText = mota || "...";
+        const rows = btn.closest('.dx-card').querySelectorAll('.dx-items tbody tr');
+        let html = "";
+        rows.forEach((row, idx) => {
+            const cols = row.querySelectorAll('td');
+            html += `<tr><td align="center">${idx+1}</td><td>${cols[0].innerText}</td><td align="center">${cols[1].innerText}</td><td align="right">${cols[2].innerText}</td></tr>`;
+        });
+        document.getElementById('outBody').innerHTML = html;
+        window.print();
+    }
+    function printPhieuMoi() {
+        // Cập nhật ngày tháng
+        const d = new Date();
+        document.getElementById('outNgay').innerText = d.getDate();
+        document.getElementById('outMoTa').innerText = document.getElementById('newMota').value || "...................................................";
+
+        let html = "";
+        // Duyệt QUA TẤT CẢ các dòng có class .tb-row
+        const rows = document.querySelectorAll('#tbBody tr.tb-row');
+        rows.forEach((row, index) => {
+            const ten = row.querySelector('input[name="tenTB[]"]')?.value;
+            const sl = row.querySelector('input[name="soluong[]"]')?.value;
+            const dv = row.querySelector('input[name="donvi[]"]')?.value || "Cái/Bộ";
+            const giaVal = row.querySelector('input[name="gia[]"]')?.value;
+
+            if (ten && ten.trim() !== "") {
+                const giaStr = (Number(giaVal) || 0).toLocaleString('vi-VN');
+                html += `<tr>
+                 <td style="border: 1px solid black; text-align: center; padding: 5px;">${index + 1}</td>
+                 <td style="border: 1px solid black; padding: 5px; font-weight: bold;">${ten}</td>
+                 <td style="border: 1px solid black; text-align: center; padding: 5px;">${dv}</td>
+                 <td style="border: 1px solid black; text-align: center; padding: 5px;">${sl}</td>
+                 <td style="border: 1px solid black; text-align: right; padding: 5px;">${giaStr} đ</td>
+             </tr>`;
+            }
+        });
+
+        // Thêm ít nhất 3 dòng trống để đơn in nhìn "xịn" như mẫu thực tế
+        for (let i = (rows.length || 0); i < 3; i++) {
+            html += `<tr><td style="border: 1px solid black; height: 25px; text-align:center;">${i + 1}</td><td style="border: 1px solid black;"></td><td style="border: 1px solid black;"></td><td style="border: 1px solid black;"></td><td style="border: 1px solid black;"></td></tr>`;
+        }
+
+        document.getElementById('outBody').innerHTML = html;
+        window.print();
+    }
+
+    function printLichSu(btn, mota, ngay) {
+        document.getElementById('outNgay').innerText = ngay.split('/')[0];
+        document.getElementById('outMoTa').innerText = mota || "...................................................";
+
+        const card = btn.closest('.dx-card');
+        const rows = card.querySelectorAll('.dx-items tbody tr');
+        let html = "";
+
+        rows.forEach((row, idx) => {
+            const cols = row.querySelectorAll('td');
+            html += `<tr>
+             <td style="border: 1px solid black; text-align: center; padding: 5px;">${idx + 1}</td>
+             <td style="border: 1px solid black; padding: 5px; font-weight: bold;">${cols[0].innerText}</td>
+             <td style="border: 1px solid black; text-align: center; padding: 5px;">Cái/Bộ</td>
+             <td style="border: 1px solid black; text-align: center; padding: 5px;">${cols[1].innerText}</td>
+             <td style="border: 1px solid black; text-align: right; padding: 5px;">${cols[2].innerText}</td>
+         </tr>`;
+        });
+
+        document.getElementById('outBody').innerHTML = html;
+        window.print();
+    }
+</script>
