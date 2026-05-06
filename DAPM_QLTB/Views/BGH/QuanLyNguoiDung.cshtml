@@ -1,0 +1,341 @@
+@model IEnumerable<QLTB.Models.NguoiDungViewModel>
+@{
+    ViewBag.Title = "Quản Lý Người Dùng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var vaiTros  = ViewBag.VaiTros  as IEnumerable<System.Web.Mvc.SelectListItem> ?? new List<System.Web.Mvc.SelectListItem>();
+    var khoaList = ViewBag.KhoaList as IEnumerable<System.Web.Mvc.SelectListItem> ?? new List<System.Web.Mvc.SelectListItem>();
+}
+
+<style>
+    .page-header { margin-bottom: 24px; }
+    .page-header h2 { color: #1a237e; font-weight: 700; font-size: 22px; margin: 0; }
+    .page-header p  { color: #666; font-size: 13px; margin: 4px 0 0; }
+
+    .card-table {
+        background: #fff; border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,.07); overflow: hidden;
+    }
+    .card-table table { width: 100%; border-collapse: collapse; }
+    .card-table thead th {
+        background: #e8eaf6; color: #1a237e;
+        font-size: 12px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .4px;
+        padding: 12px 14px; white-space: nowrap;
+    }
+    .card-table tbody td {
+        padding: 11px 14px; font-size: 13px;
+        color: #333; border-bottom: 1px solid #f0f2f8;
+        vertical-align: middle;
+    }
+    .card-table tbody tr:last-child td { border-bottom: none; }
+    .card-table tbody tr:hover td { background: #f5f6ff; }
+
+    .badge-role { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .badge-role.tk   { background: #e3f2fd; color: #1565c0; }
+    .badge-role.csvc { background: #e8f5e9; color: #2e7d32; }
+    .badge-role.khtc { background: #fff3e0; color: #e65100; }
+    .badge-role.bgh  { background: #fce4ec; color: #c62828; }
+    .badge-role.none { background: #f5f5f5; color: #888; }
+
+    .badge-status { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .badge-status.active   { background: #e8f5e9; color: #2e7d32; }
+    .badge-status.inactive { background: #fce4ec; color: #c62828; }
+
+    .btn-icon { border: none; background: transparent; padding: 5px 8px; border-radius: 6px; cursor: pointer; font-size: 15px; transition: .15s; }
+    .btn-icon.edit { color: #1a237e; }
+    .btn-icon.edit:hover { background: #e8eaf6; }
+    .btn-icon.del  { color: #e53935; }
+    .btn-icon.del:hover  { background: #fce4ec; }
+
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 1050; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal-box { background: #fff; border-radius: 14px; padding: 28px 30px; width: 480px; max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+    .modal-title { font-size: 18px; font-weight: 700; color: #1a237e; margin-bottom: 18px; }
+    .form-lbl { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 4px; display: block; }
+    .form-inp { width: 100%; padding: 9px 12px; border: 1px solid #d0d5e8; border-radius: 8px; font-size: 13px; background: #f8f9fe; box-sizing: border-box; margin-bottom: 12px; }
+    .form-inp:focus { border-color: #3949ab; outline: none; }
+    .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
+    .btn-cancel { background: #f5f5f5; color: #555; border: none; border-radius: 8px; padding: 9px 20px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-save   { background: #1a237e; color: #fff; border: none; border-radius: 8px; padding: 9px 24px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-danger { background: #e53935; color: #fff; border: none; border-radius: 8px; padding: 9px 24px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+    .alert-box { padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none; }
+    .alert-box.success { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+    .alert-box.error   { background: #fce4ec; color: #c62828; border: 1px solid #ef9a9a; }
+</style>
+
+<div class="page-header">
+    <h2>👥 Quản Lý Người Dùng</h2>
+    <p>Tạo, chỉnh sửa và phân quyền tài khoản trong hệ thống</p>
+</div>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+<div id="alertBox" class="alert-box"></div>
+
+<!-- Toolbar -->
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+    <span style="font-size:13px; color:#666;">Tổng: <strong>@Model.Count()</strong> tài khoản</span>
+    <button onclick="openCreate()" style="background:#1a237e;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;">
+        <i class="bi bi-person-plus-fill"></i> Tạo tài khoản mới
+    </button>
+</div>
+
+<!-- Bảng danh sách -->
+<div class="card-table">
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>ID Người dùng</th>
+                <th>Họ tên</th>
+                <th>Email</th>
+                <th>Khoa / Phòng ban</th>
+                <th>Vai trò</th>
+                <th>Trạng thái</th>
+                <th style="text-align:center">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{ int stt = 0; }
+            @foreach (var nd in Model)
+            {
+                stt++;
+                string roleClass = nd.VaiTroNo.Contains("TK")   ? "tk"
+                                 : nd.VaiTroNo.Contains("CSVC") ? "csvc"
+                                 : nd.VaiTroNo.Contains("KHTC") ? "khtc"
+                                 : nd.VaiTroNo.Contains("BGH")  ? "bgh" : "none";
+                <tr>
+                    <td style="color:#999">@stt</td>
+                    <td><code style="font-size:11px;background:#f0f2f8;padding:2px 7px;border-radius:4px;">@nd.ID_NguoiDung</code></td>
+                    <td><strong>@nd.HoTen</strong></td>
+                    <td>@(string.IsNullOrEmpty(nd.Email) ? "—" : nd.Email)</td>
+                    <td>@(string.IsNullOrEmpty(nd.TenKhoa) ? "—" : nd.TenKhoa)</td>
+                    <td><span class="badge-role @roleClass">@nd.TenVaiTro</span></td>
+                    <td>
+                        <span class="badge-status @(nd.TrangThaiTK ? "active" : "inactive")">
+                            @(nd.TrangThaiTK ? "✅ Hoạt động" : "🔒 Khóa")
+                        </span>
+                    </td>
+                    <td style="text-align:center; white-space:nowrap;">
+                        <button class="btn-icon edit" title="Sửa" onclick="openEdit('@nd.ID_NguoiDung')">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button class="btn-icon del" title="Xóa" onclick="openDelete('@nd.ID_NguoiDung', '@Html.Raw(nd.HoTen.Replace("'", "\\'"))')">
+                            <i class="bi bi-trash3-fill"></i>
+                        </button>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr><td colspan="8" style="text-align:center;color:#999;padding:30px;">Chưa có tài khoản nào.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- ===== MODAL TẠO ===== -->
+<div class="modal-overlay" id="modalCreate">
+    <div class="modal-box">
+        <div class="modal-title">➕ Tạo Tài Khoản Mới</div>
+
+        <label class="form-lbl">ID Người dùng <span style="color:red">*</span></label>
+        <input type="text" id="c_id" class="form-inp" placeholder="VD: ND001" style="font-family:monospace;" />
+
+        <label class="form-lbl">Họ và tên <span style="color:red">*</span></label>
+        <input type="text" id="c_hoTen" class="form-inp" placeholder="Nguyễn Văn A" />
+
+        <label class="form-lbl">Email</label>
+        <input type="email" id="c_email" class="form-inp" placeholder="example@spkt.edu.vn" />
+
+        <label class="form-lbl">Mật khẩu <span style="color:red">*</span></label>
+        <input type="password" id="c_matKhau" class="form-inp" placeholder="Nhập mật khẩu" />
+
+        <label class="form-lbl">Vai trò</label>
+        <select id="c_vaiTro" class="form-inp">
+            <option value="">-- Chưa phân quyền --</option>
+            @foreach (var vt in vaiTros)
+            {
+                <option value="@vt.Value">@vt.Text</option>
+            }
+        </select>
+
+        <label class="form-lbl">Khoa / Phòng ban</label>
+        <select id="c_khoa" class="form-inp">
+            <option value="">-- Không thuộc đơn vị --</option>
+            @foreach (var kp in khoaList)
+            {
+                <option value="@kp.Value">@kp.Text</option>
+            }
+        </select>
+
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-save" onclick="submitCreate()">💾 Tạo tài khoản</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL SỬA ===== -->
+<div class="modal-overlay" id="modalEdit">
+    <div class="modal-box">
+        <div class="modal-title">✏️ Chỉnh Sửa Tài Khoản</div>
+        <input type="hidden" id="e_id" />
+
+        <label class="form-lbl">ID Người dùng</label>
+        <input type="text" id="e_id_display" class="form-inp" readonly
+               style="font-family:monospace;background:#f0f2f8;color:#555;cursor:not-allowed;" />
+
+        <label class="form-lbl">Họ và tên <span style="color:red">*</span></label>
+        <input type="text" id="e_hoTen" class="form-inp" />
+
+        <label class="form-lbl">Email</label>
+        <input type="email" id="e_email" class="form-inp" />
+
+        <label class="form-lbl">Vai trò</label>
+        <select id="e_vaiTro" class="form-inp">
+            <option value="">-- Chưa phân quyền --</option>
+            @foreach (var vt in vaiTros)
+            {
+                <option value="@vt.Value">@vt.Text</option>
+            }
+        </select>
+
+        <label class="form-lbl">Khoa / Phòng ban</label>
+        <select id="e_khoa" class="form-inp">
+            <option value="">-- Không thuộc đơn vị --</option>
+            @foreach (var kp in khoaList)
+            {
+                <option value="@kp.Value">@kp.Text</option>
+            }
+        </select>
+
+        <label class="form-lbl">Trạng thái</label>
+        <select id="e_trangThai" class="form-inp">
+            <option value="true">✅ Hoạt động</option>
+            <option value="false">🔒 Khóa</option>
+        </select>
+
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-save" onclick="submitEdit()">💾 Lưu thay đổi</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL XÓA ===== -->
+<div class="modal-overlay" id="modalDelete">
+    <div class="modal-box" style="width:400px;">
+        <div class="modal-title">🗑️ Xác Nhận Xóa</div>
+        <input type="hidden" id="d_id" />
+        <p style="font-size:14px;color:#444;margin-bottom:20px;">
+            Bạn có chắc muốn xóa tài khoản <strong id="d_ten"></strong>?<br>
+            <span style="color:#e53935;font-size:12px;">Hành động này không thể hoàn tác.</span>
+        </p>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-danger" onclick="submitDelete()">🗑️ Xóa</button>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+<script>
+    function showAlert(msg, type) {
+        var box = document.getElementById('alertBox');
+        box.textContent = msg;
+        box.className = 'alert-box ' + type;
+        box.style.display = 'block';
+        setTimeout(function () { box.style.display = 'none'; }, 4000);
+    }
+    function closeAll() {
+        document.querySelectorAll('.modal-overlay').forEach(function (m) { m.classList.remove('active'); });
+    }
+    document.querySelectorAll('.modal-overlay').forEach(function (m) {
+        m.addEventListener('click', function (e) { if (e.target === m) closeAll(); });
+    });
+
+    // ── Tạo ──────────────────────────────────────────────────
+    function openCreate() {
+        document.getElementById('c_id').value      = '';
+        document.getElementById('c_hoTen').value   = '';
+        document.getElementById('c_email').value   = '';
+        document.getElementById('c_matKhau').value = '';
+        document.getElementById('c_vaiTro').value  = '';
+        document.getElementById('c_khoa').value    = '';
+        document.getElementById('modalCreate').classList.add('active');
+        setTimeout(function () { document.getElementById('c_id').focus(); }, 100);
+    }
+    function submitCreate() {
+        var id      = document.getElementById('c_id').value.trim();
+        var hoTen   = document.getElementById('c_hoTen').value.trim();
+        var matKhau = document.getElementById('c_matKhau').value;
+        if (!id)      { showAlert('Vui lòng nhập ID người dùng.', 'error'); return; }
+        if (!hoTen)   { showAlert('Vui lòng nhập họ tên.', 'error'); return; }
+        if (!matKhau) { showAlert('Vui lòng nhập mật khẩu.', 'error'); return; }
+
+        $.post('@Url.Action("TaoNguoiDung", "BGH")', {
+            id:        id,
+            hoTen:     hoTen,
+            email:     document.getElementById('c_email').value,
+            matKhau:   matKhau,
+            vaiTroNo:  document.getElementById('c_vaiTro').value,
+            khoaBanNo: document.getElementById('c_khoa').value
+        }, function (res) {
+            if (res.ok) { showAlert(res.msg, 'success'); closeAll(); setTimeout(function () { location.reload(); }, 1200); }
+            else showAlert(res.msg, 'error');
+        });
+    }
+
+    // ── Sửa ──────────────────────────────────────────────────
+    function openEdit(id) {
+        $.get('@Url.Action("GetNguoiDung", "BGH")', { id: id }, function (res) {
+            if (!res.ok) { showAlert(res.msg, 'error'); return; }
+            var d = res.data;
+            document.getElementById('e_id').value         = d.id;
+            document.getElementById('e_id_display').value = d.id;
+            document.getElementById('e_hoTen').value      = d.hoTen;
+            document.getElementById('e_email').value      = d.email;
+            document.getElementById('e_vaiTro').value     = d.vaiTroNo;
+            document.getElementById('e_khoa').value       = d.khoaBanNo;
+            document.getElementById('e_trangThai').value  = d.trangThai ? 'true' : 'false';
+            document.getElementById('modalEdit').classList.add('active');
+        });
+    }
+    function submitEdit() {
+        var hoTen = document.getElementById('e_hoTen').value.trim();
+        if (!hoTen) { showAlert('Họ tên không được để trống.', 'error'); return; }
+
+        $.post('@Url.Action("SuaNguoiDung", "BGH")', {
+            id:        document.getElementById('e_id').value,
+            hoTen:     hoTen,
+            email:     document.getElementById('e_email').value,
+            vaiTroNo:  document.getElementById('e_vaiTro').value,
+            khoaBanNo: document.getElementById('e_khoa').value,
+            trangThai: document.getElementById('e_trangThai').value === 'true'
+        }, function (res) {
+            if (res.ok) { showAlert(res.msg, 'success'); closeAll(); setTimeout(function () { location.reload(); }, 1200); }
+            else showAlert(res.msg, 'error');
+        });
+    }
+
+    // ── Xóa ──────────────────────────────────────────────────
+    function openDelete(id, ten) {
+        document.getElementById('d_id').value = id;
+        document.getElementById('d_ten').textContent = ten;
+        document.getElementById('modalDelete').classList.add('active');
+    }
+    function submitDelete() {
+        $.post('@Url.Action("XoaNguoiDung", "BGH")', {
+            id: document.getElementById('d_id').value
+        }, function (res) {
+            if (res.ok) { showAlert('Đã xóa tài khoản.', 'success'); closeAll(); setTimeout(function () { location.reload(); }, 1200); }
+            else showAlert(res.msg, 'error');
+        });
+    }
+</script>
+}
