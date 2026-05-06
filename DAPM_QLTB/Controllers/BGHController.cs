@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Web.Mvc;
 using QLTB.Models;
 
@@ -498,12 +499,35 @@ namespace QLTB.Controllers
                 using (var conn = DbHelper.GetConnection())
                 {
                     conn.Open();
+
+                    // Tìm theo toàn bộ tên + từng từ riêng lẻ (bao gồm cả tên ngắn như 'pqk')
+                    var allTerms = new List<string> { tenTB ?? "" }; // tìm toàn bộ tên trước
                     var words = (tenTB ?? "").Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
-                    if (words.Length == 0)
-                        return Json(new { ok = true, data = new List<object>() }, JsonRequestBehavior.AllowGet);
+                    foreach (var w in words)
+                        if (!allTerms.Contains(w)) allTerms.Add(w);
 
                     var likes = new List<string>();
-                    for (int i = 0; i < words.Length; i++) likes.Add("ct.TenThietBiDeXuat LIKE @W" + i);
+                    for (int i = 0; i < allTerms.Count; i++)
+                        likes.Add("ct.TenThietBiDeXuat LIKE @W" + i);
+
+                    // Kiểm tra có cột ThietBiNo không (sau migration)
+                    bool hasThietBiNo = false;
+                    using (var chk = new SqlCommand("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='CHITIET_DEXUAT' AND COLUMN_NAME='ThietBiNo'", conn))
+                        hasThietBiNo = (int)chk.ExecuteScalar() > 0;
+
+                    // Lấy ID_ThietBi từ TenTB
+                    string idThietBi = null;
+                    using (var chk = new SqlCommand("SELECT TOP 1 ID_ThietBi FROM THIETBI WHERE TenTB=@Ten", conn))
+                    {
+                        chk.Parameters.AddWithValue("@Ten", tenTB ?? "");
+                        var v = chk.ExecuteScalar();
+                        if (v != null) idThietBi = v.ToString();
+                    }
+
+                    // WHERE: ưu tiên ThietBiNo nếu có, kết hợp với LIKE tên
+                    string whereClause = "(" + string.Join(" OR ", likes) + ")";
+                    if (hasThietBiNo && idThietBi != null)
+                        whereClause = "(ct.ThietBiNo=@ThietBiId OR " + string.Join(" OR ", likes) + ")";
 
                     string sql = @"
                         SELECT ls.CapDuyet, ls.ThoiGianDuyet, ls.TrangThaiSauDuyet, ls.GhiChu,
@@ -515,14 +539,17 @@ namespace QLTB.Controllers
                         JOIN NGUOIDUNG nd ON nd.ID_NguoiDung = ls.NguoiDuyetNo
                         JOIN DEXUAT_MUASAM dx ON dx.ID_DeXuat = ls.DeXuatNo
                         JOIN CHITIET_DEXUAT ct ON ct.DeXuatNo = dx.ID_DeXuat
-                        WHERE (" + string.Join(" OR ", likes) + @")
+                        WHERE " + whereClause + @"
                         ORDER BY dx.NgayDeXuat DESC, ls.ThoiGianDuyet";
 
                     var list = new List<object>();
                     using (var cmd = new SqlCommand(sql, conn))
                     {
-                        for (int i = 0; i < words.Length; i++)
-                            cmd.Parameters.AddWithValue("@W" + i, "%" + words[i] + "%");
+                        for (int i = 0; i < allTerms.Count; i++)
+                            cmd.Parameters.AddWithValue("@W" + i, "%" + allTerms[i] + "%");
+                        if (hasThietBiNo && idThietBi != null)
+                            cmd.Parameters.AddWithValue("@ThietBiId", idThietBi);
+
                         using (var r = cmd.ExecuteReader())
                             while (r.Read())
                                 list.Add(new {
