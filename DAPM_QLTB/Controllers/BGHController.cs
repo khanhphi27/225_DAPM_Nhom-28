@@ -674,13 +674,21 @@ namespace QLTB.Controllers
                     using (var cmd = new SqlCommand("SELECT ID_VaiTro, TenVaiTro FROM VAITRO ORDER BY TenVaiTro", conn))
                     using (var rd = cmd.ExecuteReader())
                         while (rd.Read())
-                            vaiTros.Add(new System.Web.Mvc.SelectListItem { Value = rd["ID_VaiTro"].ToString(), Text = rd["TenVaiTro"].ToString() });
+                            vaiTros.Add(new System.Web.Mvc.SelectListItem
+                            {
+                                Value = rd["ID_VaiTro"].ToString(),
+                                Text  = rd["TenVaiTro"].ToString()
+                            });
 
                     var khoaList = new List<System.Web.Mvc.SelectListItem>();
                     using (var cmd = new SqlCommand("SELECT ID_KhoaPhongBan, TenPhongBanKhoa FROM KHOA_PHONGBAN ORDER BY TenPhongBanKhoa", conn))
                     using (var rd = cmd.ExecuteReader())
                         while (rd.Read())
-                            khoaList.Add(new System.Web.Mvc.SelectListItem { Value = rd["ID_KhoaPhongBan"].ToString(), Text = rd["TenPhongBanKhoa"].ToString() });
+                            khoaList.Add(new System.Web.Mvc.SelectListItem
+                            {
+                                Value = rd["ID_KhoaPhongBan"].ToString(),
+                                Text  = rd["TenPhongBanKhoa"].ToString()
+                            });
 
                     ViewBag.VaiTros  = vaiTros;
                     ViewBag.KhoaList = khoaList;
@@ -704,12 +712,15 @@ namespace QLTB.Controllers
                 using (var conn = DbHelper.GetConnection())
                 {
                     conn.Open();
+
+                    // Kiểm tra ID đã tồn tại chưa
                     using (var cmd = new SqlCommand("SELECT COUNT(*) FROM NGUOIDUNG WHERE ID_NguoiDung = @id", conn))
                     {
                         cmd.Parameters.AddWithValue("@id", id.Trim());
                         if ((int)cmd.ExecuteScalar() > 0)
-                            return Json(new { ok = false, msg = "ID '" + id.Trim() + "' đã tồn tại." });
+                            return Json(new { ok = false, msg = "ID người dùng '" + id.Trim() + "' đã tồn tại." });
                     }
+
                     using (var tran = conn.BeginTransaction())
                     {
                         using (var cmd = new SqlCommand(@"
@@ -723,9 +734,17 @@ namespace QLTB.Controllers
                             cmd.Parameters.AddWithValue("@khoa",  string.IsNullOrWhiteSpace(khoaBanNo) ? (object)DBNull.Value : khoaBanNo);
                             cmd.ExecuteNonQuery();
                         }
+
                         if (!string.IsNullOrWhiteSpace(vaiTroNo))
-                            using (var cmd = new SqlCommand("INSERT INTO VAITRO_NGUOIDUNG (NguoiDungNo, VaiTroNo, NgayHieuLuc) VALUES (@nd, @vt, GETDATE())", conn, tran))
-                            { cmd.Parameters.AddWithValue("@nd", id.Trim()); cmd.Parameters.AddWithValue("@vt", vaiTroNo); cmd.ExecuteNonQuery(); }
+                            using (var cmd = new SqlCommand(@"
+                                INSERT INTO VAITRO_NGUOIDUNG (NguoiDungNo, VaiTroNo, NgayHieuLuc)
+                                VALUES (@nd, @vt, GETDATE())", conn, tran))
+                            {
+                                cmd.Parameters.AddWithValue("@nd", id.Trim());
+                                cmd.Parameters.AddWithValue("@vt", vaiTroNo);
+                                cmd.ExecuteNonQuery();
+                            }
+
                         tran.Commit();
                     }
                 }
@@ -754,14 +773,19 @@ namespace QLTB.Controllers
                         cmd.Parameters.AddWithValue("@id", id);
                         using (var rd = cmd.ExecuteReader())
                             if (rd.Read())
-                                return Json(new { ok = true, data = new {
-                                    id        = rd["ID_NguoiDung"].ToString(),
-                                    hoTen     = rd["HoTen"].ToString(),
-                                    email     = rd["Email"]?.ToString() ?? "",
-                                    trangThai = Convert.ToBoolean(rd["TrangThaiTK"]),
-                                    khoaBanNo = rd["Khoa_BanNo"].ToString(),
-                                    vaiTroNo  = rd["VaiTroNo"].ToString()
-                                }}, JsonRequestBehavior.AllowGet);
+                                return Json(new
+                                {
+                                    ok = true,
+                                    data = new
+                                    {
+                                        id        = rd["ID_NguoiDung"].ToString(),
+                                        hoTen     = rd["HoTen"].ToString(),
+                                        email     = rd["Email"]?.ToString() ?? "",
+                                        trangThai = Convert.ToBoolean(rd["TrangThaiTK"]),
+                                        khoaBanNo = rd["Khoa_BanNo"].ToString(),
+                                        vaiTroNo  = rd["VaiTroNo"].ToString()
+                                    }
+                                }, JsonRequestBehavior.AllowGet);
                     }
                 }
                 return Json(new { ok = false, msg = "Không tìm thấy người dùng." }, JsonRequestBehavior.AllowGet);
@@ -770,38 +794,54 @@ namespace QLTB.Controllers
         }
 
         [HttpPost]
-        public JsonResult SuaNguoiDung(string id, string hoTen, string email, string vaiTroNo, string khoaBanNo, bool trangThai)
+        public JsonResult SuaNguoiDung(string id, string hoTen, string email, string matKhauMoi, string vaiTroNo, string khoaBanNo, bool trangThai)
         {
             if (Session["UserId"] == null) return Json(new { ok = false, msg = "Chưa đăng nhập." });
             try
             {
                 if (string.IsNullOrWhiteSpace(hoTen))
                     return Json(new { ok = false, msg = "Họ tên không được để trống." });
+
                 using (var conn = DbHelper.GetConnection())
                 {
                     conn.Open();
                     using (var tran = conn.BeginTransaction())
                     {
-                        using (var cmd = new SqlCommand(@"
-                            UPDATE NGUOIDUNG SET HoTen=@hoTen, Email=@email, Khoa_BanNo=@khoa, TrangThaiTK=@tt
-                            WHERE ID_NguoiDung=@id", conn, tran))
+                        // Nếu có mật khẩu mới thì cập nhật, không thì giữ nguyên
+                        string sqlUpdate = string.IsNullOrWhiteSpace(matKhauMoi)
+                            ? @"UPDATE NGUOIDUNG SET HoTen=@hoTen, Email=@email, Khoa_BanNo=@khoa, TrangThaiTK=@tt WHERE ID_NguoiDung=@id"
+                            : @"UPDATE NGUOIDUNG SET HoTen=@hoTen, Email=@email, Khoa_BanNo=@khoa, TrangThaiTK=@tt, MatKhau=@mk WHERE ID_NguoiDung=@id";
+
+                        using (var cmd = new SqlCommand(sqlUpdate, conn, tran))
                         {
                             cmd.Parameters.AddWithValue("@id",    id);
                             cmd.Parameters.AddWithValue("@hoTen", hoTen.Trim());
                             cmd.Parameters.AddWithValue("@email", (object)email ?? DBNull.Value);
                             cmd.Parameters.AddWithValue("@khoa",  string.IsNullOrWhiteSpace(khoaBanNo) ? (object)DBNull.Value : khoaBanNo);
                             cmd.Parameters.AddWithValue("@tt",    trangThai);
+                            if (!string.IsNullOrWhiteSpace(matKhauMoi))
+                                cmd.Parameters.AddWithValue("@mk", matKhauMoi);
                             cmd.ExecuteNonQuery();
                         }
-                        using (var cmd = new SqlCommand("DELETE FROM VAITRO_NGUOIDUNG WHERE NguoiDungNo=@id", conn, tran))
+
+                        using (var cmd = new SqlCommand("DELETE FROM VAITRO_NGUOIDUNG WHERE NguoiDungNo = @id", conn, tran))
                         { cmd.Parameters.AddWithValue("@id", id); cmd.ExecuteNonQuery(); }
+
                         if (!string.IsNullOrWhiteSpace(vaiTroNo))
-                            using (var cmd = new SqlCommand("INSERT INTO VAITRO_NGUOIDUNG (NguoiDungNo, VaiTroNo, NgayHieuLuc) VALUES (@nd, @vt, GETDATE())", conn, tran))
-                            { cmd.Parameters.AddWithValue("@nd", id); cmd.Parameters.AddWithValue("@vt", vaiTroNo); cmd.ExecuteNonQuery(); }
+                            using (var cmd = new SqlCommand(@"
+                                INSERT INTO VAITRO_NGUOIDUNG (NguoiDungNo, VaiTroNo, NgayHieuLuc)
+                                VALUES (@nd, @vt, GETDATE())", conn, tran))
+                            {
+                                cmd.Parameters.AddWithValue("@nd", id);
+                                cmd.Parameters.AddWithValue("@vt", vaiTroNo);
+                                cmd.ExecuteNonQuery();
+                            }
+
                         tran.Commit();
+                        string msg = "Cập nhật thành công!" + (string.IsNullOrWhiteSpace(matKhauMoi) ? "" : " (đã đổi mật khẩu)");
+                        return Json(new { ok = true, msg = msg });
                     }
                 }
-                return Json(new { ok = true, msg = "Cập nhật thành công!" });
             }
             catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
         }
@@ -819,14 +859,16 @@ namespace QLTB.Controllers
                     conn.Open();
                     using (var tran = conn.BeginTransaction())
                     {
-                        using (var cmd = new SqlCommand("DELETE FROM VAITRO_NGUOIDUNG WHERE NguoiDungNo=@id", conn, tran))
+                        using (var cmd = new SqlCommand("DELETE FROM VAITRO_NGUOIDUNG WHERE NguoiDungNo = @id", conn, tran))
                         { cmd.Parameters.AddWithValue("@id", id); cmd.ExecuteNonQuery(); }
-                        using (var cmd = new SqlCommand("DELETE FROM NGUOIDUNG WHERE ID_NguoiDung=@id", conn, tran))
+
+                        using (var cmd = new SqlCommand("DELETE FROM NGUOIDUNG WHERE ID_NguoiDung = @id", conn, tran))
                         { cmd.Parameters.AddWithValue("@id", id); cmd.ExecuteNonQuery(); }
+
                         tran.Commit();
+                        return Json(new { ok = true });
                     }
                 }
-                return Json(new { ok = true });
             }
             catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
         }
