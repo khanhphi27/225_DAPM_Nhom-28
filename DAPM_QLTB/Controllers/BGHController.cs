@@ -277,7 +277,7 @@ namespace QLTB.Controllers
             var vm = new ThongKeTaiSanViewModel {
                 TheoKhoa     = new List<ThongKeTheoKhoaViewModel>(),
                 TheoDanhMuc  = new List<ThongKeTheoDanhMucViewModel>(),
-                LichSuKiemKe = new List<KiemKeViewModel>(),
+                LichSuKiemKe = new List<KiemKeListViewModel>(),
                 CanChuY      = new List<ThietBiCanChuYViewModel>()
             };
             try
@@ -408,7 +408,7 @@ namespace QLTB.Controllers
                         using (var cmd = new SqlCommand(sqlKK, conn))
                         using (var r = cmd.ExecuteReader())
                             while (r.Read())
-                                vm.LichSuKiemKe.Add(new KiemKeViewModel {
+                                vm.LichSuKiemKe.Add(new KiemKeListViewModel {
                                     ID_KiemKe     = r["ID_KiemKe"].ToString(),
                                     NgayKiemKe    = Convert.ToDateTime(r["NgayKiemKe"]),
                                     NguoiThucHien = r["NguoiThucHien"].ToString(),

@@ -1,9 +1,20 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace QLTB.Models
 {
+    // ── Thông báo ────────────────────────────────────────────
+    public class ThongBaoViewModel
+    {
+        public string   ID_ThongBao  { get; set; }
+        public string   TieuDe       { get; set; }
+        public string   NoiDung      { get; set; }
+        public DateTime NgayTao      { get; set; }
+        public string   LoaiThongBao { get; set; }
+        public bool     DaDoc        { get; set; }
+        public string   NguoiTao     { get; set; }
+    }
+
     public class User
     {
         public int Id { get; set; }

@@ -1,0 +1,1090 @@
+﻿@{ ViewBag.Title = "Quản Lý Thiết Bị - Phòng CSVC"; }
+@model List<QLTB.Models.ThietBiViewModel>
+@{
+    ViewBag.Title = "Quản Lý Thiết Bị - Phòng CSVC";
+    var importDeXuatNo = (ViewBag.ImportDeXuatNo ?? "").ToString();
+    bool importMode = !string.IsNullOrWhiteSpace(importDeXuatNo);
+    var danhMucList = ViewBag.DanhMucList as IEnumerable<System.Web.Mvc.SelectListItem> ?? Enumerable.Empty<System.Web.Mvc.SelectListItem>();
+    var khoaList = ViewBag.KhoaList as IEnumerable<System.Web.Mvc.SelectListItem> ?? Enumerable.Empty<System.Web.Mvc.SelectListItem>();
+    var coSoList = ViewBag.CoSoList as IEnumerable<System.Web.Mvc.SelectListItem> ?? Enumerable.Empty<System.Web.Mvc.SelectListItem>();
+    var khuList = ViewBag.KhuList as IEnumerable<QLTB.Models.KhuViewModel> ?? Enumerable.Empty<QLTB.Models.KhuViewModel>();
+    var phongList = ViewBag.PhongList as IEnumerable<QLTB.Models.PhongViewModel> ?? Enumerable.Empty<QLTB.Models.PhongViewModel>();
+    var nhaCungCapList = ViewBag.NhaCungCapList as IEnumerable<System.Web.Mvc.SelectListItem> ?? Enumerable.Empty<System.Web.Mvc.SelectListItem>();
+}
+<style>
+    .tb-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+        .tb-header h2 {
+            color: #1a237e;
+            font-weight: 700;
+            font-size: 22px;
+            margin: 0;
+        }
+
+        .tb-header p {
+            color: #666;
+            font-size: 13px;
+            margin: 2px 0 0;
+        }
+
+    .filter-bar {
+        background: #fff;
+        border-radius: 10px;
+        padding: 16px 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        margin-bottom: 20px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+
+        .filter-bar .form-group {
+            margin: 0;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .filter-bar label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .filter-bar .form-control, .filter-bar .form-select {
+            font-size: 13px;
+            border-radius: 7px;
+            border: 1px solid #d0d5e8;
+            padding: 7px 10px;
+            background: #f8f9fe;
+            width: 100%;
+        }
+
+    .btn-search {
+        background: #1a237e;
+        color: #fff;
+        border: none;
+        border-radius: 7px;
+        padding: 8px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-add {
+        background: #43a047;
+        color: #fff;
+        border: none;
+        border-radius: 7px;
+        padding: 8px 18px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+        .btn-add:hover {
+            background: #2e7d32;
+        }
+
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4,1fr);
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .stat-box {
+        background: #fff;
+        border-radius: 10px;
+        padding: 16px 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        border-left: 4px solid;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+        .stat-box.total {
+            border-color: #1a237e;
+        }
+
+        .stat-box.active {
+            border-color: #43a047;
+        }
+
+        .stat-box.repair {
+            border-color: #fb8c00;
+        }
+
+        .stat-box.broken {
+            border-color: #e53935;
+        }
+
+    .stat-icon {
+        font-size: 28px;
+    }
+
+    .stat-num {
+        font-size: 26px;
+        font-weight: 700;
+        color: #222;
+    }
+
+    .stat-lbl {
+        font-size: 12px;
+        color: #888;
+    }
+
+    .card-table {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        overflow: hidden;
+    }
+
+        .card-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .card-table thead th {
+            background: #e8eaf6;
+            color: #1a237e;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            padding: 12px 14px;
+            border: none;
+            white-space: nowrap;
+        }
+
+        .card-table tbody td {
+            padding: 11px 14px;
+            font-size: 13px;
+            color: #333;
+            border-bottom: 1px solid #f0f2f8;
+            vertical-align: middle;
+        }
+
+        .card-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .card-table tbody tr:hover td {
+            background: #f5f6ff;
+        }
+
+        .device-row {
+            cursor: pointer;
+        }
+
+            .device-row:hover {
+                background: #eef4ff;
+            }
+
+    .badge-status {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+        .badge-status.ok {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-status.repair {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .badge-status.broken {
+            background: #fce4ec;
+            color: #c62828;
+        }
+
+        .badge-status.new {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+    .action-btns {
+        display: flex;
+        gap: 6px;
+    }
+
+    .btn-edit {
+        background: #e8eaf6;
+        color: #1a237e;
+        border: none;
+        border-radius: 6px;
+        padding: 5px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-del {
+        background: #fce4ec;
+        color: #c62828;
+        border: none;
+        border-radius: 6px;
+        padding: 5px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-report {
+        background: #fff3e0;
+        color: #e65100;
+        border: none;
+        border-radius: 6px;
+        padding: 5px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    /* Modal */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+    .modal-box {
+        background: #fff;
+        border-radius: 14px;
+        padding: 28px 32px;
+        width: 600px;
+        max-width: 95vw;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+        z-index: 2001;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+
+    .modal-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1a237e;
+        margin-bottom: 20px;
+    }
+
+    .modal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+        .modal-grid .full {
+            grid-column: 1/-1;
+        }
+
+    .form-lbl {
+        font-size: 12px;
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .form-inp {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1px solid #d0d5e8;
+        border-radius: 8px;
+        font-size: 13px;
+        background: #f8f9fe;
+        box-sizing: border-box;
+    }
+
+        .form-inp:focus {
+            border-color: #3949ab;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(57,73,171,0.1);
+        }
+
+    .modal-footer {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 22px;
+    }
+
+    .btn-cancel {
+        background: #f5f5f5;
+        color: #555;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-save {
+        background: #1a237e;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 24px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .section-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #1a237e;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        margin: 16px 0 10px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #e8eaf6;
+        grid-column: 1/-1;
+    }
+
+    .pagination {
+        display: flex;
+        gap: 6px;
+        justify-content: flex-end;
+        padding: 14px 16px;
+    }
+
+    .pg-btn {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        background: #f0f2f8;
+        color: #333;
+    }
+
+        .pg-btn.active {
+            background: #1a237e;
+            color: #fff;
+        }
+</style>
+
+<!-- Header -->
+<div class="tb-header">
+    <div>
+        <h2>📦 Quản Lý Thiết Bị</h2>
+        <p>Xem, thêm, sửa thông tin thiết bị — dữ liệu từ bảng THIETBI, DANHMUC, KHOA_PHONGBAN, NHACUNGCAP</p>
+    </div>
+    <button class="btn-add" onclick="openAdd()">+ Thêm Thiết Bị Mới</button>
+</div>
+
+@if (importMode)
+{
+    <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+        <div style="font-size:13px;color:#2e7d32;">
+            📥 Đang nhập thiết bị từ đề xuất: <b>@importDeXuatNo</b>. Mã đề xuất sẽ tự động gắn vào thiết bị mới.
+        </div>
+        <button class="btn-add" style="background:#1a237e" onclick="completeImport()">✅ Hoàn tất nhập thiết bị</button>
+    </div>
+}
+
+<!-- Thống kê — ánh xạ TrangThaiTB trong THIETBI -->
+<div class="stats-row">
+    <div class="stat-box total">
+        <div class="stat-icon">📦</div>
+        <div><div class="stat-num">7</div><div class="stat-lbl">Tổng thiết bị</div></div>
+    </div>
+    <div class="stat-box active">
+        <div class="stat-icon">✅</div>
+        <div><div class="stat-num">4</div><div class="stat-lbl">Đang sử dụng</div></div>
+    </div>
+    <div class="stat-box repair">
+        <div class="stat-icon">🔧</div>
+        <div><div class="stat-num">2</div><div class="stat-lbl">Đang bảo trì</div></div>
+    </div>
+    <div class="stat-box broken">
+        <div class="stat-icon">❌</div>
+        <div><div class="stat-num">1</div><div class="stat-lbl">Hư hỏng</div></div>
+    </div>
+</div>
+
+<!-- Bộ lọc -->
+<div class="filter-bar">
+    <div class="form-group">
+        <label>Tìm kiếm</label>
+        <input type="text" class="form-control" id="filterText" placeholder="Tên thiết bị, mã TB, số seri..." oninput="applyFilter()" />
+    </div>
+    <div class="form-group">
+        <label>Danh mục</label>
+        <select class="form-select" id="filterDanhMuc" onchange="applyFilter()">
+            <option value="">Tất cả danh mục</option>
+            @foreach (var item in danhMucList)
+            {
+                <option value="@item.Text">@item.Text</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Khoa</label>
+        <select class="form-select" id="filterKhoa" onchange="applyFilter()">
+            <option value="">Tất cả khoa</option>
+            @foreach (var item in khoaList)
+            {
+                <option value="@item.Text">@item.Text</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Cơ sở</label>
+        <select class="form-select" id="filterCoSo" onchange="filterPageKhuOptions(); filterPagePhongOptions(); applyFilter();">
+            <option value="">Tất cả cơ sở</option>
+            @foreach (var item in coSoList)
+            {
+                <option value="@item.Value">@item.Text</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Khu</label>
+        <select class="form-select" id="filterKhu" onchange="syncPageLocationFromKhu(); filterPagePhongOptions(); applyFilter();">
+            <option value="">Tất cả khu</option>
+            @foreach (var item in khuList)
+            {
+                <option value="@item.ID_KhuVuc" data-coso="@item.CoSoNo">@item.TenKhuVuc</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Phòng</label>
+        <select class="form-select" id="filterPhong" onchange="syncPageLocationFromPhong(); applyFilter();">
+            <option value="">Tất cả phòng</option>
+            @foreach (var item in phongList)
+            {
+                <option value="@item.ID_Phong" data-coso="@item.CoSoNo" data-khu="@item.KhuVucNo">@item.TenPhong</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Tình trạng</label>
+        <select class="form-select" id="filterTrangThai" onchange="applyFilter()">
+            <option value="">Tất cả</option>
+            <option>Đang sử dụng</option>
+            <option>Đang bảo trì</option>
+            <option>Hư hỏng</option>
+            <option>Mới nhập</option>
+        </select>
+    </div>
+    <button class="btn-search" type="button" onclick="applyFilter()">🔍 Tìm kiếm</button>
+    <button class="btn-search" type="button" style="background:#f5f5f5;color:#555;" onclick="resetFilter()">✕ Bỏ lọc</button>
+</div>
+
+<!-- Bảng danh sách — các cột khớp với THIETBI -->
+<div class="card-table">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên thiết bị</th>
+                <th>Danh mục</th>
+                <th>Số seri</th>
+                <th>Giá</th>
+                <th>Tình trạng</th>
+                <th>Mã đề xuất</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var d in Model)
+            {
+                <tr class="device-row" onclick="viewDeviceDetail('@d.ID_ThietBi')" data-search="@((d.ID_ThietBi + " " + d.TenTB + " " + (d.SoSeri.HasValue ? d.SoSeri.Value.ToString() : "")).ToLower())"
+                    data-danhmuc="@d.DanhMuc"
+                    data-khoa="@d.KhoaPhongBan"
+                    data-trangthai="@d.TrangThaiTB"
+                    data-coso="@d.PhongCoSoNo"
+                    data-khu="@d.PhongKhuVucNo"
+                    data-phong="@d.PhongNo">
+                    <td>@d.ID_ThietBi</td>
+                    <td>@d.TenTB</td>        <!-- 🔥 THÊM -->
+                    <td>@d.DanhMuc</td>
+                    <td>@d.SoSeri</td>
+                    <td>@d.Gia</td>
+                    <td>@d.TrangThaiTB</td>
+                    <td>@(string.IsNullOrEmpty(d.DeXuatNo) ? "Ngoài đề xuất" : d.DeXuatNo)</td>
+                    <td>
+                        <button onclick="event.stopPropagation(); editDevice('@d.ID_ThietBi')">Sửa</button>
+                        <button onclick="event.stopPropagation(); deleteDevice('@d.ID_ThietBi')">Xóa</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="pagination">
+        <button class="pg-btn active">1</button>
+        <button class="pg-btn">2</button>
+        <button class="pg-btn">›</button>
+    </div>
+</div>
+
+<!-- Modal Thêm / Sửa thiết bị — khớp cột THIETBI -->
+<div class="modal-overlay" id="deviceModal">
+    <div class="modal-box">
+        <div class="modal-title" id="modalTitle">➕ Thêm Thiết Bị Mới</div>
+        <div class="modal-grid">
+            <div class="section-label">Thông tin cơ bản</div>
+            <div>
+                <label class="form-lbl">Mã thiết bị</label>
+                <input type="text" class="form-inp" id="fCode" readonly style="background:#eef1f6;color:#8a93a7;" />
+            </div>
+            <div>
+                <label class="form-lbl">Số seri</label>
+                <input type="number" class="form-inp" id="fSeri" placeholder="VD: 1008" />
+            </div>
+            <div class="full">
+                <label class="form-lbl">Tên thiết bị</label>
+                <input type="text" class="form-inp" id="fName" placeholder="Nhập tên thiết bị đầy đủ" />
+            </div>
+            <div>
+                <label class="form-lbl">Danh mục</label>
+                <select class="form-inp" id="fCat">
+                    <option value="">-- Chọn danh mục --</option>
+                    @foreach (var item in danhMucList)
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="form-lbl">Khoa / phòng ban</label>
+                <select class="form-inp" id="fKhoa">
+                    <option value="">-- Chọn khoa / phòng ban --</option>
+                    @foreach (var item in khoaList)
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="form-lbl">Cơ sở</label>
+                <select class="form-inp" id="fCoSo" onchange="filterKhuOptions(); filterPhongOptions();">
+                    <option value="">-- Chọn cơ sở --</option>
+                    @foreach (var item in coSoList)
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="form-lbl">Khu</label>
+                <select class="form-inp" id="fKhu" onchange="filterPhongOptions(); syncLocationFromKhu();">
+                    <option value="">-- Chọn khu --</option>
+                    @foreach (var item in khuList)
+                    {
+                        <option value="@item.ID_KhuVuc" data-coso="@item.CoSoNo">@item.TenKhuVuc@(string.IsNullOrWhiteSpace(item.TenCoSo) ? "" : " - " + item.TenCoSo)</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="form-lbl">Phòng</label>
+                <select class="form-inp" id="fPhong" onchange="syncLocationFromPhong()">
+                    <option value="">-- Chọn phòng --</option>
+                    @foreach (var item in phongList)
+                    {
+                        <option value="@item.ID_Phong" data-coso="@item.CoSoNo" data-khu="@item.KhuVucNo">@item.TenPhong@(string.IsNullOrWhiteSpace(item.TenKhuVuc) ? "" : " - " + item.TenKhuVuc)</option>
+                    }
+                </select>
+            </div>
+            <div class="full">
+                <label class="form-lbl">Nhà cung cấp</label>
+                <select class="form-inp" id="fNcc">
+                    <option value="">-- Chọn nhà cung cấp --</option>
+                    @foreach (var item in nhaCungCapList)
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="form-lbl">Tình trạng</label>
+                <select class="form-inp" id="fStatus">
+                    <option value="Mới nhập">Mới nhập</option>
+                    <option value="Đang sử dụng">Đang sử dụng</option>
+                    <option value="Đang bảo trì">Đang bảo trì</option>
+                    <option value="Hư hỏng">Hư hỏng</option>
+                </select>
+            </div>
+
+            <div class="section-label">Phân bổ & Nguồn gốc</div>
+            <div>
+                <label class="form-lbl">Giá trị</label>
+                <input type="text" class="form-inp" id="fPrice" placeholder="VD: 15,000,000" />
+            </div>
+            <div class="full">
+                <label class="form-lbl">Thông số kỹ thuật</label>
+                <textarea class="form-inp" id="fSpec" rows="2" placeholder="CPU, RAM, dung lượng, model..."></textarea>
+            </div>
+            <input type="hidden" id="fDeXuat" value="" />
+            <div class="full" id="importCodeBox" style="display:none;">
+                <label class="form-lbl">Mã đề xuất đang nhập</label>
+                <input type="text" class="form-inp" id="fDeXuatReadonly" readonly />
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal('deviceModal')">Hủy</button>
+            <button class="btn-save" onclick="saveOrUpdate()">💾 Lưu</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Báo hỏng — tạo bản ghi BAOHONG_THIETBI -->
+<div class="modal-overlay" id="baoHongModal">
+    <div class="modal-box">
+        <div class="modal-title">⚠️ Báo Hỏng Thiết Bị</div>
+        <p style="font-size:13px;color:#666;margin-bottom:16px">Tạo phiếu báo hỏng → lưu vào bảng <strong>BAOHONG_THIETBI</strong>. Phòng CSVC sẽ lập kế hoạch sửa chữa đột xuất.</p>
+        <div class="modal-grid">
+            <div>
+                <label class="form-lbl">ID Báo hỏng (ID_BaoHong)</label>
+                <input type="text" class="form-inp" id="bhCode" placeholder="VD: BH-2024-042" />
+            </div>
+            <div>
+                <label class="form-lbl">Thiết bị (ThietBiNo)</label>
+                <input type="text" class="form-inp" id="bhDevice" readonly />
+            </div>
+            <div>
+                <label class="form-lbl">Ngày báo (NgayBao)</label>
+                <input type="date" class="form-inp" id="bhDate" />
+            </div>
+            <div>
+                <label class="form-lbl">Mức độ ưu tiên (MucDoUuTien)</label>
+                <select class="form-inp" id="bhPriority">
+                    <option value="Khẩn">🔴 Khẩn cấp</option>
+                    <option value="Vừa">🟡 Vừa</option>
+                    <option value="Thấp">🟢 Thấp</option>
+                </select>
+            </div>
+            <div class="full">
+                <label class="form-lbl">Mô tả hư hỏng (MoTaHong)</label>
+                <textarea class="form-inp" id="bhDesc" rows="3" placeholder="Mô tả chi tiết tình trạng hư hỏng..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal('baoHongModal')">Hủy</button>
+            <button class="btn-save" style="background:#e65100" onclick="submitBaoHong()">⚠️ Gửi báo hỏng</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    var importDeXuatNo = '@importDeXuatNo';
+    var importMode = '@(importMode ? "1" : "0")' === '1';
+
+    function filterPageKhuOptions() {
+        var coSo = $('#filterCoSo').val() || '';
+        var khuSelect = document.getElementById('filterKhu');
+        var currentValue = khuSelect.value;
+
+        Array.prototype.forEach.call(khuSelect.options, function (opt, index) {
+            if (index === 0) {
+                opt.hidden = false;
+                return;
+            }
+
+            var optCoSo = opt.getAttribute('data-coso') || '';
+            opt.hidden = !!coSo && optCoSo !== coSo;
+        });
+
+        if (currentValue) {
+            var currentOpt = khuSelect.options[khuSelect.selectedIndex];
+            if (!currentOpt || currentOpt.hidden) {
+                khuSelect.value = '';
+            }
+        }
+    }
+
+    function filterPagePhongOptions() {
+        var coSo = $('#filterCoSo').val() || '';
+        var khu = $('#filterKhu').val() || '';
+        var phongSelect = document.getElementById('filterPhong');
+        var currentValue = phongSelect.value;
+
+        Array.prototype.forEach.call(phongSelect.options, function (opt, index) {
+            if (index === 0) {
+                opt.hidden = false;
+                return;
+            }
+
+            var optCoSo = opt.getAttribute('data-coso') || '';
+            var optKhu = opt.getAttribute('data-khu') || '';
+            opt.hidden = (!!coSo && optCoSo !== coSo) || (!!khu && optKhu !== khu);
+        });
+
+        if (currentValue) {
+            var currentOpt = phongSelect.options[phongSelect.selectedIndex];
+            if (!currentOpt || currentOpt.hidden) {
+                phongSelect.value = '';
+            }
+        }
+    }
+
+    function syncPageLocationFromKhu() {
+        var khuSelect = document.getElementById('filterKhu');
+        var opt = khuSelect.options[khuSelect.selectedIndex];
+        if (!opt || !opt.value) return;
+
+        var coSo = opt.getAttribute('data-coso') || '';
+        if (coSo) {
+            $('#filterCoSo').val(coSo);
+            filterPageKhuOptions();
+            filterPagePhongOptions();
+        }
+    }
+
+    function syncPageLocationFromPhong() {
+        var phongSelect = document.getElementById('filterPhong');
+        var opt = phongSelect.options[phongSelect.selectedIndex];
+        if (!opt || !opt.value) return;
+
+        var coSo = opt.getAttribute('data-coso') || '';
+        var khu = opt.getAttribute('data-khu') || '';
+
+        $('#filterCoSo').val(coSo);
+        filterPageKhuOptions();
+        $('#filterKhu').val(khu);
+        filterPagePhongOptions();
+    }
+
+    function applyFilter() {
+        var text = ($('#filterText').val() || '').toLowerCase();
+        var danhMuc = $('#filterDanhMuc').val() || '';
+        var khoa = $('#filterKhoa').val() || '';
+        var coSo = $('#filterCoSo').val() || '';
+        var khu = $('#filterKhu').val() || '';
+        var phong = $('#filterPhong').val() || '';
+        var trangThai = $('#filterTrangThai').val() || '';
+
+        $('.card-table tbody tr').each(function () {
+            var $row = $(this);
+            var rowSearch = ($row.data('search') || '').toString();
+            var rowDanhMuc = ($row.data('danhmuc') || '').toString();
+            var rowKhoa = ($row.data('khoa') || '').toString();
+            var rowTrangThai = ($row.data('trangthai') || '').toString();
+            var rowCoSo = ($row.data('coso') || '').toString();
+            var rowKhu = ($row.data('khu') || '').toString();
+            var rowPhong = ($row.data('phong') || '').toString();
+
+            var match = (!text || rowSearch.indexOf(text) >= 0)
+                && (!danhMuc || rowDanhMuc === danhMuc)
+                && (!khoa || rowKhoa === khoa)
+                && (!coSo || rowCoSo === coSo)
+                && (!khu || rowKhu === khu)
+                && (!phong || rowPhong === phong)
+                && (!trangThai || rowTrangThai === trangThai);
+
+            $row.toggle(match);
+        });
+    }
+
+    function resetFilter() {
+        $('#filterText').val('');
+        $('#filterDanhMuc').val('');
+        $('#filterKhoa').val('');
+        $('#filterCoSo').val('');
+        $('#filterKhu').val('');
+        $('#filterPhong').val('');
+        $('#filterTrangThai').val('');
+        filterPageKhuOptions();
+        filterPagePhongOptions();
+        applyFilter();
+    }
+
+    function viewDeviceDetail(id) {
+        window.location.href = '@Url.Action("ChiTiet", "ThietBi")' + '?id=' + encodeURIComponent(id);
+    }
+
+    function filterKhuOptions() {
+        var coSo = $('#fCoSo').val() || '';
+        var khuSelect = document.getElementById('fKhu');
+        var currentValue = khuSelect.value;
+
+        Array.prototype.forEach.call(khuSelect.options, function (opt, index) {
+            if (index === 0) {
+                opt.hidden = false;
+                return;
+            }
+
+            var optCoSo = opt.getAttribute('data-coso') || '';
+            opt.hidden = !!coSo && optCoSo !== coSo;
+        });
+
+        if (currentValue) {
+            var currentOpt = khuSelect.options[khuSelect.selectedIndex];
+            if (!currentOpt || currentOpt.hidden) {
+                khuSelect.value = '';
+            }
+        }
+    }
+
+    function filterPhongOptions() {
+        var coSo = $('#fCoSo').val() || '';
+        var khu = $('#fKhu').val() || '';
+        var phongSelect = document.getElementById('fPhong');
+        var currentValue = phongSelect.value;
+
+        Array.prototype.forEach.call(phongSelect.options, function (opt, index) {
+            if (index === 0) {
+                opt.hidden = false;
+                return;
+            }
+
+            var optCoSo = opt.getAttribute('data-coso') || '';
+            var optKhu = opt.getAttribute('data-khu') || '';
+            opt.hidden = (!!coSo && optCoSo !== coSo) || (!!khu && optKhu !== khu);
+        });
+
+        if (currentValue) {
+            var currentOpt = phongSelect.options[phongSelect.selectedIndex];
+            if (!currentOpt || currentOpt.hidden) {
+                phongSelect.value = '';
+            }
+        }
+    }
+
+    function syncLocationFromKhu() {
+        var khuSelect = document.getElementById('fKhu');
+        var opt = khuSelect.options[khuSelect.selectedIndex];
+        if (!opt || !opt.value) return;
+
+        var coSo = opt.getAttribute('data-coso') || '';
+        if (coSo) {
+            $('#fCoSo').val(coSo);
+            filterKhuOptions();
+        }
+    }
+
+    function syncLocationFromPhong() {
+        var phongSelect = document.getElementById('fPhong');
+        var opt = phongSelect.options[phongSelect.selectedIndex];
+        if (!opt || !opt.value) return;
+
+        var coSo = opt.getAttribute('data-coso') || '';
+        var khu = opt.getAttribute('data-khu') || '';
+
+        $('#fCoSo').val(coSo);
+        filterKhuOptions();
+        $('#fKhu').val(khu);
+        filterPhongOptions();
+    }
+
+    function openModal(mode) {
+        var m = document.getElementById('deviceModal');
+        document.getElementById('modalTitle').textContent = mode === 'add' ? '➕ Thêm Thiết Bị Mới' : '✏️ Cập Nhật Thông Tin Thiết Bị';
+        if (mode === 'edit') {
+            document.getElementById('fCode').value = 'TB002';
+            document.getElementById('fName').value = 'Máy chiếu Epson EB-X51';
+            document.getElementById('fSeri').value = '1002';
+            document.getElementById('fPrice').value = '12,000,000';
+            document.getElementById('fStatus').value = 'Đang bảo trì';
+        }
+        m.classList.add('active');
+    }
+    function openBaoHong(code, name) {
+        document.getElementById('bhCode').value = 'BH-2024-0' + Math.floor(Math.random() * 90 + 10);
+        document.getElementById('bhDevice').value = code + ' - ' + name;
+        document.getElementById('bhDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('baoHongModal').classList.add('active');
+    }
+    function submitBaoHong() {
+        alert('Phiếu báo hỏng đã được gửi!\nPhòng CSVC sẽ lập kế hoạch sửa chữa đột xuất.');
+        closeModal('baoHongModal');
+    }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    document.querySelectorAll('.modal-overlay').forEach(function (m) {
+        m.addEventListener('click', function (e) { if (e.target === m) m.classList.remove('active'); });
+    });
+    let isEdit = false;
+    let currentId = '';
+
+    function openAdd() {
+        isEdit = false;
+        currentId = '';
+
+        $('#modalTitle').text('➕ Thêm Thiết Bị Mới');
+        $('.btn-save').text('💾 Thêm');
+
+        $('#fCode').val('').prop('readonly', true);
+        $('#fName').val('');
+        $('#fSeri').val('');
+        $('#fPrice').val('');
+        $('#fStatus').val('Mới nhập');
+        $('#fCat').val('');
+        $('#fCoSo').val('');
+        $('#fKhoa').val('');
+        filterKhuOptions();
+        $('#fNcc').val('');
+        $('#fKhu').val('');
+        $('#fPhong').val('');
+        filterPhongOptions();
+        $('#fDeXuat').val('');
+        $('#importCodeBox').hide();
+        $('#fDeXuatReadonly').val('');
+
+        $.get('/CSVC/GetNextThietBiId', function (res) {
+            if (res.ok && res.id) {
+                $('#fCode').val(res.id);
+            } else {
+                alert('Không tạo được mã thiết bị tự động: ' + (res.msg || 'Lỗi không xác định'));
+            }
+        }).fail(function () {
+            alert('Không tạo được mã thiết bị tự động do lỗi kết nối server.');
+        });
+
+        $('#deviceModal').addClass('active');
+    }
+
+    function openAddFromDeXuat(deXuatNo) {
+        deXuatNo = (deXuatNo || '').trim();
+        openAdd();
+        $('#fDeXuat').val(deXuatNo);
+        $('#importCodeBox').show();
+        $('#fDeXuatReadonly').val(deXuatNo);
+        $('#modalTitle').text('📥 Nhập Thiết Bị Từ Đề Xuất ' + deXuatNo);
+    }
+
+    function editDevice(id) {
+        isEdit = true;
+        currentId = id;
+
+        $('#modalTitle').text('✏️ Sửa Thiết Bị');
+        $('.btn-save').text('💾 Cập Nhật');
+        $('#fCode').val(id).prop('readonly', true);
+
+        $.get('/CSVC/GetThietBiById', { id: id }, function (res) {
+            if (res.ok && res.data) {
+                var d = res.data;
+                $('#fName').val(d.TenTB || '');
+                $('#fSeri').val(d.SoSeri || '');
+                $('#fPrice').val(d.Gia ? Number(d.Gia).toLocaleString('vi-VN') : '');
+                $('#fStatus').val(d.TrangThaiTB || 'Đang sử dụng');
+                $('#fCat').val(d.DanhMuc || '');
+                $('#fKhoa').val(d.KhoaPhongBan || '');
+                $('#fCoSo').val(d.PhongCoSoNo || '');
+                filterKhuOptions();
+                $('#fKhu').val(d.PhongKhuVucNo || '');
+                filterPhongOptions();
+                $('#fPhong').val(d.PhongNo || '');
+                syncLocationFromPhong();
+                $('#fNcc').val(d.NhaCungCap || '');
+                $('#fDeXuat').val(d.DeXuatNo || '');
+                $('#importCodeBox').hide();
+                $('#fDeXuatReadonly').val('');
+
+                $('#deviceModal').addClass('active');
+            } else {
+                alert('Không lấy được dữ liệu: ' + (res.msg || ''));
+            }
+        });
+    }
+
+    function completeImport() {
+        if (!importMode || !importDeXuatNo) return;
+        if (!confirm('Xác nhận hoàn tất nhập thiết bị cho đề xuất ' + importDeXuatNo + '?')) return;
+
+        $.post('/CSVC/HoanTatNhapThietBi', { id: importDeXuatNo }, function (res) {
+            if (res.ok) {
+                alert('✅ Đã hoàn tất nhập thiết bị.');
+                window.location.href = '@Url.Action("PheDuyetDeXuat", "CSVC")';
+            } else {
+                alert('❌ Lỗi: ' + (res.msg || 'Không xác định'));
+            }
+        }).fail(function () {
+            alert('Lỗi kết nối server!');
+        });
+    }
+
+    function saveOrUpdate() {
+
+        let priceStr = $('#fPrice').val().trim().replace(/[^0-9]/g, '');
+        let giaValue = priceStr ? parseFloat(priceStr) : null;
+
+        let seriVal = $('#fSeri').val().trim(); // 🔥 ĐẶT Ở ĐÂY
+        let deXuatNoValue = ($('#fDeXuat').val() || '').trim();
+
+        // Trong chế độ nhập từ đề xuất, luôn ưu tiên mã đề xuất của luồng import.
+        if (!isEdit && importMode) {
+            deXuatNoValue = (importDeXuatNo || $('#fDeXuatReadonly').val() || deXuatNoValue).trim();
+        }
+
+        $.post('/CSVC/SaveThietBi', {
+            ID_ThietBi: isEdit ? $('#fCode').val().trim() : '',
+            TenTB: $('#fName').val().trim(),
+            DanhMuc: $('#fCat').val(),
+            KhoaPhongBan: $('#fKhoa').val(),
+            PhongCoSoNo: $('#fCoSo').val(),
+            PhongKhuVucNo: $('#fKhu').val(),
+            NhaCungCap: $('#fNcc').val(),
+            PhongNo: $('#fPhong').val(),
+            SoSeri: seriVal === '' ? null : parseInt(seriVal), // 🔥 OK
+            Gia: giaValue,
+            TrangThaiTB: $('#fStatus').val(),
+            DeXuatNo: deXuatNoValue
+        }, function (res) {
+            if (res.ok) {
+                alert('✅ ' + res.message);
+                location.reload();
+            } else {
+                alert('❌ Lỗi: ' + res.msg);
+            }
+        });
+    }
+
+    function deleteDevice(id) {
+        if (!confirm('Bạn có chắc muốn xóa thiết bị này không?')) return;
+
+        $.post('/CSVC/XoaThietBi', { id: id }, function (res) {
+            if (res.ok) {
+                alert('✅ Xóa thành công');
+                location.reload();
+            } else {
+                alert('❌ Xóa thất bại');
+            }
+        }).fail(function () {
+            alert('Lỗi kết nối server!');
+        });
+    }
+
+    $(function () {
+        if (importMode && importDeXuatNo) {
+            openAddFromDeXuat(importDeXuatNo);
+        }
+
+        filterPageKhuOptions();
+        filterPagePhongOptions();
+        applyFilter();
+    });
+</script>
+

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -146,6 +146,16 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\KHTCController.cs" />
     <Compile Include="Controllers\TruongKhoaController.cs" />
+    <Compile Include="Controllers\DanhMucController.cs" />
+    <Compile Include="Controllers\NhaCungCapController.cs" />
+    <Compile Include="Controllers\KhoaController.cs" />
+    <Compile Include="Controllers\PhongController.cs" />
+    <Compile Include="Controllers\NguoiDungController.cs" />
+    <Compile Include="Controllers\ThietBiController.cs" />
+    <Compile Include="Controllers\DeXuatController.cs" />
+    <Compile Include="Controllers\BaoTriController.cs" />
+    <Compile Include="Controllers\KiemKeController.cs" />
+    <Compile Include="Controllers\ThongKeController.cs" />
     <Compile Include="COSO.cs">
       <DependentUpon>QLTB.tt</DependentUpon>
     </Compile>
@@ -177,9 +187,39 @@
       <DependentUpon>QLTB.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\DbHelper.cs" />
-    <Compile Include="Models\ThietBiViewModel.cs" />
-    <Compile Include="Models\User.cs" />
-    <Compile Include="Models\ViewModels.cs" />
+    <Compile Include="Models\NotificationHelper.cs" />
+    <Compile Include="Models\Entities\_readme.cs" />
+    <Compile Include="Models\Services\DanhMucService.cs" />
+    <Compile Include="Models\Services\NhaCungCapService.cs" />
+    <Compile Include="Models\Services\KhoaService.cs" />
+    <Compile Include="Models\Services\PhongService.cs" />
+    <Compile Include="Models\Services\NguoiDungService.cs" />
+    <Compile Include="Models\Services\ThietBiService.cs" />
+    <Compile Include="Models\Services\DeXuatService.cs" />
+    <Compile Include="Models\Services\BaoTriService.cs" />
+    <Compile Include="Models\Services\KiemKeService.cs" />
+    <Compile Include="Models\Services\ThongKeService.cs" />
+    <Compile Include="Models\Repositories\DanhMucRepository.cs" />
+    <Compile Include="Models\Repositories\NhaCungCapRepository.cs" />
+    <Compile Include="Models\Repositories\KhoaRepository.cs" />
+    <Compile Include="Models\Repositories\PhongRepository.cs" />
+    <Compile Include="Models\Repositories\NguoiDungRepository.cs" />
+    <Compile Include="Models\Repositories\ThietBiRepository.cs" />
+    <Compile Include="Models\Repositories\DeXuatRepository.cs" />
+    <Compile Include="Models\Repositories\BaoTriRepository.cs" />
+    <Compile Include="Models\Repositories\KiemKeRepository.cs" />
+    <Compile Include="Models\Repositories\ThongKeRepository.cs" />
+    <Compile Include="Models\ViewModels\ThietBiViewModel.cs" />
+    <Compile Include="Models\ViewModels\DeXuatViewModel.cs" />
+    <Compile Include="Models\ViewModels\NhaCungCapViewModel.cs" />
+    <Compile Include="Models\ViewModels\DanhMucViewModel.cs" />
+    <Compile Include="Models\ViewModels\KhoaViewModel.cs" />
+    <Compile Include="Models\ViewModels\PhongViewModel.cs" />
+    <Compile Include="Models\ViewModels\NguoiDungViewModel.cs" />
+    <Compile Include="Models\ViewModels\BaoTriViewModel.cs" />
+    <Compile Include="Models\ViewModels\KiemKeViewModel.cs" />
+    <Compile Include="Models\ViewModels\ThongKeViewModel.cs" />
+    <Compile Include="Models\ViewModels\AccountViewModel.cs" />
     <Compile Include="NGUOIDUNG.cs">
       <DependentUpon>QLTB.tt</DependentUpon>
     </Compile>

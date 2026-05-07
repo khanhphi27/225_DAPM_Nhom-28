@@ -1,0 +1,264 @@
+﻿@{
+    ViewBag.Title = "Theo DĂµi TĂ¬nh Tráº¡ng Thiáº¿t Bá»‹";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var canChuY  = ViewBag.CanChuY  as List<QLTB.Models.TheDoiThietBiViewModel> ?? new List<QLTB.Models.TheDoiThietBiViewModel>();
+    var hoatDong = ViewBag.HoatDong as List<QLTB.Models.TheDoiThietBiViewModel> ?? new List<QLTB.Models.TheDoiThietBiViewModel>();
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+    .badge-tt { display:inline-block; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+    .badge-tt.ok   { background:#e8f5e9; color:#2e7d32; }
+    .badge-tt.warn { background:#fff3e0; color:#e65100; }
+    .badge-tt.err  { background:#fce4ec; color:#c62828; }
+    .btn-ls { background:#e8eaf6; color:#1a237e; border:none; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:600; cursor:pointer; white-space:nowrap; }
+    .btn-ls:hover { background:#c5cae9; }
+    /* Modal */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:2000; align-items:center; justify-content:center; }
+    .modal-overlay.active { display:flex; }
+    .modal-box { background:#fff; border-radius:14px; padding:28px 30px; width:560px; max-width:95vw; max-height:80vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+    .modal-title { font-size:17px; font-weight:700; color:#1a237e; margin-bottom:16px; }
+    /* Timeline */
+    .ls-timeline { position:relative; padding-left:28px; }
+    .ls-timeline::before { content:''; position:absolute; left:10px; top:0; bottom:0; width:2px; background:#e0e0e0; }
+    .ls-item { position:relative; margin-bottom:18px; }
+    .ls-dot { position:absolute; left:-22px; top:3px; width:16px; height:16px; border-radius:50%; background:#fff; border:2px solid #ccc; }
+    .ls-dot.csvc   { background:#1e88e5; border-color:#1e88e5; }
+    .ls-dot.khtc   { background:#6a1b9a; border-color:#6a1b9a; }
+    .ls-dot.bgh    { background:#43a047; border-color:#43a047; }
+    .ls-dot.reject { background:#e53935; border-color:#e53935; }
+    .ls-cap  { font-size:10px; font-weight:700; text-transform:uppercase; color:#888; }
+    .ls-name { font-size:13px; font-weight:600; color:#333; }
+    .ls-time { font-size:11px; color:#aaa; }
+    .ls-tt   { font-size:12px; margin-top:3px; }
+    .ls-gc   { font-size:12px; color:#666; font-style:italic; }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">đŸ” Theo DĂµi TĂ¬nh Tráº¡ng Thiáº¿t Bá»‹</h2>
+            <small class="text-muted">Cáº­p nháº­t lĂºc: @DateTime.Now.ToString("HH:mm dd/MM/yyyy")</small>
+        </div>
+        <a href="@Url.Action("Dashboard", "ThongKe")" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-chevron-left"></i> Quay láº¡i
+        </a>
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-warning">â ï¸ @ViewBag.Error</div>
+    }
+
+    <!-- Stat cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <p class="text-muted small mb-1">Hoáº¡t Ä‘á»™ng tá»‘t</p>
+                <h3 class="text-success fw-bold">@hoatDong.Count</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <p class="text-muted small mb-1">Cáº§n báº£o trĂ¬</p>
+                <h3 class="text-warning fw-bold">@canChuY.FindAll(x => x.TrangThaiTB == "Cáº§n báº£o trĂ¬").Count</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <p class="text-muted small mb-1">BĂ¡o há»ng</p>
+                <h3 class="text-danger fw-bold">@canChuY.FindAll(x => x.TrangThaiTB == "BĂ¡o há»ng").Count</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <p class="text-muted small mb-1">Cáº§n chĂº Ă½</p>
+                <h3 class="text-primary fw-bold">@canChuY.Count</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thiáº¿t bá»‹ cáº§n chĂº Ă½ -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0 pt-3">
+            <h5 class="fw-bold text-danger mb-0">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>Thiáº¿t Bá»‹ Cáº§n ChĂº Ă (@canChuY.Count)
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">MĂ£ TB</th>
+                        <th>TĂªn thiáº¿t bá»‹</th>
+                        <th>Khoa / Vá»‹ trĂ­</th>
+                        <th>PhĂ²ng</th>
+                        <th>TĂ¬nh tráº¡ng</th>
+                        <th>NgĂ y bĂ¡o</th>
+                        <th>MĂ´ táº£ há»ng</th>
+                        <th class="text-center">Lá»‹ch sá»­ duyá»‡t</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!canChuY.Any())
+                    {
+                        <tr><td colspan="8" class="text-center py-4 text-muted">Má»i thá»© Ä‘á»u á»•n Ä‘á»‹nh đŸ‰</td></tr>
+                    }
+                    else
+                    {
+                        foreach (var tb in canChuY)
+                        {
+                            string badgeCls = tb.TrangThaiTB == "BĂ¡o há»ng" ? "err" : "warn";
+                            <tr>
+                                <td class="ps-3 fw-bold text-primary">#@tb.ID_ThietBi</td>
+                                <td class="fw-semibold">@tb.TenTB</td>
+                                <td><span class="badge bg-light text-dark">@tb.KhoaPhongBan</span></td>
+                                <td>@(string.IsNullOrEmpty(tb.Phong) ? "â€”" : tb.Phong)</td>
+                                <td><span class="badge-tt @badgeCls">@tb.TrangThaiTB</span></td>
+                                <td class="text-muted small">@(tb.NgayBaoHong.HasValue ? tb.NgayBaoHong.Value.ToString("dd/MM/yyyy") : "â€”")</td>
+                                <td class="small text-danger">@(string.IsNullOrEmpty(tb.MoTaHong) ? "â€”" : tb.MoTaHong)</td>
+                                <td class="text-center">
+                                    <button class="btn-ls" onclick="xemLichSu('@tb.TenTB.Replace("'","\\'")', '@tb.ID_ThietBi')">
+                                        đŸ“œ Xem
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Hoáº¡t Ä‘á»™ng bĂ¬nh thÆ°á»ng -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0 pt-3">
+            <h5 class="fw-bold text-success mb-0">
+                <i class="bi bi-check-circle-fill me-2"></i>Hoáº¡t Äá»™ng BĂ¬nh ThÆ°á»ng (@hoatDong.Count)
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">MĂ£ TB</th>
+                        <th>TĂªn thiáº¿t bá»‹</th>
+                        <th>Khoa / ÄÆ¡n vá»‹</th>
+                        <th>PhĂ²ng</th>
+                        <th>Danh má»¥c</th>
+                        <th>NhĂ  cung cáº¥p</th>
+                        <th class="text-center">TĂ¬nh tráº¡ng</th>
+                        <th class="text-center">Lá»‹ch sá»­ duyá»‡t</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var tb in hoatDong)
+                    {
+                        <tr>
+                            <td class="ps-3 fw-bold">#@tb.ID_ThietBi</td>
+                            <td>@tb.TenTB</td>
+                            <td>@tb.KhoaPhongBan</td>
+                            <td>@(string.IsNullOrEmpty(tb.Phong) ? "â€”" : tb.Phong)</td>
+                            <td class="text-muted small">@tb.TenDanhMuc</td>
+                            <td class="small">@(string.IsNullOrEmpty(tb.NhaCungCap) ? "â€”" : tb.NhaCungCap)</td>
+                            <td class="text-center"><span class="badge-tt ok">Äang sá»­ dá»¥ng</span></td>
+                            <td class="text-center">
+                                <button class="btn-ls" onclick="xemLichSu('@tb.TenTB.Replace("'","\\'")', '@tb.ID_ThietBi')">
+                                    đŸ“œ Xem
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal lá»‹ch sá»­ duyá»‡t -->
+<div class="modal-overlay" id="lsModal">
+    <div class="modal-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div class="modal-title">đŸ“œ Lá»‹ch Sá»­ Duyá»‡t â€” <span id="lsTitle" style="color:#3949ab;"></span></div>
+            <button onclick="document.getElementById('lsModal').classList.remove('active')"
+                style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;">âœ•</button>
+        </div>
+        <div id="lsBody"><div style="text-align:center;padding:20px;color:#aaa;">Äang táº£i...</div></div>
+    </div>
+</div>
+
+@section scripts {
+<script>
+    var dotMap = { 'csvc':'csvc','khtc':'khtc','bgh':'bgh','1':'csvc','3':'khtc','4':'bgh' };
+    var capMap = { 'csvc':'CSVC','khtc':'KHTC','bgh':'BGH','1':'CSVC','3':'KHTC','4':'BGH' };
+
+    function xemLichSu(tenTB, maTB) {
+        document.getElementById('lsTitle').textContent = tenTB + ' (#' + maTB + ')';
+        document.getElementById('lsBody').innerHTML = '<div style="text-align:center;padding:20px;color:#aaa;">Äang táº£i...</div>';
+        document.getElementById('lsModal').classList.add('active');
+
+        $.get('@Url.Action("GetLichSuDuyetTheoThietBi","BGH")', { tenTB: tenTB }, function(res) {
+            if (!res.ok) {
+                document.getElementById('lsBody').innerHTML = '<div style="color:#e53935;padding:16px;">Lá»—i: ' + res.msg + '</div>';
+                return;
+            }
+            if (!res.data || res.data.length === 0) {
+                document.getElementById('lsBody').innerHTML =
+                    '<div style="text-align:center;color:#aaa;padding:24px;">'
+                    + 'đŸ“­ ChÆ°a cĂ³ lá»‹ch sá»­ duyá»‡t Ä‘á» xuáº¥t mua sáº¯m cho thiáº¿t bá»‹ nĂ y.'
+                    + '</div>';
+                return;
+            }
+
+            // NhĂ³m theo ID_DeXuat, loáº¡i trĂ¹ng bÆ°á»›c duyá»‡t
+            var groups = {}, order = [];
+            res.data.forEach(function(item) {
+                if (!groups[item.ID_DeXuat]) {
+                    groups[item.ID_DeXuat] = { tt: item.TrangThaiDeXuat, ngay: item.NgayDeXuat, ten: item.TenThietBi, steps: [], seen: {} };
+                    order.push(item.ID_DeXuat);
+                }
+                var key = item.CapDuyet + '|' + item.ThoiGian;
+                if (!groups[item.ID_DeXuat].seen[key]) {
+                    groups[item.ID_DeXuat].seen[key] = true;
+                    groups[item.ID_DeXuat].steps.push(item);
+                }
+            });
+
+            var html = '';
+            order.forEach(function(idDX) {
+                var g = groups[idDX];
+                var bc = g.tt === 'ÄĂ£ duyá»‡t' ? 'ok' : g.tt.includes('Tá»« chá»‘i') ? 'err' : 'warn';
+                html += '<div style="margin-bottom:16px;border:1px solid #e8eaf6;border-radius:10px;overflow:hidden;">'
+                    + '<div style="background:#f5f6ff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;">'
+                    + '<div><b style="color:#1a237e;">' + idDX + '</b>'
+                    + ' <span style="font-size:11px;color:#888;">đŸ“… ' + g.ngay + '</span>'
+                    + '<div style="font-size:11px;color:#666;margin-top:2px;">đŸ“¦ ' + g.ten + '</div></div>'
+                    + '<span class="badge-tt ' + bc + '">' + g.tt + '</span>'
+                    + '</div>'
+                    + '<div style="padding:14px 16px 6px;" class="ls-timeline">';
+
+                g.steps.forEach(function(s) {
+                    var cap = String(s.CapDuyet).toLowerCase();
+                    var cls = s.TrangThaiSauDuyet.includes('Tá»« chá»‘i') ? 'reject' : (dotMap[cap] || '');
+                    html += '<div class="ls-item">'
+                        + '<div class="ls-dot ' + cls + '"></div>'
+                        + '<div class="ls-cap">' + (capMap[cap] || cap.toUpperCase()) + '</div>'
+                        + '<div class="ls-name">' + s.NguoiDuyet + '</div>'
+                        + '<div class="ls-time">đŸ•’ ' + s.ThoiGian + '</div>'
+                        + '<div class="ls-tt">â†’ <b>' + s.TrangThaiSauDuyet + '</b></div>'
+                        + (s.GhiChu ? '<div class="ls-gc">đŸ’¬ ' + s.GhiChu + '</div>' : '')
+                        + '</div>';
+                });
+                html += '</div></div>';
+            });
+            document.getElementById('lsBody').innerHTML = html;
+        });
+    }
+
+    document.getElementById('lsModal').addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('active');
+    });
+</script>
+}
+

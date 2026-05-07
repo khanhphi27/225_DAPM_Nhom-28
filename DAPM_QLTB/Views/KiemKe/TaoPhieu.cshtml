@@ -1,0 +1,223 @@
+﻿@model QLTB.Models.TaoPhieuKiemKeViewModel
+@using System.Linq
+@{
+    ViewBag.Title = "Táº¡o Phiáº¿u Kiá»ƒm KĂª - PhĂ²ng CSVC";
+}
+
+<style>
+    body, td, th, select, input, button, a { font-size: 15px; }
+
+    .page-hdr h2 { color:#1a237e; font-weight:700; font-size:24px; margin:0; }
+    .page-hdr p  { color:#666; font-size:14px; margin:3px 0 0; }
+
+    .info-card {
+        background:#e8eaf6; border-radius:12px; padding:18px 24px;
+        margin-bottom:20px; display:flex; gap:32px; flex-wrap:wrap; align-items:center;
+    }
+    .info-item { font-size:14px; color:#333; }
+    .info-item strong { color:#1a237e; }
+
+    .alert-info  { background:#e3f2fd; border:1px solid #90caf9; border-radius:10px; padding:14px 18px; color:#1565c0; font-size:14px; margin-bottom:16px; }
+    .alert-warn  { background:#fff8e1; border:1px solid #ffe082; border-radius:10px; padding:14px 18px; color:#e65100; font-size:14px; margin-bottom:16px; }
+    .alert-error { background:#fce4ec; border:1px solid #ef9a9a; border-radius:10px; padding:14px 18px; color:#c62828; font-size:14px; margin-bottom:16px; }
+
+    .card-table { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); overflow:hidden; margin-bottom:20px; }
+    .card-table table { width:100%; border-collapse:collapse; }
+    .card-table thead th {
+        background:#e8eaf6; color:#1a237e; font-size:13px; font-weight:700;
+        text-transform:uppercase; letter-spacing:.4px; padding:14px 16px; border:none; white-space:nowrap;
+    }
+    .card-table tbody td { padding:12px 16px; font-size:14px; color:#333; border-bottom:1px solid #f0f2f8; vertical-align:middle; }
+    .card-table tbody tr:last-child td { border-bottom:none; }
+    .card-table tbody tr:hover td { background:#f5f6ff; }
+
+    .group-header td { background:#f0f2ff; padding:10px 16px; font-size:13px; font-weight:700; color:#1a237e; }
+
+    .qty-input {
+        width:90px; padding:7px 10px; border:1px solid #d0d5e8;
+        border-radius:6px; font-size:15px; text-align:center; font-weight:600;
+    }
+    .qty-input:focus { border-color:#3949ab; outline:none; box-shadow:0 0 0 2px #c5cae9; }
+
+    .sl-he-thong-cell { text-align:center; font-size:15px; font-weight:700; color:#1a237e; }
+
+    .tt-select {
+        padding:7px 12px; border:1px solid #d0d5e8; border-radius:6px;
+        font-size:14px; background:#fff; min-width:150px;
+    }
+    .tt-select:focus { border-color:#3949ab; outline:none; }
+
+    .note-input {
+        width:100%; padding:7px 10px; border:1px solid #d0d5e8;
+        border-radius:6px; font-size:14px; background:#fff;
+    }
+    .note-input:focus { border-color:#3949ab; outline:none; }
+
+    .tb-status { display:inline-block; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600; }
+    .tb-status.hoatdong { background:#e8f5e9; color:#2e7d32; }
+    .tb-status.baotri   { background:#fff3e0; color:#e65100; }
+    .tb-status.hong     { background:#fce4ec; color:#c62828; }
+    .tb-status.other    { background:#f5f5f5; color:#555; }
+
+    .action-bar {
+        display:flex; justify-content:space-between; align-items:center;
+        background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07);
+        padding:18px 24px;
+    }
+    .btn-primary   { background:#1a237e; color:#fff; border:none; border-radius:8px; padding:11px 26px; font-size:15px; font-weight:600; cursor:pointer; }
+    .btn-primary:hover { background:#283593; }
+    .btn-secondary { background:#e8eaf6; color:#1a237e; border:none; border-radius:8px; padding:11px 22px; font-size:14px; font-weight:600; cursor:pointer; text-decoration:none; display:inline-block; }
+    .btn-secondary:hover { background:#c5cae9; text-decoration:none; color:#1a237e; }
+
+    .counter-badge { background:#1a237e; color:#fff; border-radius:20px; padding:3px 12px; font-size:13px; font-weight:700; margin-left:8px; }
+</style>
+
+<div class="page-hdr" style="margin-bottom:22px">
+    <h2>đŸ“ Táº¡o Phiáº¿u Kiá»ƒm KĂª TĂ i Sáº£n</h2>
+    <p>Nháº­p sá»‘ lÆ°á»£ng vĂ  tĂ¬nh tráº¡ng thá»±c táº¿ cho cĂ¡c thiáº¿t bá»‹ chÆ°a Ä‘Æ°á»£c kiá»ƒm kĂª</p>
+</div>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert-error">â ï¸ @ViewBag.Error</div>
+}
+
+<div class="info-card">
+    <div class="info-item">đŸ“‹ MĂ£ phiáº¿u: <strong>@Model.ID_KiemKe</strong></div>
+    <div class="info-item">đŸ“… NgĂ y táº¡o: <strong>@Model.NgayKiemKe.ToString("dd/MM/yyyy HH:mm")</strong></div>
+    <div class="info-item">đŸ‘¤ NgÆ°á»i thá»±c hiá»‡n: <strong>@Model.NguoiTao</strong></div>
+    <div class="info-item">đŸ”¢ Thiáº¿t bá»‹ chÆ°a kiá»ƒm: <strong style="color:#fb8c00">@Model.DanhSachChuaKiem.Count</strong></div>
+</div>
+
+@if (!Model.DanhSachChuaKiem.Any())
+{
+    <div class="alert-info">âœ… Táº¥t cáº£ thiáº¿t bá»‹ Ä‘Ă£ Ä‘Æ°á»£c kiá»ƒm kĂª. KhĂ´ng cĂ³ thiáº¿t bá»‹ nĂ o cáº§n táº¡o phiáº¿u má»›i.</div>
+    <a href="@Url.Action("DanhSach", "KiemKe")" class="btn-secondary">â† Quay láº¡i</a>
+}
+else
+{
+    <div class="alert-warn">
+        â ï¸ Chá»‰ nhá»¯ng thiáº¿t bá»‹ báº¡n <strong>nháº­p sá»‘ lÆ°á»£ng thá»±c táº¿</strong> má»›i Ä‘Æ°á»£c lÆ°u vĂ o phiáº¿u kiá»ƒm kĂª.
+        Thiáº¿t bá»‹ khĂ´ng nháº­p gĂ¬ sáº½ váº«n á»Ÿ tráº¡ng thĂ¡i <em>chÆ°a kiá»ƒm kĂª</em>.
+    </div>
+
+    using (Html.BeginForm("HoanTat", "KiemKe", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="card-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>MĂ£ TB</th>
+                        <th>TĂªn thiáº¿t bá»‹</th>
+                        <th>Danh má»¥c</th>
+                        <th>ÄÆ¡n vá»‹ quáº£n lĂ½</th>
+                        <th>Tráº¡ng thĂ¡i</th>
+                        <th>SL Sá»• sĂ¡ch</th>
+                        <th>SL Thá»±c táº¿ <span style="color:#e53935">*</span></th>
+                        <th>TĂ¬nh tráº¡ng thá»±c táº¿</th>
+                        <th>Ghi chĂº</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        string currentKhoa = null;
+                        int stt = 0;
+                    }
+                    @for (int i = 0; i < Model.DanhSachChuaKiem.Count; i++)
+                    {
+                        var tb = Model.DanhSachChuaKiem[i];
+
+                        if (tb.TenKhoa != currentKhoa)
+                        {
+                            currentKhoa = tb.TenKhoa;
+                            int soTBKhoa = Model.DanhSachChuaKiem.Count(x => x.TenKhoa == currentKhoa);
+                            <tr class="group-header">
+                                <td colspan="10">đŸ¢ @currentKhoa â€” @soTBKhoa thiáº¿t bá»‹ chÆ°a kiá»ƒm</td>
+                            </tr>
+                        }
+                        stt++;
+                        string trangThaiClass = tb.TrangThaiTB == "Hoáº¡t Ä‘á»™ng" ? "hoatdong"
+                                              : tb.TrangThaiTB == "Báº£o trĂ¬"   ? "baotri"
+                                              : tb.TrangThaiTB == "Há»ng"      ? "hong" : "other";
+
+                        @Html.Hidden("DanhSachChuaKiem[" + i + "].ID_ThietBi",     tb.ID_ThietBi)
+                        @Html.Hidden("DanhSachChuaKiem[" + i + "].TenTB",          tb.TenTB)
+                        @Html.Hidden("DanhSachChuaKiem[" + i + "].TrangThaiTB",    tb.TrangThaiTB)
+                        @Html.Hidden("DanhSachChuaKiem[" + i + "].TenKhoa",        tb.TenKhoa)
+                        @Html.Hidden("DanhSachChuaKiem[" + i + "].TenDanhMuc",     tb.TenDanhMuc)
+                        @Html.Hidden("DanhSachChuaKiem[" + i + "].SoLuongHeThong", tb.SoLuongHeThong)
+
+                        <tr>
+                            <td style="color:#aaa;font-size:13px">@stt</td>
+                            <td><strong style="color:#1a237e">@tb.ID_ThietBi</strong></td>
+                            <td>@tb.TenTB</td>
+                            <td style="color:#666">@tb.TenDanhMuc</td>
+                            <td>@tb.TenKhoa</td>
+                            <td><span class="tb-status @trangThaiClass">@tb.TrangThaiTB</span></td>
+                            <td class="sl-he-thong-cell">@tb.SoLuongHeThong</td>
+                            <td>
+                                <input type="number" min="0"
+                                       name="DanhSachChuaKiem[@i].SoLuongThucTe"
+                                       class="qty-input sl-input"
+                                       placeholder="Nháº­p SL" />
+                            </td>
+                            <td>
+                                <select name="DanhSachChuaKiem[@i].TinhTrangThucTe" class="tt-select">
+                                    <option value="BĂ¬nh thÆ°á»ng">BĂ¬nh thÆ°á»ng</option>
+                                    <option value="Cáº§n báº£o trĂ¬">Cáº§n báº£o trĂ¬</option>
+                                    <option value="Há»ng">Há»ng</option>
+                                    <option value="Máº¥t">Máº¥t</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text"
+                                       name="DanhSachChuaKiem[@i].GhiChu"
+                                       class="note-input"
+                                       placeholder="Ghi chĂº (tuá»³ chá»n)" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="action-bar">
+            <div style="font-size:14px;color:#555">
+                ÄĂ£ nháº­p:
+                <span id="daNhapCount" class="counter-badge">0</span>
+                / @Model.DanhSachChuaKiem.Count thiáº¿t bá»‹
+            </div>
+            <div style="display:flex;gap:12px;align-items:center">
+                <a href="@Url.Action("DanhSach", "KiemKe")" class="btn-secondary">â† Há»§y bá»</a>
+                <button type="submit" class="btn-primary" id="btnHoanTat">âœ… HoĂ n táº¥t kiá»ƒm kĂª</button>
+            </div>
+        </div>
+    }
+}
+
+<script>
+    document.querySelectorAll('.sl-input').forEach(function (inp) {
+        inp.addEventListener('input', capNhatDem);
+    });
+
+    function capNhatDem() {
+        var count = 0;
+        document.querySelectorAll('.sl-input').forEach(function (inp) {
+            if (inp.value !== '') count++;
+        });
+        document.getElementById('daNhapCount').textContent = count;
+    }
+
+    document.getElementById('btnHoanTat')?.addEventListener('click', function (e) {
+        var coNhap = false;
+        document.querySelectorAll('.sl-input').forEach(function (inp) { if (inp.value !== '') coNhap = true; });
+        if (!coNhap) {
+            e.preventDefault();
+            alert('Vui lĂ²ng nháº­p sá»‘ lÆ°á»£ng thá»±c táº¿ cho Ă­t nháº¥t 1 thiáº¿t bá»‹ trÆ°á»›c khi hoĂ n táº¥t.');
+        }
+    });
+</script>
+

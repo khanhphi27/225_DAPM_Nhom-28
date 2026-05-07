@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace QLTB.Models
 {
@@ -22,5 +22,18 @@ namespace QLTB.Models
         public decimal? Gia { get; set; }
         public string TrangThaiTB { get; set; }
         public string DeXuatNo { get; set; }
+    }
+
+    // ── Thiết bị (dùng cho dropdown) ─────────────────────────
+    public class ThietBiDropdownViewModel
+    {
+        public string ID_ThietBi { get; set; }
+        public string TenTB { get; set; }
+        public string TrangThai { get; set; }
+        public string DanhMuc { get; set; }
+        public bool DangBaoHong { get; set; }
+        public string BaoHongNo { get; set; }
+        public string MoTaBaoHong { get; set; }
+        public string MucDoUuTienBaoHong { get; set; }
     }
 }

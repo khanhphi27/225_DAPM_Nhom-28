@@ -1,0 +1,913 @@
+﻿@model QLTB.Models.GhiNhanPageViewModel
+@{ ViewBag.Title = "Ghi Nhận Sửa Chữa - Phòng CSVC"; }
+
+<style>
+    .page-hdr h2 {
+        color: #1a237e;
+        font-weight: 700;
+        font-size: 22px;
+        margin: 0 0 4px
+    }
+
+    .page-hdr p {
+        color: #666;
+        font-size: 13px;
+        margin: 0 0 16px
+    }
+
+    .two-col {
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        gap: 18px;
+        align-items: start
+    }
+
+    .panel {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        overflow: hidden;
+        margin-bottom: 16px
+    }
+
+    .panel-header {
+        padding: 13px 18px;
+        border-bottom: 1px solid #f0f2f8;
+        display: flex;
+        justify-content: space-between;
+        align-items: center
+    }
+
+        .panel-header h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a237e;
+            margin: 0
+        }
+
+    .report-item {
+        padding: 11px 16px;
+        border-bottom: 1px solid #f0f2f8;
+        cursor: pointer;
+        transition: background .12s
+    }
+
+        .report-item:hover {
+            background: #f8f9ff
+        }
+
+        .report-item.selected {
+            background: #eef0fb;
+            border-left: 3px solid #1a237e
+        }
+
+        .report-item:last-child {
+            border-bottom: none
+        }
+
+    .ri-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px
+    }
+
+    .ri-code {
+        font-size: 12px;
+        font-weight: 700;
+        color: #1a237e
+    }
+
+    .ri-name {
+        font-size: 12px;
+        color: #333;
+        font-weight: 600;
+        margin-bottom: 3px
+    }
+
+    .ri-meta {
+        font-size: 11px;
+        color: #888
+    }
+
+    .ri-bh {
+        font-size: 11px;
+        color: #e65100;
+        margin-top: 2px;
+        font-weight: 600
+    }
+
+    .badge-kh {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 700
+    }
+
+        .badge-kh.sc {
+            background: #fce4ec;
+            color: #c62828
+        }
+
+        .badge-kh.dk {
+            background: #e8f5e9;
+            color: #2e7d32
+        }
+
+    .empty-state {
+        padding: 32px;
+        text-align: center;
+        color: #aaa;
+        font-size: 13px
+    }
+    /* Form ghi nhận */
+    .repair-panel {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.06)
+    }
+
+    .repair-header {
+        padding: 14px 20px;
+        border-bottom: 1px solid #f0f2f8;
+        display: flex;
+        justify-content: space-between;
+        align-items: center
+    }
+
+        .repair-header h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a237e;
+            margin: 0
+        }
+
+    .repair-body {
+        padding: 20px
+    }
+
+    .info-box {
+        background: #f8f9fe;
+        border: 1px solid #e8eaf6;
+        border-radius: 8px;
+        padding: 14px;
+        margin-bottom: 16px
+    }
+
+        .info-box h5 {
+            font-size: 12px;
+            font-weight: 700;
+            color: #1a237e;
+            margin: 0 0 10px
+        }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px
+    }
+
+    .info-item label {
+        font-size: 10px;
+        color: #888;
+        font-weight: 600;
+        display: block;
+        margin-bottom: 2px
+    }
+
+    .info-item p {
+        font-size: 12px;
+        color: #333;
+        font-weight: 600;
+        margin: 0
+    }
+
+    .info-item.full {
+        grid-column: 1/-1
+    }
+
+    .bh-tag {
+        background: #fff3e0;
+        border: 1px solid #ffe082;
+        border-radius: 6px;
+        padding: 7px 12px;
+        font-size: 11px;
+        color: #795548;
+        margin-bottom: 8px
+    }
+
+        .bh-tag strong {
+            color: #e65100
+        }
+
+    .tb-detail-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 0;
+        border-bottom: 1px solid #f0f2f8;
+        font-size: 12px;
+        cursor: pointer
+    }
+
+        .tb-detail-item:last-child {
+            border: none
+        }
+
+        .tb-detail-item.selected-tb {
+            background: #eef0fb;
+            border-radius: 6px;
+            padding: 6px 8px
+        }
+
+        .tb-detail-item input[type=radio] {
+            margin: 0
+        }
+
+    .section-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: #1a237e;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        padding: 10px 0 6px;
+        border-bottom: 1px solid #e8eaf6;
+        margin: 14px 0 10px
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 12px
+    }
+
+        .form-row.single {
+            grid-template-columns: 1fr
+        }
+
+    .form-lbl {
+        font-size: 12px;
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 4px;
+        display: block
+    }
+
+    .form-inp {
+        width: 100%;
+        padding: 8px 11px;
+        border: 1px solid #d0d5e8;
+        border-radius: 7px;
+        font-size: 13px;
+        background: #f8f9fe;
+        box-sizing: border-box
+    }
+
+        .form-inp:focus {
+            border-color: #3949ab;
+            outline: none
+        }
+
+    .status-group {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 14px
+    }
+
+    .status-opt {
+        padding: 8px 14px;
+        border-radius: 8px;
+        border: 2px solid #e0e0e0;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        background: #fff;
+        color: #666;
+        transition: all .15s
+    }
+
+        .status-opt.selected.ok {
+            border-color: #43a047;
+            background: #e8f5e9;
+            color: #2e7d32
+        }
+
+        .status-opt.selected.warn {
+            border-color: #fb8c00;
+            background: #fff3e0;
+            color: #e65100
+        }
+
+        .status-opt.selected.bad {
+            border-color: #e53935;
+            background: #fce4ec;
+            color: #c62828
+        }
+
+    .form-footer {
+        margin-top: 16px;
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end
+    }
+
+    .btn-save {
+        background: #1a237e;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 24px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer
+    }
+
+    .btn-cancel {
+        background: #f5f5f5;
+        color: #555;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer
+    }
+    /* Lịch sử */
+    .history-item {
+        padding: 12px 18px;
+        border-bottom: 1px solid #f0f2f8
+    }
+
+        .history-item:last-child {
+            border: none
+        }
+
+        .history-group {
+            border-bottom: 1px solid #f0f2f8;
+            padding: 12px 18px
+        }
+
+            .history-group:last-child {
+                border-bottom: none
+            }
+
+        .history-group-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: flex-start;
+            margin-bottom: 8px
+        }
+
+        .history-group-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a237e
+        }
+
+        .history-group-meta {
+            font-size: 11px;
+            color: #888;
+            text-align: right
+        }
+
+        .history-group-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 8px
+        }
+
+            .history-group-summary span {
+                background: #f8f9fe;
+                border: 1px solid #e8eaf6;
+                border-radius: 999px;
+                padding: 2px 8px
+            }
+
+        .history-list {
+            margin-top: 6px;
+            padding-left: 8px;
+            border-left: 2px solid #e8eaf6
+        }
+
+    .hi-head {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px
+    }
+
+    .hi-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: #333
+    }
+
+    .hi-date {
+        font-size: 11px;
+        color: #888
+    }
+
+    .hi-detail {
+        font-size: 12px;
+        color: #666;
+        margin-top: 2px
+    }
+
+        .hi-detail span {
+            margin-right: 10px
+        }
+
+    .badge-tt {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 700
+    }
+
+        .badge-tt.ok {
+            background: #e8f5e9;
+            color: #2e7d32
+        }
+
+        .badge-tt.warn {
+            background: #fff3e0;
+            color: #e65100
+        }
+
+        .badge-tt.bad {
+            background: #fce4ec;
+            color: #c62828
+        }
+
+    .toast {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        background: #333;
+        color: #fff;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-size: 13px;
+        z-index: 9999;
+        display: none
+    }
+
+        .toast.ok {
+            background: #2e7d32
+        }
+
+        .toast.err {
+            background: #c62828
+        }
+</style>
+
+<div class="page-hdr">
+    <h2>🛠️ Ghi Nhận Sửa Chữa Thiết Bị</h2>
+    <p>Ghi kết quả vào <strong>GHINHAN_SUA_CHUA</strong> theo từng thiết bị trong <strong>CHITIET_KEHOACH</strong> — tự động cập nhật trạng thái thiết bị & báo hỏng</p>
+</div>
+
+@if (ViewBag.Error != null)
+{
+<div style="background:#fce4ec;border:1px solid #e57373;border-radius:8px;padding:12px 16px;margin-bottom:16px;color:#c62828;font-size:13px">⚠️ Lỗi: @ViewBag.Error</div>}
+
+<div class="two-col">
+    @* ── Cột trái ── *@
+    <div>
+        <div class="panel">
+            <div class="panel-header">
+                <h3>📋 Kế hoạch chờ ghi nhận</h3>
+                <span style="color:#e65100;font-weight:700;font-size:12px">@Model.KeHoachChoCho.Count kế hoạch</span>
+            </div>
+            @if (Model.KeHoachChoCho.Count == 0)
+            {
+<div class="empty-state">✅ Không có kế hoạch nào đang chờ ghi nhận</div>            }
+            @foreach (var kh in Model.KeHoachChoCho)
+            {
+                var loaiCls = kh.LoaiKeHoach == "Sửa chữa" ? "sc" : "dk";
+                var loaiIcon = kh.LoaiKeHoach == "Sửa chữa" ? "🔧" : "📅";
+                var soBH = 0;
+
+                foreach (var ct in kh.ChiTiet)
+                {
+                    if (ct.BaoHongNo != null)
+                    {
+                        soBH++;
+                    }
+                }
+                // Serialize chi tiết để truyền sang JS
+                var ctJson = Newtonsoft.Json.JsonConvert.SerializeObject(kh.ChiTiet);
+
+<div class="report-item" onclick='selectKH(this,@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(kh.ID_KeHoach)),@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(kh.LoaiKeHoach)),@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(kh.DonViThucHien)),@Html.Raw(ctJson))'>
+    <div class="ri-head">
+        <div class="ri-code">@kh.ID_KeHoach</div>
+        <span class="badge-kh @loaiCls">@loaiIcon @kh.LoaiKeHoach</span>
+    </div>
+    <div class="ri-name">@(kh.GhiChu.Length>60 ? kh.GhiChu.Substring(0,60)+"…" : kh.GhiChu)</div>
+    <div class="ri-meta">
+        📅 @kh.NgayLap.ToString("dd/MM/yyyy")
+        @if (kh.NgayDuKienHT.HasValue)
+        {<text>→ @kh.NgayDuKienHT.Value.ToString("dd/MM/yyyy")</text>}
+        &nbsp;|&nbsp; 🏢 @kh.DonViThucHien
+    </div>
+    <div class="ri-meta">
+        📦 @kh.ChiTiet.Count thiết bị
+        @if (soBH > 0)
+        {<span style="color:#e65100;margin-left:6px">📎 @soBH từ báo hỏng</span>}
+        &nbsp;|&nbsp; <span style="font-weight:600;color:#1a237e">@kh.TrangThai</span>
+    </div>
+</div>            }
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <h3>📜 Lịch sử ghi nhận gần đây</h3>
+            </div>
+            @if (Model.LichSuGhiNhan.Count == 0)
+            {
+<div class="empty-state">Chưa có ghi nhận nào</div>            }
+            else
+            {
+                var nhomLichSu = Model.LichSuGhiNhan
+                    .GroupBy(x => x.KeHoachNo)
+                    .OrderByDescending(g => g.Max(x => x.NgayThucHien))
+                    .ToList();
+
+                foreach (var nhom in nhomLichSu)
+                {
+                    var dauTien = nhom.First();
+                    var soGhiNhan = nhom.Count();
+                    var soThietBi = nhom.Select(x => x.ChiTietKeHoachNo).Where(x => !string.IsNullOrEmpty(x)).Distinct().Count();
+                    var loaiNhom = string.IsNullOrEmpty(dauTien.LoaiKeHoach) ? "Kế hoạch" : dauTien.LoaiKeHoach;
+                    <div class="history-group" onclick="openCompletedPlanDetail('@nhom.Key')">
+                        <div class="history-group-head">
+                            <div>
+                                <div class="history-group-title">📋 @nhom.Key</div>
+                                <div class="history-group-meta">@loaiNhom</div>
+                            </div>
+                            <div class="history-group-meta">@soGhiNhan ghi nhận • @soThietBi thiết bị</div>
+                        </div>
+                        <div class="history-group-summary">
+                            <span>🏢 @(!string.IsNullOrEmpty(dauTien.DonViThucHien) ? dauTien.DonViThucHien : "Không rõ đơn vị")</span>
+                            <span>🕒 @nhom.Max(x => x.NgayThucHien).ToString("dd/MM/yyyy")</span>
+                        </div>
+                        <div class="history-list">
+                            @foreach (var gn in nhom.OrderByDescending(x => x.NgayThucHien))
+                            {
+                                var ttCls = gn.TrangThaiSauSua.Contains("tốt") ? "ok" : gn.TrangThaiSauSua.Contains("Tạm") ? "warn" : "bad";
+<div class="history-item">
+    <div class="hi-head">
+        <span class="hi-name">@gn.ID_GhiNhan</span>
+        <span class="hi-date">@gn.NgayThucHien.ToString("dd/MM/yyyy")</span>
+    </div>
+    <div class="hi-detail">
+        <span>📦 @gn.TenTB</span>
+        @if (!string.IsNullOrEmpty(gn.BaoHongNo))
+        {<span style="color:#e65100">📎 @gn.BaoHongNo</span>}
+    </div>
+    <div class="hi-detail" style="margin-top:3px">
+        <span class="badge-tt @ttCls">@(string.IsNullOrEmpty(gn.TrangThaiSauSua) ? "—" : gn.TrangThaiSauSua)</span>
+        @if (gn.ChiPhiThucTe.HasValue)
+        {<span style="margin-left:8px">💰 @gn.ChiPhiThucTe.Value.ToString("N0") đ</span>}
+    </div>
+</div>                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    @* ── Cột phải: Form ghi nhận ── *@
+    <div class="repair-panel">
+        <div class="repair-header">
+            <h3>📝 Ghi Nhận Kết Quả Sửa Chữa</h3>
+            <span id="formKHId" style="font-size:12px;color:#888">Chọn kế hoạch bên trái</span>
+        </div>
+        <div class="repair-body">
+            <div id="formPlaceholder" style="padding:40px;text-align:center;color:#aaa;font-size:13px">
+                ← Chọn một kế hoạch để bắt đầu ghi nhận kết quả
+            </div>
+            <div id="completedPlanView" style="display:none;padding:14px 18px 18px">
+                <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px">
+                    <div>
+                        <div style="font-size:16px;font-weight:700;color:#1a237e;margin-bottom:4px" id="completedPlanTitle">—</div>
+                        <div style="font-size:12px;color:#666" id="completedPlanSub">—</div>
+                    </div>
+                    <span class="badge-kh sc" id="completedPlanStatus">Đã hoàn thành</span>
+                </div>
+                <div class="info-box" style="margin-bottom:12px">
+                    <h5>📋 Thông tin kế hoạch</h5>
+                    <div class="info-grid">
+                        <div class="info-item"><label>Loại kế hoạch</label><p id="completedLoai">—</p></div>
+                        <div class="info-item"><label>Đơn vị thực hiện</label><p id="completedDonVi">—</p></div>
+                        <div class="info-item"><label>Ngày lập</label><p id="completedNgayLap">—</p></div>
+                        <div class="info-item"><label>Ngày dự kiến HT</label><p id="completedNgayHT">—</p></div>
+                        <div class="info-item"><label>Chi phí dự kiến</label><p id="completedCPDK">—</p></div>
+                        <div class="info-item"><label>Người lập</label><p id="completedNguoiLap">—</p></div>
+                        <div class="info-item full"><label>Ghi chú</label><p id="completedGhiChu">—</p></div>
+                    </div>
+                </div>
+                <div class="info-box" style="margin-bottom:12px">
+                    <h5>📦 Thiết bị trong kế hoạch</h5>
+                    <div id="completedDevices"></div>
+                </div>
+                <div class="info-box" style="margin-bottom:12px">
+                    <h5>🧾 Lịch sử ghi nhận</h5>
+                    <div id="completedHistory"></div>
+                </div>
+                <div class="form-footer" style="justify-content:flex-start;margin-top:0">
+                    <button class="btn-cancel" onclick="backToRecordingMode()">← Quay lại ghi nhận</button>
+                </div>
+            </div>
+            <div id="formContent" style="display:none">
+
+                <div class="info-box">
+                    <h5>📋 Thông tin kế hoạch</h5>
+                    <div id="bhTagContainer"></div>
+                    <div class="info-grid">
+                        <div class="info-item"><label>Loại kế hoạch</label><p id="infoLoai">—</p></div>
+                        <div class="info-item"><label>Đơn vị thực hiện</label><p id="infoDonVi">—</p></div>
+                    </div>
+                </div>
+
+                <div class="section-title">Chọn thiết bị cần ghi nhận *</div>
+                <div id="tbPickList" style="margin-bottom:14px"></div>
+
+                <div id="selectedTBInfo" style="display:none;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:14px">
+                    <strong>Thiết bị đang ghi nhận:</strong> <span id="selTBName">—</span>
+                    <div id="selBHInfo" style="color:#e65100;margin-top:4px;display:none"></div>
+                </div>
+
+                <div class="section-title">Thông tin ghi nhận (GHINHAN_SUA_CHUA)</div>
+                <div class="form-row">
+                    <div>
+                        <label class="form-lbl">ID Ghi nhận *</label>
+                        <input type="text" class="form-inp" id="gnId" placeholder="VD: GN_024" />
+                    </div>
+                    <div>
+                        <label class="form-lbl">Ngày thực hiện *</label>
+                        <input type="date" class="form-inp" id="gnNgay" />
+                    </div>
+                </div>
+                <div class="form-row single">
+                    <div>
+                        <label class="form-lbl">Kết quả sửa chữa *</label>
+                        <textarea class="form-inp" id="gnKetQua" rows="3" placeholder="Mô tả chi tiết công việc đã thực hiện, nguyên nhân, giải pháp..."></textarea>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label class="form-lbl">Chi phí thực tế (VNĐ)</label>
+                        <input type="text" class="form-inp" id="gnChiPhi" placeholder="VD: 750000" />
+                    </div>
+                </div>
+
+                <div class="section-title">Tình trạng thiết bị sau sửa (TrangThaiSauSua)</div>
+                <div class="status-group">
+                    <div class="status-opt" onclick="selStatus(this,'ok','Hoạt động tốt')">✅ Hoạt động tốt</div>
+                    <div class="status-opt" onclick="selStatus(this,'warn','Tạm thời hoạt động')">⚠️ Tạm thời hoạt động</div>
+                    <div class="status-opt" onclick="selStatus(this,'bad','Không thể sửa / Đề xuất thanh lý')">❌ Không thể sửa</div>
+                </div>
+                <input type="hidden" id="gnTrangThai" />
+                <input type="hidden" id="gnKHId" />
+                <input type="hidden" id="gnCTKHId" />
+
+                <div class="form-footer">
+                    <button class="btn-cancel" onclick="resetForm()">Hủy</button>
+                    <button class="btn-save" onclick="luuGhiNhan()">💾 Lưu ghi nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    var selectedKHId = null;
+    var selectedCTKHId = null;
+    var currentChiTiet = [];
+
+    function showRecordingMode(showForm) {
+        document.getElementById('completedPlanView').style.display = 'none';
+        document.getElementById('formPlaceholder').style.display = showForm ? 'none' : 'none';
+        document.getElementById('formContent').style.display = showForm ? 'block' : 'none';
+    }
+
+    function selectKH(el, khId, loai, donVi, chiTiet) {
+        document.querySelectorAll('.report-item').forEach(function (i) { i.classList.remove('selected'); });
+        el.classList.add('selected');
+        selectedKHId = khId;
+        currentChiTiet = chiTiet;
+        showRecordingMode(true);
+
+        document.getElementById('formKHId').textContent = khId;
+        document.getElementById('gnKHId').value = (khId || '').trim();
+        document.getElementById('infoLoai').textContent = loai;
+        document.getElementById('infoDonVi').textContent = donVi || '—';
+        document.getElementById('gnNgay').value = new Date().toISOString().split('T')[0];
+        document.getElementById('gnId').value = 'GN_' + Date.now().toString().slice(-5);
+
+        // Hiển thị tag báo hỏng (nếu có)
+        var bhContainer = document.getElementById('bhTagContainer');
+        var bhList = chiTiet.filter(function (ct) { return ct.BaoHongNo; });
+        if (bhList.length > 0) {
+            bhContainer.innerHTML = bhList.map(function (ct) {
+                return '<div class="bh-tag"><strong>📎 Báo hỏng ' + ct.BaoHongNo + '</strong> — ' + ct.TenTB + ': ' + ct.MoTaBaoHong + '</div>';
+            }).join('');
+        } else {
+            bhContainer.innerHTML = '';
+        }
+
+        // Danh sách thiết bị để chọn radio
+        var pickHtml = chiTiet.length === 0 ? '<div style="color:#aaa;font-size:12px;padding:8px">Không có thiết bị nào</div>' :
+            chiTiet.map(function (ct, i) {
+                var ctkhId = (ct.ID_ChiTietKH || '').trim();
+                var src = ct.BaoHongNo
+                    ? '<span style="background:#fff3e0;color:#e65100;padding:1px 6px;border-radius:4px;font-size:10px">📎 ' + ct.BaoHongNo + '</span>'
+                    : '<span style="background:#e8f5e9;color:#2e7d32;padding:1px 6px;border-radius:4px;font-size:10px">📅 Định kỳ</span>';
+                return '<div class="tb-detail-item" onclick="selectTBByIndex(' + i + ')">' +
+                    '<input type="radio" name="tbRadio" data-idx="' + i + '" value="' + ctkhId + '" /> ' +
+                    '<div><strong>' + ct.ThietBiNo + '</strong> — ' + ct.TenTB +
+                    ' <span style="color:#888;font-size:11px">[' + ct.TenDanhMuc + ']</span> ' + src +
+                    (ct.GhiChuChiTiet ? '<div style="color:#888;font-size:11px;margin-top:1px">' + ct.GhiChuChiTiet + '</div>' : '') +
+                    '</div></div>';
+            }).join('');
+        document.getElementById('tbPickList').innerHTML = pickHtml;
+
+        document.querySelectorAll('#tbPickList input[name=tbRadio]').forEach(function (r) {
+            r.addEventListener('change', function () {
+                var idx = parseInt(r.getAttribute('data-idx'), 10);
+                if (!isNaN(idx)) selectTBByIndex(idx);
+            });
+        });
+
+        // Reset
+        document.getElementById('selectedTBInfo').style.display = 'none';
+        document.getElementById('gnCTKHId').value = '';
+        document.getElementById('gnKetQua').value = '';
+        document.getElementById('gnChiPhi').value = '';
+        document.getElementById('gnTrangThai').value = '';
+        document.querySelectorAll('.status-opt').forEach(function (o) { o.classList.remove('selected', 'ok', 'warn', 'bad'); });
+
+        document.getElementById('formPlaceholder').style.display = 'none';
+        document.getElementById('formContent').style.display = 'block';
+    }
+
+    function openCompletedPlanDetail(khId) {
+        document.querySelectorAll('.history-group').forEach(function (g) { g.classList.remove('selected'); });
+        showRecordingMode(false);
+        document.getElementById('completedPlanView').style.display = 'block';
+        document.getElementById('completedPlanTitle').textContent = khId;
+        document.getElementById('completedPlanSub').textContent = 'Đang tải chi tiết kế hoạch đã hoàn thành...';
+        document.getElementById('completedDevices').innerHTML = '<div style="color:#888;font-size:12px">Đang tải...</div>';
+        document.getElementById('completedHistory').innerHTML = '<div style="color:#888;font-size:12px">Đang tải...</div>';
+
+        fetch('/CSVC/GetKeHoachDetail?id=' + encodeURIComponent(khId))
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data.ok) { showToast('Lỗi: ' + data.msg, false); return; }
+                var kh = data.keHoach;
+                var ct = data.chiTiet || [];
+                var ls = data.lichSu || [];
+
+                document.getElementById('formKHId').textContent = kh.ID_KeHoach + ' - chi tiết đã hoàn thành';
+                document.getElementById('completedPlanTitle').textContent = kh.ID_KeHoach;
+                document.getElementById('completedPlanSub').textContent = (kh.LoaiKeHoach || 'Kế hoạch') + ' • ' + (kh.TrangThai || 'Đã hoàn thành');
+                document.getElementById('completedLoai').textContent = kh.LoaiKeHoach || '—';
+                document.getElementById('completedDonVi').textContent = kh.DonViThucHien || '—';
+                document.getElementById('completedNgayLap').textContent = kh.NgayLap || '—';
+                document.getElementById('completedNgayHT').textContent = kh.NgayDuKienHT || '—';
+                document.getElementById('completedCPDK').textContent = kh.ChiPhiDuKien > 0 ? Number(kh.ChiPhiDuKien).toLocaleString('vi-VN') + ' đ' : '—';
+                document.getElementById('completedNguoiLap').textContent = kh.HoTen || '—';
+                document.getElementById('completedGhiChu').textContent = kh.GhiChu || '—';
+
+                var devicesHtml = ct.length === 0 ? '<div style="color:#aaa;font-size:12px;padding:8px 0">Chưa có thiết bị</div>' : ct.map(function (c) {
+                    var src = c.BaoHongNo ? '<span style="background:#fff3e0;color:#e65100;padding:2px 6px;border-radius:6px;font-size:10px">📎 ' + c.BaoHongNo + '</span>' : '<span style="background:#e8f5e9;color:#2e7d32;padding:2px 6px;border-radius:6px;font-size:10px">📅 Định kỳ</span>';
+                    return '<div class="device-row">📦 <strong>' + c.ThietBiNo + '</strong> — ' + c.TenTB + ' <span style="color:#888;font-size:11px">[' + c.TenDanhMuc + ']</span> ' + src + (c.GhiChuChiTiet ? '<span style="color:#888;font-size:11px"> — ' + c.GhiChuChiTiet + '</span>' : '') + '</div>';
+                }).join('');
+
+                var historyHtml = ls.length === 0 ? '<div style="color:#aaa;font-size:12px;padding:8px 0">Chưa có ghi nhận nào</div>' : ls.map(function (g) {
+                    var ttCls = (g.TrangThaiSauSua || '').indexOf('Hoạt động tốt') >= 0 ? 'ok' : (g.TrangThaiSauSua || '').indexOf('Tạm') >= 0 ? 'warn' : 'bad';
+                    var tien = g.ChiPhiThucTe > 0 ? Number(g.ChiPhiThucTe).toLocaleString('vi-VN') + ' đ' : '—';
+                    return '<div class="history-item" style="padding:10px 0">' +
+                        '<div class="hi-head"><span class="hi-name">' + g.ID_GhiNhan + '</span><span class="hi-date">' + g.NgayThucHien + '</span></div>' +
+                        '<div class="hi-detail"><span>📦 ' + (g.TenTB || g.ThietBiNo || '—') + '</span>' +
+                        (g.BaoHongNo ? '<span style="color:#e65100">📎 ' + g.BaoHongNo + '</span>' : '') +
+                        '</div>' +
+                        '<div class="hi-detail" style="margin-top:3px"><span class="badge-tt ' + ttCls + '">' + (g.TrangThaiSauSua || '—') + '</span><span style="margin-left:8px">💰 ' + tien + '</span></div>' +
+                        (g.KetQua ? '<div style="font-size:12px;color:#666;margin-top:4px">' + g.KetQua + '</div>' : '') +
+                        '</div>';
+                }).join('');
+
+                document.getElementById('completedDevices').innerHTML = devicesHtml;
+                document.getElementById('completedHistory').innerHTML = historyHtml;
+            })
+            .catch(function (e) { showToast('Lỗi kết nối: ' + e.message, false); });
+    }
+
+    function backToRecordingMode() {
+        document.getElementById('completedPlanView').style.display = 'none';
+        if (selectedKHId) {
+            document.getElementById('formPlaceholder').style.display = 'none';
+            document.getElementById('formContent').style.display = 'block';
+        } else {
+            document.getElementById('formPlaceholder').style.display = 'block';
+            document.getElementById('formContent').style.display = 'none';
+        }
+        document.getElementById('formKHId').textContent = 'Chọn kế hoạch bên trái';
+    }
+
+    function selectTBByIndex(idx) {
+        if (idx == null || idx < 0 || idx >= currentChiTiet.length) return;
+        var ct = currentChiTiet[idx] || {};
+        selectTB(
+            (ct.ID_ChiTietKH || '').trim(),
+            ct.TenTB || '',
+            ct.BaoHongNo || '',
+            ct.MoTaBaoHong || ''
+        );
+    }
+
+    function selectTB(ctkhId, tenTB, bhId, moTaBH) {
+        ctkhId = (ctkhId || '').trim();
+        selectedCTKHId = ctkhId;
+        document.getElementById('gnCTKHId').value = ctkhId;
+        document.querySelectorAll('input[name=tbRadio]').forEach(function (r) { r.checked = (r.value || '').trim() === ctkhId; });
+        document.querySelectorAll('.tb-detail-item').forEach(function (d) {
+            d.classList.toggle('selected-tb', (d.querySelector('input').value || '').trim() === ctkhId);
+        });
+
+        document.getElementById('selTBName').textContent = tenTB;
+        var bhInfo = document.getElementById('selBHInfo');
+        if (bhId) { bhInfo.textContent = '📎 Từ báo hỏng ' + bhId + ': ' + moTaBH; bhInfo.style.display = 'block'; }
+        else { bhInfo.style.display = 'none'; }
+        document.getElementById('selectedTBInfo').style.display = 'block';
+    }
+
+    function selStatus(el, type, val) {
+        document.querySelectorAll('.status-opt').forEach(function (o) { o.classList.remove('selected', 'ok', 'warn', 'bad'); });
+        el.classList.add('selected', type);
+        document.getElementById('gnTrangThai').value = val;
+    }
+
+    function luuGhiNhan() {
+        var gnId = document.getElementById('gnId').value.trim();
+        var khId = (document.getElementById('gnKHId').value || '').trim();
+        var ctkhId = (document.getElementById('gnCTKHId').value || '').trim();
+        var ngay = document.getElementById('gnNgay').value;
+        var kq = document.getElementById('gnKetQua').value.trim();
+        var tt = document.getElementById('gnTrangThai').value;
+
+        if (!gnId) { showToast('Vui lòng nhập ID ghi nhận', false); return; }
+        if (!ctkhId) { showToast('Vui lòng chọn thiết bị cần ghi nhận', false); return; }
+        if (!ngay) { showToast('Vui lòng chọn ngày thực hiện', false); return; }
+        if (!kq) { showToast('Vui lòng nhập kết quả sửa chữa', false); return; }
+        if (!tt) { showToast('Vui lòng chọn tình trạng sau sửa', false); return; }
+
+        var params = new URLSearchParams({
+            idGhiNhan: gnId,
+            keHoachNo: khId,
+            chiTietKeHoachNo: ctkhId,
+            ngayThucHien: ngay,
+            ketQua: kq,
+            chiPhiThucTe: document.getElementById('gnChiPhi').value,
+            trangThaiSauSua: tt
+        });
+
+        fetch('/CSVC/LuuGhiNhan', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.ok) {
+                    showToast(data.msg + (data.trangThaiKH === 'Đã hoàn thành' ? ' — Kế hoạch đã hoàn thành!' : ''), true);
+                    setTimeout(function () { location.reload(); }, 1400);
+                } else {
+                    showToast(data.msg, false);
+                }
+            })
+            .catch(function (e) { showToast('Lỗi kết nối: ' + e.message, false); });
+    }
+
+    function resetForm() {
+        document.querySelectorAll('.report-item').forEach(function (i) { i.classList.remove('selected'); });
+        document.getElementById('formPlaceholder').style.display = 'block';
+        document.getElementById('formContent').style.display = 'none';
+        document.getElementById('formKHId').textContent = 'Chọn kế hoạch bên trái';
+    }
+
+    function showToast(msg, ok) {
+        var t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast ' + (ok ? 'ok' : 'err');
+        t.style.display = 'block';
+        setTimeout(function () { t.style.display = 'none'; }, 3500);
+    }
+</script>
+
