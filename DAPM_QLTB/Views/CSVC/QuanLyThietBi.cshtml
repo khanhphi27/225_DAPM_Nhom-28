@@ -430,21 +430,61 @@
 <div class="filter-bar">
     <div class="form-group">
         <label>Tìm kiếm</label>
-        <input type="text" class="form-control" placeholder="Tên thiết bị, mã TB, số seri..." />
+        <input type="text" class="form-control" id="filterText" placeholder="Tên thiết bị, mã TB, số seri..." oninput="applyFilter()" />
     </div>
     <div class="form-group">
         <label>Danh mục</label>
-        <select class="form-select">
+        <select class="form-select" id="filterDanhMuc" onchange="applyFilter()">
             <option value="">Tất cả danh mục</option>
-            <option>Máy tính &amp; Laptop</option>
-            <option>Máy chiếu</option>
-            <option>Thiết bị thực hành</option>
-            <option>Thiết bị văn phòng</option>
+            @foreach (var item in danhMucList)
+            {
+                <option value="@item.Text">@item.Text</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Khoa</label>
+        <select class="form-select" id="filterKhoa" onchange="applyFilter()">
+            <option value="">Tất cả khoa</option>
+            @foreach (var item in khoaList)
+            {
+                <option value="@item.Text">@item.Text</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Cơ sở</label>
+        <select class="form-select" id="filterCoSo" onchange="filterPageKhuOptions(); filterPagePhongOptions(); applyFilter();">
+            <option value="">Tất cả cơ sở</option>
+            @foreach (var item in coSoList)
+            {
+                <option value="@item.Value">@item.Text</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Khu</label>
+        <select class="form-select" id="filterKhu" onchange="syncPageLocationFromKhu(); filterPagePhongOptions(); applyFilter();">
+            <option value="">Tất cả khu</option>
+            @foreach (var item in khuList)
+            {
+                <option value="@item.ID_KhuVuc" data-coso="@item.CoSoNo">@item.TenKhuVuc</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Phòng</label>
+        <select class="form-select" id="filterPhong" onchange="syncPageLocationFromPhong(); applyFilter();">
+            <option value="">Tất cả phòng</option>
+            @foreach (var item in phongList)
+            {
+                <option value="@item.ID_Phong" data-coso="@item.CoSoNo" data-khu="@item.KhuVucNo">@item.TenPhong</option>
+            }
         </select>
     </div>
     <div class="form-group">
         <label>Tình trạng</label>
-        <select class="form-select">
+        <select class="form-select" id="filterTrangThai" onchange="applyFilter()">
             <option value="">Tất cả</option>
             <option>Đang sử dụng</option>
             <option>Đang bảo trì</option>
@@ -452,7 +492,8 @@
             <option>Mới nhập</option>
         </select>
     </div>
-    <button class="btn-search">🔍 Tìm kiếm</button>
+    <button class="btn-search" type="button" onclick="applyFilter()">🔍 Tìm kiếm</button>
+    <button class="btn-search" type="button" style="background:#f5f5f5;color:#555;" onclick="resetFilter()">✕ Bỏ lọc</button>
 </div>
 
 <!-- Bảng danh sách — các cột khớp với THIETBI -->
@@ -473,7 +514,13 @@
         <tbody>
             @foreach (var d in Model)
             {
-                <tr>
+                <tr data-search="@((d.ID_ThietBi + " " + d.TenTB + " " + (d.SoSeri.HasValue ? d.SoSeri.Value.ToString() : ""))).ToLower()"
+                    data-danhmuc="@d.DanhMuc"
+                    data-khoa="@d.KhoaPhongBan"
+                    data-trangthai="@d.TrangThaiTB"
+                    data-coso="@d.PhongCoSoNo"
+                    data-khu="@d.PhongKhuVucNo"
+                    data-phong="@d.PhongNo">
                     <td>@d.ID_ThietBi</td>
                     <td>@d.TenTB</td>        <!-- 🔥 THÊM -->
                     <td>@d.DanhMuc</td>
@@ -647,6 +694,125 @@
 <script>
     var importDeXuatNo = '@importDeXuatNo';
     var importMode = '@(importMode ? "1" : "0")' === '1';
+
+    function filterPageKhuOptions() {
+        var coSo = $('#filterCoSo').val() || '';
+        var khuSelect = document.getElementById('filterKhu');
+        var currentValue = khuSelect.value;
+
+        Array.prototype.forEach.call(khuSelect.options, function (opt, index) {
+            if (index === 0) {
+                opt.hidden = false;
+                return;
+            }
+
+            var optCoSo = opt.getAttribute('data-coso') || '';
+            opt.hidden = !!coSo && optCoSo !== coSo;
+        });
+
+        if (currentValue) {
+            var currentOpt = khuSelect.options[khuSelect.selectedIndex];
+            if (!currentOpt || currentOpt.hidden) {
+                khuSelect.value = '';
+            }
+        }
+    }
+
+    function filterPagePhongOptions() {
+        var coSo = $('#filterCoSo').val() || '';
+        var khu = $('#filterKhu').val() || '';
+        var phongSelect = document.getElementById('filterPhong');
+        var currentValue = phongSelect.value;
+
+        Array.prototype.forEach.call(phongSelect.options, function (opt, index) {
+            if (index === 0) {
+                opt.hidden = false;
+                return;
+            }
+
+            var optCoSo = opt.getAttribute('data-coso') || '';
+            var optKhu = opt.getAttribute('data-khu') || '';
+            opt.hidden = (!!coSo && optCoSo !== coSo) || (!!khu && optKhu !== khu);
+        });
+
+        if (currentValue) {
+            var currentOpt = phongSelect.options[phongSelect.selectedIndex];
+            if (!currentOpt || currentOpt.hidden) {
+                phongSelect.value = '';
+            }
+        }
+    }
+
+    function syncPageLocationFromKhu() {
+        var khuSelect = document.getElementById('filterKhu');
+        var opt = khuSelect.options[khuSelect.selectedIndex];
+        if (!opt || !opt.value) return;
+
+        var coSo = opt.getAttribute('data-coso') || '';
+        if (coSo) {
+            $('#filterCoSo').val(coSo);
+            filterPageKhuOptions();
+            filterPagePhongOptions();
+        }
+    }
+
+    function syncPageLocationFromPhong() {
+        var phongSelect = document.getElementById('filterPhong');
+        var opt = phongSelect.options[phongSelect.selectedIndex];
+        if (!opt || !opt.value) return;
+
+        var coSo = opt.getAttribute('data-coso') || '';
+        var khu = opt.getAttribute('data-khu') || '';
+
+        $('#filterCoSo').val(coSo);
+        filterPageKhuOptions();
+        $('#filterKhu').val(khu);
+        filterPagePhongOptions();
+    }
+
+    function applyFilter() {
+        var text = ($('#filterText').val() || '').toLowerCase();
+        var danhMuc = $('#filterDanhMuc').val() || '';
+        var khoa = $('#filterKhoa').val() || '';
+        var coSo = $('#filterCoSo').val() || '';
+        var khu = $('#filterKhu').val() || '';
+        var phong = $('#filterPhong').val() || '';
+        var trangThai = $('#filterTrangThai').val() || '';
+
+        $('.card-table tbody tr').each(function () {
+            var $row = $(this);
+            var rowSearch = ($row.data('search') || '').toString();
+            var rowDanhMuc = ($row.data('danhmuc') || '').toString();
+            var rowKhoa = ($row.data('khoa') || '').toString();
+            var rowTrangThai = ($row.data('trangthai') || '').toString();
+            var rowCoSo = ($row.data('coso') || '').toString();
+            var rowKhu = ($row.data('khu') || '').toString();
+            var rowPhong = ($row.data('phong') || '').toString();
+
+            var match = (!text || rowSearch.indexOf(text) >= 0)
+                && (!danhMuc || rowDanhMuc === danhMuc)
+                && (!khoa || rowKhoa === khoa)
+                && (!coSo || rowCoSo === coSo)
+                && (!khu || rowKhu === khu)
+                && (!phong || rowPhong === phong)
+                && (!trangThai || rowTrangThai === trangThai);
+
+            $row.toggle(match);
+        });
+    }
+
+    function resetFilter() {
+        $('#filterText').val('');
+        $('#filterDanhMuc').val('');
+        $('#filterKhoa').val('');
+        $('#filterCoSo').val('');
+        $('#filterKhu').val('');
+        $('#filterPhong').val('');
+        $('#filterTrangThai').val('');
+        filterPageKhuOptions();
+        filterPagePhongOptions();
+        applyFilter();
+    }
 
     function filterKhuOptions() {
         var coSo = $('#fCoSo').val() || '';
@@ -903,5 +1069,9 @@
         if (importMode && importDeXuatNo) {
             openAddFromDeXuat(importDeXuatNo);
         }
+
+        filterPageKhuOptions();
+        filterPagePhongOptions();
+        applyFilter();
     });
 </script>
