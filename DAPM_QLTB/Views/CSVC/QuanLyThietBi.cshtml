@@ -6,6 +6,9 @@
     bool importMode = !string.IsNullOrWhiteSpace(importDeXuatNo);
     var danhMucList = ViewBag.DanhMucList as IEnumerable<System.Web.Mvc.SelectListItem> ?? Enumerable.Empty<System.Web.Mvc.SelectListItem>();
     var khoaList = ViewBag.KhoaList as IEnumerable<System.Web.Mvc.SelectListItem> ?? Enumerable.Empty<System.Web.Mvc.SelectListItem>();
+    var coSoList = ViewBag.CoSoList as IEnumerable<System.Web.Mvc.SelectListItem> ?? Enumerable.Empty<System.Web.Mvc.SelectListItem>();
+    var khuList = ViewBag.KhuList as IEnumerable<QLTB.Models.KhuViewModel> ?? Enumerable.Empty<QLTB.Models.KhuViewModel>();
+    var phongList = ViewBag.PhongList as IEnumerable<QLTB.Models.PhongViewModel> ?? Enumerable.Empty<QLTB.Models.PhongViewModel>();
     var nhaCungCapList = ViewBag.NhaCungCapList as IEnumerable<System.Web.Mvc.SelectListItem> ?? Enumerable.Empty<System.Web.Mvc.SelectListItem>();
 }
 <style>
@@ -180,6 +183,14 @@
             background: #f5f6ff;
         }
 
+        .device-row {
+            cursor: pointer;
+        }
+
+            .device-row:hover {
+                background: #eef4ff;
+            }
+
     .badge-status {
         display: inline-block;
         padding: 3px 10px;
@@ -252,7 +263,7 @@
         position: fixed;
         inset: 0;
         background: rgba(0,0,0,0.45);
-        z-index: 1000;
+        z-index: 2000;
         align-items: center;
         justify-content: center;
     }
@@ -269,6 +280,8 @@
         max-width: 95vw;
         max-height: 90vh;
         overflow-y: auto;
+        position: relative;
+        z-index: 2001;
         box-shadow: 0 20px 60px rgba(0,0,0,0.25);
     }
 
@@ -425,21 +438,61 @@
 <div class="filter-bar">
     <div class="form-group">
         <label>Tìm kiếm</label>
-        <input type="text" class="form-control" placeholder="Tên thiết bị, mã TB, số seri..." />
+        <input type="text" class="form-control" id="filterText" placeholder="Tên thiết bị, mã TB, số seri..." oninput="applyFilter()" />
     </div>
     <div class="form-group">
         <label>Danh mục</label>
-        <select class="form-select">
+        <select class="form-select" id="filterDanhMuc" onchange="applyFilter()">
             <option value="">Tất cả danh mục</option>
-            <option>Máy tính &amp; Laptop</option>
-            <option>Máy chiếu</option>
-            <option>Thiết bị thực hành</option>
-            <option>Thiết bị văn phòng</option>
+            @foreach (var item in danhMucList)
+            {
+                <option value="@item.Text">@item.Text</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Khoa</label>
+        <select class="form-select" id="filterKhoa" onchange="applyFilter()">
+            <option value="">Tất cả khoa</option>
+            @foreach (var item in khoaList)
+            {
+                <option value="@item.Text">@item.Text</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Cơ sở</label>
+        <select class="form-select" id="filterCoSo" onchange="filterPageKhuOptions(); filterPagePhongOptions(); applyFilter();">
+            <option value="">Tất cả cơ sở</option>
+            @foreach (var item in coSoList)
+            {
+                <option value="@item.Value">@item.Text</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Khu</label>
+        <select class="form-select" id="filterKhu" onchange="syncPageLocationFromKhu(); filterPagePhongOptions(); applyFilter();">
+            <option value="">Tất cả khu</option>
+            @foreach (var item in khuList)
+            {
+                <option value="@item.ID_KhuVuc" data-coso="@item.CoSoNo">@item.TenKhuVuc</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Phòng</label>
+        <select class="form-select" id="filterPhong" onchange="syncPageLocationFromPhong(); applyFilter();">
+            <option value="">Tất cả phòng</option>
+            @foreach (var item in phongList)
+            {
+                <option value="@item.ID_Phong" data-coso="@item.CoSoNo" data-khu="@item.KhuVucNo">@item.TenPhong</option>
+            }
         </select>
     </div>
     <div class="form-group">
         <label>Tình trạng</label>
-        <select class="form-select">
+        <select class="form-select" id="filterTrangThai" onchange="applyFilter()">
             <option value="">Tất cả</option>
             <option>Đang sử dụng</option>
             <option>Đang bảo trì</option>
@@ -447,7 +500,8 @@
             <option>Mới nhập</option>
         </select>
     </div>
-    <button class="btn-search">🔍 Tìm kiếm</button>
+    <button class="btn-search" type="button" onclick="applyFilter()">🔍 Tìm kiếm</button>
+    <button class="btn-search" type="button" style="background:#f5f5f5;color:#555;" onclick="resetFilter()">✕ Bỏ lọc</button>
 </div>
 
 <!-- Bảng danh sách — các cột khớp với THIETBI -->
@@ -468,7 +522,13 @@
         <tbody>
             @foreach (var d in Model)
             {
-                <tr>
+                <tr class="device-row" onclick="viewDeviceDetail('@d.ID_ThietBi')" data-search="@((d.ID_ThietBi + " " + d.TenTB + " " + (d.SoSeri.HasValue ? d.SoSeri.Value.ToString() : "")).ToLower())"
+                    data-danhmuc="@d.DanhMuc"
+                    data-khoa="@d.KhoaPhongBan"
+                    data-trangthai="@d.TrangThaiTB"
+                    data-coso="@d.PhongCoSoNo"
+                    data-khu="@d.PhongKhuVucNo"
+                    data-phong="@d.PhongNo">
                     <td>@d.ID_ThietBi</td>
                     <td>@d.TenTB</td>        <!-- 🔥 THÊM -->
                     <td>@d.DanhMuc</td>
@@ -477,8 +537,8 @@
                     <td>@d.TrangThaiTB</td>
                     <td>@(string.IsNullOrEmpty(d.DeXuatNo) ? "Ngoài đề xuất" : d.DeXuatNo)</td>
                     <td>
-                        <button onclick="editDevice('@d.ID_ThietBi')">Sửa</button>
-                        <button onclick="deleteDevice('@d.ID_ThietBi')">Xóa</button>
+                        <button onclick="event.stopPropagation(); editDevice('@d.ID_ThietBi')">Sửa</button>
+                        <button onclick="event.stopPropagation(); deleteDevice('@d.ID_ThietBi')">Xóa</button>
                     </td>
                 </tr>
             }
@@ -526,6 +586,36 @@
                     @foreach (var item in khoaList)
                     {
                         <option value="@item.Value">@item.Text</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="form-lbl">Cơ sở</label>
+                <select class="form-inp" id="fCoSo" onchange="filterKhuOptions(); filterPhongOptions();">
+                    <option value="">-- Chọn cơ sở --</option>
+                    @foreach (var item in coSoList)
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="form-lbl">Khu</label>
+                <select class="form-inp" id="fKhu" onchange="filterPhongOptions(); syncLocationFromKhu();">
+                    <option value="">-- Chọn khu --</option>
+                    @foreach (var item in khuList)
+                    {
+                        <option value="@item.ID_KhuVuc" data-coso="@item.CoSoNo">@item.TenKhuVuc@(string.IsNullOrWhiteSpace(item.TenCoSo) ? "" : " - " + item.TenCoSo)</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="form-lbl">Phòng</label>
+                <select class="form-inp" id="fPhong" onchange="syncLocationFromPhong()">
+                    <option value="">-- Chọn phòng --</option>
+                    @foreach (var item in phongList)
+                    {
+                        <option value="@item.ID_Phong" data-coso="@item.CoSoNo" data-khu="@item.KhuVucNo">@item.TenPhong@(string.IsNullOrWhiteSpace(item.TenKhuVuc) ? "" : " - " + item.TenKhuVuc)</option>
                     }
                 </select>
             </div>
@@ -613,6 +703,203 @@
     var importDeXuatNo = '@importDeXuatNo';
     var importMode = '@(importMode ? "1" : "0")' === '1';
 
+    function filterPageKhuOptions() {
+        var coSo = $('#filterCoSo').val() || '';
+        var khuSelect = document.getElementById('filterKhu');
+        var currentValue = khuSelect.value;
+
+        Array.prototype.forEach.call(khuSelect.options, function (opt, index) {
+            if (index === 0) {
+                opt.hidden = false;
+                return;
+            }
+
+            var optCoSo = opt.getAttribute('data-coso') || '';
+            opt.hidden = !!coSo && optCoSo !== coSo;
+        });
+
+        if (currentValue) {
+            var currentOpt = khuSelect.options[khuSelect.selectedIndex];
+            if (!currentOpt || currentOpt.hidden) {
+                khuSelect.value = '';
+            }
+        }
+    }
+
+    function filterPagePhongOptions() {
+        var coSo = $('#filterCoSo').val() || '';
+        var khu = $('#filterKhu').val() || '';
+        var phongSelect = document.getElementById('filterPhong');
+        var currentValue = phongSelect.value;
+
+        Array.prototype.forEach.call(phongSelect.options, function (opt, index) {
+            if (index === 0) {
+                opt.hidden = false;
+                return;
+            }
+
+            var optCoSo = opt.getAttribute('data-coso') || '';
+            var optKhu = opt.getAttribute('data-khu') || '';
+            opt.hidden = (!!coSo && optCoSo !== coSo) || (!!khu && optKhu !== khu);
+        });
+
+        if (currentValue) {
+            var currentOpt = phongSelect.options[phongSelect.selectedIndex];
+            if (!currentOpt || currentOpt.hidden) {
+                phongSelect.value = '';
+            }
+        }
+    }
+
+    function syncPageLocationFromKhu() {
+        var khuSelect = document.getElementById('filterKhu');
+        var opt = khuSelect.options[khuSelect.selectedIndex];
+        if (!opt || !opt.value) return;
+
+        var coSo = opt.getAttribute('data-coso') || '';
+        if (coSo) {
+            $('#filterCoSo').val(coSo);
+            filterPageKhuOptions();
+            filterPagePhongOptions();
+        }
+    }
+
+    function syncPageLocationFromPhong() {
+        var phongSelect = document.getElementById('filterPhong');
+        var opt = phongSelect.options[phongSelect.selectedIndex];
+        if (!opt || !opt.value) return;
+
+        var coSo = opt.getAttribute('data-coso') || '';
+        var khu = opt.getAttribute('data-khu') || '';
+
+        $('#filterCoSo').val(coSo);
+        filterPageKhuOptions();
+        $('#filterKhu').val(khu);
+        filterPagePhongOptions();
+    }
+
+    function applyFilter() {
+        var text = ($('#filterText').val() || '').toLowerCase();
+        var danhMuc = $('#filterDanhMuc').val() || '';
+        var khoa = $('#filterKhoa').val() || '';
+        var coSo = $('#filterCoSo').val() || '';
+        var khu = $('#filterKhu').val() || '';
+        var phong = $('#filterPhong').val() || '';
+        var trangThai = $('#filterTrangThai').val() || '';
+
+        $('.card-table tbody tr').each(function () {
+            var $row = $(this);
+            var rowSearch = ($row.data('search') || '').toString();
+            var rowDanhMuc = ($row.data('danhmuc') || '').toString();
+            var rowKhoa = ($row.data('khoa') || '').toString();
+            var rowTrangThai = ($row.data('trangthai') || '').toString();
+            var rowCoSo = ($row.data('coso') || '').toString();
+            var rowKhu = ($row.data('khu') || '').toString();
+            var rowPhong = ($row.data('phong') || '').toString();
+
+            var match = (!text || rowSearch.indexOf(text) >= 0)
+                && (!danhMuc || rowDanhMuc === danhMuc)
+                && (!khoa || rowKhoa === khoa)
+                && (!coSo || rowCoSo === coSo)
+                && (!khu || rowKhu === khu)
+                && (!phong || rowPhong === phong)
+                && (!trangThai || rowTrangThai === trangThai);
+
+            $row.toggle(match);
+        });
+    }
+
+    function resetFilter() {
+        $('#filterText').val('');
+        $('#filterDanhMuc').val('');
+        $('#filterKhoa').val('');
+        $('#filterCoSo').val('');
+        $('#filterKhu').val('');
+        $('#filterPhong').val('');
+        $('#filterTrangThai').val('');
+        filterPageKhuOptions();
+        filterPagePhongOptions();
+        applyFilter();
+    }
+
+    function viewDeviceDetail(id) {
+        window.location.href = '@Url.Action("ChiTietThietBi", "CSVC")' + '?id=' + encodeURIComponent(id);
+    }
+
+    function filterKhuOptions() {
+        var coSo = $('#fCoSo').val() || '';
+        var khuSelect = document.getElementById('fKhu');
+        var currentValue = khuSelect.value;
+
+        Array.prototype.forEach.call(khuSelect.options, function (opt, index) {
+            if (index === 0) {
+                opt.hidden = false;
+                return;
+            }
+
+            var optCoSo = opt.getAttribute('data-coso') || '';
+            opt.hidden = !!coSo && optCoSo !== coSo;
+        });
+
+        if (currentValue) {
+            var currentOpt = khuSelect.options[khuSelect.selectedIndex];
+            if (!currentOpt || currentOpt.hidden) {
+                khuSelect.value = '';
+            }
+        }
+    }
+
+    function filterPhongOptions() {
+        var coSo = $('#fCoSo').val() || '';
+        var khu = $('#fKhu').val() || '';
+        var phongSelect = document.getElementById('fPhong');
+        var currentValue = phongSelect.value;
+
+        Array.prototype.forEach.call(phongSelect.options, function (opt, index) {
+            if (index === 0) {
+                opt.hidden = false;
+                return;
+            }
+
+            var optCoSo = opt.getAttribute('data-coso') || '';
+            var optKhu = opt.getAttribute('data-khu') || '';
+            opt.hidden = (!!coSo && optCoSo !== coSo) || (!!khu && optKhu !== khu);
+        });
+
+        if (currentValue) {
+            var currentOpt = phongSelect.options[phongSelect.selectedIndex];
+            if (!currentOpt || currentOpt.hidden) {
+                phongSelect.value = '';
+            }
+        }
+    }
+
+    function syncLocationFromKhu() {
+        var khuSelect = document.getElementById('fKhu');
+        var opt = khuSelect.options[khuSelect.selectedIndex];
+        if (!opt || !opt.value) return;
+
+        var coSo = opt.getAttribute('data-coso') || '';
+        if (coSo) {
+            $('#fCoSo').val(coSo);
+            filterKhuOptions();
+        }
+    }
+
+    function syncLocationFromPhong() {
+        var phongSelect = document.getElementById('fPhong');
+        var opt = phongSelect.options[phongSelect.selectedIndex];
+        if (!opt || !opt.value) return;
+
+        var coSo = opt.getAttribute('data-coso') || '';
+        var khu = opt.getAttribute('data-khu') || '';
+
+        $('#fCoSo').val(coSo);
+        filterKhuOptions();
+        $('#fKhu').val(khu);
+        filterPhongOptions();
+    }
+
     function openModal(mode) {
         var m = document.getElementById('deviceModal');
         document.getElementById('modalTitle').textContent = mode === 'add' ? '➕ Thêm Thiết Bị Mới' : '✏️ Cập Nhật Thông Tin Thiết Bị';
@@ -655,8 +942,13 @@
         $('#fPrice').val('');
         $('#fStatus').val('Mới nhập');
         $('#fCat').val('');
+        $('#fCoSo').val('');
         $('#fKhoa').val('');
+        filterKhuOptions();
         $('#fNcc').val('');
+        $('#fKhu').val('');
+        $('#fPhong').val('');
+        filterPhongOptions();
         $('#fDeXuat').val('');
         $('#importCodeBox').hide();
         $('#fDeXuatReadonly').val('');
@@ -700,6 +992,12 @@
                 $('#fStatus').val(d.TrangThaiTB || 'Đang sử dụng');
                 $('#fCat').val(d.DanhMuc || '');
                 $('#fKhoa').val(d.KhoaPhongBan || '');
+                $('#fCoSo').val(d.PhongCoSoNo || '');
+                filterKhuOptions();
+                $('#fKhu').val(d.PhongKhuVucNo || '');
+                filterPhongOptions();
+                $('#fPhong').val(d.PhongNo || '');
+                syncLocationFromPhong();
                 $('#fNcc').val(d.NhaCungCap || '');
                 $('#fDeXuat').val(d.DeXuatNo || '');
                 $('#importCodeBox').hide();
@@ -746,7 +1044,10 @@
             TenTB: $('#fName').val().trim(),
             DanhMuc: $('#fCat').val(),
             KhoaPhongBan: $('#fKhoa').val(),
+            PhongCoSoNo: $('#fCoSo').val(),
+            PhongKhuVucNo: $('#fKhu').val(),
             NhaCungCap: $('#fNcc').val(),
+            PhongNo: $('#fPhong').val(),
             SoSeri: seriVal === '' ? null : parseInt(seriVal), // 🔥 OK
             Gia: giaValue,
             TrangThaiTB: $('#fStatus').val(),
@@ -780,5 +1081,9 @@
         if (importMode && importDeXuatNo) {
             openAddFromDeXuat(importDeXuatNo);
         }
+
+        filterPageKhuOptions();
+        filterPagePhongOptions();
+        applyFilter();
     });
 </script>

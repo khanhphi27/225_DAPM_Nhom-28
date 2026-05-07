@@ -30,18 +30,80 @@ namespace QLTB.Controllers
 
                 ViewBag.DanhMucList = LoadDropdownItems(conn, "SELECT ID_DanhMuc AS Value, TenDanhMuc AS Text FROM DANHMUC ORDER BY TenDanhMuc");
                 ViewBag.KhoaList = LoadDropdownItems(conn, "SELECT ID_KhoaPhongBan AS Value, TenPhongBanKhoa AS Text FROM KHOA_PHONGBAN ORDER BY TenPhongBanKhoa");
+                ViewBag.CoSoList = LoadDropdownItems(conn, "SELECT ID_CoSo AS Value, TenCoSo AS Text FROM COSO ORDER BY TenCoSo");
+
+                var khuList = new List<KhuViewModel>();
+                const string khuSql = @"
+                    SELECT kv.ID_KhuVuc, kv.TenKhuVuc,
+                           ISNULL(kv.CoSoNo, '') AS CoSoNo,
+                           ISNULL(cs.TenCoSo, '') AS TenCoSo
+                    FROM KHUVUC kv
+                    LEFT JOIN COSO cs ON cs.ID_CoSo = kv.CoSoNo
+                    ORDER BY cs.TenCoSo, kv.TenKhuVuc";
+                using (var cmdKhu = new SqlCommand(khuSql, conn))
+                using (var rdKhu = cmdKhu.ExecuteReader())
+                {
+                    while (rdKhu.Read())
+                    {
+                        khuList.Add(new KhuViewModel
+                        {
+                            ID_KhuVuc = rdKhu["ID_KhuVuc"].ToString(),
+                            TenKhuVuc = rdKhu["TenKhuVuc"].ToString(),
+                            CoSoNo = rdKhu["CoSoNo"]?.ToString() ?? "",
+                            TenCoSo = rdKhu["TenCoSo"]?.ToString() ?? ""
+                        });
+                    }
+                }
+                ViewBag.KhuList = khuList;
                 ViewBag.NhaCungCapList = LoadDropdownItems(conn, "SELECT ID_NhaCC AS Value, TenNhaCC AS Text FROM NHACUNGCAP ORDER BY TenNhaCC");
 
+                var phongList = new List<PhongViewModel>();
+                const string phongSql = @"
+                    SELECT p.ID_Phong, p.TenPhong,
+                           ISNULL(kv.CoSoNo, '') AS CoSoNo,
+                           ISNULL(p.KhuVucNo, '') AS KhuVucNo,
+                           ISNULL(kv.TenKhuVuc, '') AS TenKhuVuc
+                    FROM PHONG p
+                    LEFT JOIN KHUVUC kv ON kv.ID_KhuVuc = p.KhuVucNo
+                    ORDER BY kv.TenKhuVuc, p.TenPhong";
+                using (var cmdPhong = new SqlCommand(phongSql, conn))
+                using (var rdPhong = cmdPhong.ExecuteReader())
+                {
+                    while (rdPhong.Read())
+                    {
+                        phongList.Add(new PhongViewModel
+                        {
+                            ID_Phong = rdPhong["ID_Phong"].ToString(),
+                            TenPhong = rdPhong["TenPhong"].ToString(),
+                            CoSoNo = rdPhong["CoSoNo"]?.ToString() ?? "",
+                            KhuVucNo = rdPhong["KhuVucNo"]?.ToString() ?? "",
+                            TenKhuVuc = rdPhong["TenKhuVuc"]?.ToString() ?? ""
+                        });
+                    }
+                }
+                ViewBag.PhongList = phongList;
+
                 const string sql = @"
-                    SELECT tb.ID_ThietBi, tb.TenTB,
+                      SELECT tb.ID_ThietBi, tb.TenTB,
                            dm.TenDanhMuc,
                            kp.TenPhongBanKhoa,
                            ncc.TenNhaCC,
-                          tb.SoSeri, tb.Gia, tb.TrangThaiTB, tb.DeXuatNo
+                          tb.SoSeri, tb.Gia, tb.TrangThaiTB, tb.DeXuatNo,
+                          ptb.PhongNo,
+                          ISNULL(p.KhuVucNo, '') AS PhongKhuVucNo,
+                          ISNULL(kv.CoSoNo, '') AS PhongCoSoNo
                     FROM THIETBI tb
                     LEFT JOIN DANHMUC dm ON tb.DanhMucNo = dm.ID_DanhMuc
                     LEFT JOIN KHOA_PHONGBAN kp ON tb.KhoaPhongBan = kp.ID_KhoaPhongBan
-                    LEFT JOIN NHACUNGCAP ncc ON tb.NhaCCNo = ncc.ID_NhaCC";
+                      LEFT JOIN NHACUNGCAP ncc ON tb.NhaCCNo = ncc.ID_NhaCC
+                      OUTER APPLY (
+                        SELECT TOP 1 ptb.PhongNo
+                        FROM PHONG_THIETBI ptb
+                        WHERE ptb.ThietBiNo = tb.ID_ThietBi
+                        ORDER BY ISNULL(ptb.NgayHieuLuc, '19000101') DESC
+                      ) ptb
+                      LEFT JOIN PHONG p ON p.ID_Phong = ptb.PhongNo
+                      LEFT JOIN KHUVUC kv ON kv.ID_KhuVuc = p.KhuVucNo";
 
                 using (var cmd = new SqlCommand(sql, conn))
                 using (var rd = cmd.ExecuteReader())
@@ -53,8 +115,17 @@ namespace QLTB.Controllers
                             ID_ThietBi = rd["ID_ThietBi"].ToString(),
                             TenTB = rd["TenTB"].ToString(),
                             DanhMuc = rd["TenDanhMuc"]?.ToString() ?? "",
+                            TenDanhMuc = rd["TenDanhMuc"]?.ToString() ?? "",
                             KhoaPhongBan = rd["TenPhongBanKhoa"]?.ToString() ?? "",
+                            TenKhoaPhongBan = rd["TenPhongBanKhoa"]?.ToString() ?? "",
+                            PhongCoSoNo = rd["PhongCoSoNo"] == DBNull.Value ? "" : rd["PhongCoSoNo"].ToString(),
+                            TenCoSo = string.Empty,
+                            PhongKhuVucNo = rd["PhongKhuVucNo"] == DBNull.Value ? "" : rd["PhongKhuVucNo"].ToString(),
+                            TenKhuVuc = string.Empty,
+                            PhongNo = rd["PhongNo"] == DBNull.Value ? "" : rd["PhongNo"].ToString(),
+                            TenPhong = string.Empty,
                             NhaCungCap = rd["TenNhaCC"]?.ToString() ?? "",
+                            TenNhaCungCap = rd["TenNhaCC"]?.ToString() ?? "",
                             SoSeri = rd["SoSeri"] == DBNull.Value ? (int?)null : Convert.ToInt32(rd["SoSeri"]),
                             Gia = rd["Gia"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(rd["Gia"]),
                             TrangThaiTB = rd["TrangThaiTB"]?.ToString() ?? "",
@@ -64,6 +135,82 @@ namespace QLTB.Controllers
                 }
             }
             return View(list);
+        }
+
+        [HttpGet]
+        public ActionResult ChiTietThietBi(string id)
+        {
+            var r = CheckAuth(); if (r != null) return r;
+
+            if (string.IsNullOrWhiteSpace(id))
+                return RedirectToAction("QuanLyThietBi");
+
+            ThietBiViewModel detail = null;
+
+            using (var conn = DbHelper.GetConnection())
+            {
+                conn.Open();
+
+                const string sql = @"
+                    SELECT tb.ID_ThietBi, tb.TenTB, tb.DanhMucNo, tb.KhoaPhongBan, tb.NhaCCNo,
+                           dm.TenDanhMuc, kp.TenPhongBanKhoa, ncc.TenNhaCC,
+                           tb.SoSeri, tb.Gia, tb.TrangThaiTB, tb.DeXuatNo,
+                           ptb.PhongNo,
+                           ISNULL(p.TenPhong, '') AS TenPhong,
+                           ISNULL(p.KhuVucNo, '') AS PhongKhuVucNo,
+                           ISNULL(kv.TenKhuVuc, '') AS TenKhuVuc,
+                           ISNULL(kv.CoSoNo, '') AS PhongCoSoNo,
+                           ISNULL(cs.TenCoSo, '') AS TenCoSo
+                    FROM THIETBI tb
+                    LEFT JOIN DANHMUC dm ON tb.DanhMucNo = dm.ID_DanhMuc
+                    LEFT JOIN KHOA_PHONGBAN kp ON tb.KhoaPhongBan = kp.ID_KhoaPhongBan
+                    LEFT JOIN NHACUNGCAP ncc ON tb.NhaCCNo = ncc.ID_NhaCC
+                    OUTER APPLY (
+                        SELECT TOP 1 ptb.PhongNo
+                        FROM PHONG_THIETBI ptb
+                        WHERE ptb.ThietBiNo = tb.ID_ThietBi
+                        ORDER BY ISNULL(ptb.NgayHieuLuc, '19000101') DESC
+                    ) ptb
+                    LEFT JOIN PHONG p ON p.ID_Phong = ptb.PhongNo
+                    LEFT JOIN KHUVUC kv ON kv.ID_KhuVuc = p.KhuVucNo
+                    LEFT JOIN COSO cs ON cs.ID_CoSo = kv.CoSoNo
+                    WHERE tb.ID_ThietBi = @id";
+
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+
+                    using (var rd = cmd.ExecuteReader())
+                    {
+                        if (!rd.Read())
+                            return HttpNotFound();
+
+                        detail = new ThietBiViewModel
+                        {
+                            ID_ThietBi = rd["ID_ThietBi"].ToString(),
+                            TenTB = rd["TenTB"].ToString(),
+                            DanhMuc = rd["DanhMucNo"]?.ToString() ?? "",
+                            TenDanhMuc = rd["TenDanhMuc"]?.ToString() ?? "",
+                            KhoaPhongBan = rd["KhoaPhongBan"]?.ToString() ?? "",
+                            TenKhoaPhongBan = rd["TenPhongBanKhoa"]?.ToString() ?? "",
+                            PhongCoSoNo = rd["PhongCoSoNo"] == DBNull.Value ? "" : rd["PhongCoSoNo"].ToString(),
+                            TenCoSo = rd["TenCoSo"]?.ToString() ?? "",
+                            PhongKhuVucNo = rd["PhongKhuVucNo"] == DBNull.Value ? "" : rd["PhongKhuVucNo"].ToString(),
+                            TenKhuVuc = rd["TenKhuVuc"]?.ToString() ?? "",
+                            PhongNo = rd["PhongNo"] == DBNull.Value ? "" : rd["PhongNo"].ToString(),
+                            TenPhong = rd["TenPhong"]?.ToString() ?? "",
+                            NhaCungCap = rd["NhaCCNo"]?.ToString() ?? "",
+                            TenNhaCungCap = rd["TenNhaCC"]?.ToString() ?? "",
+                            SoSeri = rd["SoSeri"] == DBNull.Value ? (int?)null : Convert.ToInt32(rd["SoSeri"]),
+                            Gia = rd["Gia"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(rd["Gia"]),
+                            TrangThaiTB = rd["TrangThaiTB"]?.ToString() ?? "",
+                            DeXuatNo = rd["DeXuatNo"] == DBNull.Value ? "" : rd["DeXuatNo"].ToString()
+                        };
+                    }
+                }
+            }
+
+            return View("ChiTietThietBi", detail);
         }
 
         private List<SelectListItem> LoadDropdownItems(SqlConnection conn, string sql)
@@ -1350,10 +1497,21 @@ namespace QLTB.Controllers
                 {
                     conn.Open();
                     const string sql = @"
-                        SELECT ID_ThietBi, TenTB, DanhMucNo, KhoaPhongBan, NhaCCNo,
-                               SoSeri, Gia, TrangThaiTB, DeXuatNo
-                        FROM THIETBI
-                        WHERE ID_ThietBi = @id";
+                        SELECT tb.ID_ThietBi, tb.TenTB, tb.DanhMucNo, tb.KhoaPhongBan, tb.NhaCCNo,
+                               tb.SoSeri, tb.Gia, tb.TrangThaiTB, tb.DeXuatNo,
+                               ptb.PhongNo,
+                               ISNULL(p.KhuVucNo, '') AS PhongKhuVucNo,
+                               ISNULL(kv.CoSoNo, '') AS PhongCoSoNo
+                        FROM THIETBI tb
+                        OUTER APPLY (
+                            SELECT TOP 1 ptb.PhongNo
+                            FROM PHONG_THIETBI ptb
+                            WHERE ptb.ThietBiNo = tb.ID_ThietBi
+                            ORDER BY ISNULL(ptb.NgayHieuLuc, '19000101') DESC
+                        ) ptb
+                        LEFT JOIN PHONG p ON p.ID_Phong = ptb.PhongNo
+                        LEFT JOIN KHUVUC kv ON kv.ID_KhuVuc = p.KhuVucNo
+                        WHERE tb.ID_ThietBi = @id";
 
                     using (var cmd = new SqlCommand(sql, conn))
                     {
@@ -1369,6 +1527,8 @@ namespace QLTB.Controllers
                                     TenTB = rd["TenTB"].ToString(),
                                     DanhMuc = rd["DanhMucNo"]?.ToString() ?? "",
                                     KhoaPhongBan = rd["KhoaPhongBan"]?.ToString() ?? "",
+                                    PhongCoSoNo = rd["PhongCoSoNo"] == DBNull.Value ? "" : rd["PhongCoSoNo"].ToString(),
+                                    PhongKhuVucNo = rd["PhongKhuVucNo"] == DBNull.Value ? "" : rd["PhongKhuVucNo"].ToString(),
                                     NhaCungCap = rd["NhaCCNo"]?.ToString() ?? "",
                                     SoSeri = rd["SoSeri"] == DBNull.Value ? (int?)null : Convert.ToInt32(rd["SoSeri"]),
                                     Gia = rd["Gia"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(rd["Gia"]),
@@ -1439,25 +1599,57 @@ namespace QLTB.Controllers
                         }
                     }
 
-                    string sql = isUpdate
-                        ? @"UPDATE THIETBI SET TenTB=@ten, DanhMucNo=@dm, KhoaPhongBan=@khoa,
-                               NhaCCNo=@ncc, SoSeri=@seri, Gia=@gia, TrangThaiTB=@tt, DeXuatNo=@dx
-                            WHERE ID_ThietBi = @id"
-                        : @"INSERT INTO THIETBI (ID_ThietBi, TenTB, DanhMucNo, KhoaPhongBan, NhaCCNo, SoSeri, Gia, TrangThaiTB, DeXuatNo)
-                            VALUES (@id, @ten, @dm, @khoa, @ncc, @seri, @gia, @tt, @dx)";
+                    var phongNo = string.IsNullOrWhiteSpace(tb.PhongNo) ? null : tb.PhongNo.Trim();
 
-                    using (var cmd = new SqlCommand(sql, conn))
+                    using (var tran = conn.BeginTransaction())
                     {
-                        cmd.Parameters.AddWithValue("@id", tb.ID_ThietBi);
-                        cmd.Parameters.AddWithValue("@ten", tb.TenTB ?? "");
-                        cmd.Parameters.AddWithValue("@dm", (object)tb.DanhMuc ?? DBNull.Value);
-                        cmd.Parameters.AddWithValue("@khoa", (object)tb.KhoaPhongBan ?? DBNull.Value);
-                        cmd.Parameters.AddWithValue("@ncc", (object)tb.NhaCungCap ?? DBNull.Value);
-                        cmd.Parameters.AddWithValue("@seri", (object)tb.SoSeri ?? DBNull.Value);
-                        cmd.Parameters.AddWithValue("@gia", (object)tb.Gia ?? DBNull.Value);
-                        cmd.Parameters.AddWithValue("@tt", tb.TrangThaiTB ?? "Mới nhập");
-                        cmd.Parameters.AddWithValue("@dx", (object)deXuatNo ?? DBNull.Value);
-                        cmd.ExecuteNonQuery();
+                        try
+                        {
+                            string sql = isUpdate
+                                ? @"UPDATE THIETBI SET TenTB=@ten, DanhMucNo=@dm, KhoaPhongBan=@khoa,
+                                       NhaCCNo=@ncc, SoSeri=@seri, Gia=@gia, TrangThaiTB=@tt, DeXuatNo=@dx
+                                    WHERE ID_ThietBi = @id"
+                                : @"INSERT INTO THIETBI (ID_ThietBi, TenTB, DanhMucNo, KhoaPhongBan, NhaCCNo, SoSeri, Gia, TrangThaiTB, DeXuatNo)
+                                    VALUES (@id, @ten, @dm, @khoa, @ncc, @seri, @gia, @tt, @dx)";
+
+                            using (var cmd = new SqlCommand(sql, conn, tran))
+                            {
+                                cmd.Parameters.AddWithValue("@id", tb.ID_ThietBi);
+                                cmd.Parameters.AddWithValue("@ten", tb.TenTB ?? "");
+                                cmd.Parameters.AddWithValue("@dm", (object)tb.DanhMuc ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@khoa", (object)tb.KhoaPhongBan ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@ncc", (object)tb.NhaCungCap ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@seri", (object)tb.SoSeri ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@gia", (object)tb.Gia ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@tt", tb.TrangThaiTB ?? "Mới nhập");
+                                cmd.Parameters.AddWithValue("@dx", (object)deXuatNo ?? DBNull.Value);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            using (var cmd = new SqlCommand("DELETE FROM PHONG_THIETBI WHERE ThietBiNo = @id", conn, tran))
+                            {
+                                cmd.Parameters.AddWithValue("@id", tb.ID_ThietBi);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(phongNo))
+                            {
+                                using (var cmd = new SqlCommand(@"INSERT INTO PHONG_THIETBI (ThietBiNo, PhongNo, NgayHieuLuc)
+                                                                  VALUES (@tb, @phong, GETDATE())", conn, tran))
+                                {
+                                    cmd.Parameters.AddWithValue("@tb", tb.ID_ThietBi);
+                                    cmd.Parameters.AddWithValue("@phong", phongNo);
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+
+                            tran.Commit();
+                        }
+                        catch
+                        {
+                            tran.Rollback();
+                            throw;
+                        }
                     }
                 }
 
