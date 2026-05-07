@@ -183,6 +183,14 @@
             background: #f5f6ff;
         }
 
+        .device-row {
+            cursor: pointer;
+        }
+
+            .device-row:hover {
+                background: #eef4ff;
+            }
+
     .badge-status {
         display: inline-block;
         padding: 3px 10px;
@@ -514,7 +522,7 @@
         <tbody>
             @foreach (var d in Model)
             {
-                <tr data-search="@((d.ID_ThietBi + " " + d.TenTB + " " + (d.SoSeri.HasValue ? d.SoSeri.Value.ToString() : ""))).ToLower()"
+                <tr class="device-row" onclick="viewDeviceDetail('@d.ID_ThietBi')" data-search="@((d.ID_ThietBi + " " + d.TenTB + " " + (d.SoSeri.HasValue ? d.SoSeri.Value.ToString() : "")).ToLower())"
                     data-danhmuc="@d.DanhMuc"
                     data-khoa="@d.KhoaPhongBan"
                     data-trangthai="@d.TrangThaiTB"
@@ -529,8 +537,8 @@
                     <td>@d.TrangThaiTB</td>
                     <td>@(string.IsNullOrEmpty(d.DeXuatNo) ? "Ngoài đề xuất" : d.DeXuatNo)</td>
                     <td>
-                        <button onclick="editDevice('@d.ID_ThietBi')">Sửa</button>
-                        <button onclick="deleteDevice('@d.ID_ThietBi')">Xóa</button>
+                        <button onclick="event.stopPropagation(); editDevice('@d.ID_ThietBi')">Sửa</button>
+                        <button onclick="event.stopPropagation(); deleteDevice('@d.ID_ThietBi')">Xóa</button>
                     </td>
                 </tr>
             }
@@ -812,6 +820,10 @@
         filterPageKhuOptions();
         filterPagePhongOptions();
         applyFilter();
+    }
+
+    function viewDeviceDetail(id) {
+        window.location.href = '@Url.Action("ChiTietThietBi", "CSVC")' + '?id=' + encodeURIComponent(id);
     }
 
     function filterKhuOptions() {

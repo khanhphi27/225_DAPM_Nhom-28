@@ -1,0 +1,192 @@
+@model QLTB.Models.ThietBiViewModel
+@{
+    ViewBag.Title = "Chi Tiết Thiết Bị";
+}
+
+<style>
+    .detail-shell {
+        background: linear-gradient(180deg, #f6f8fc 0%, #eef3fb 100%);
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 10px 30px rgba(26, 35, 126, 0.08);
+    }
+
+    .detail-hero {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 22px;
+    }
+
+    .detail-title h2 {
+        margin: 0 0 6px;
+        color: #16205a;
+        font-size: 26px;
+        font-weight: 800;
+    }
+
+    .detail-title p {
+        margin: 0;
+        color: #5f6b86;
+    }
+
+    .detail-actions a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 700;
+        background: #ffffff;
+        color: #1a237e;
+        box-shadow: 0 6px 18px rgba(26, 35, 126, 0.08);
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .detail-card {
+        background: rgba(255,255,255,0.94);
+        border: 1px solid rgba(26, 35, 126, 0.08);
+        border-radius: 14px;
+        padding: 16px;
+        min-height: 92px;
+    }
+
+    .detail-card .label {
+        display: block;
+        font-size: 12px;
+        color: #73809e;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+    }
+
+    .detail-card .value {
+        font-size: 16px;
+        font-weight: 700;
+        color: #24304d;
+        word-break: break-word;
+    }
+
+    .detail-wide {
+        grid-column: span 3;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: #e8eefc;
+        color: #1a237e;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .muted {
+        font-weight: 500;
+        color: #77829a;
+    }
+
+    @@media (max-width: 900px) {
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .detail-wide {
+            grid-column: auto;
+        }
+
+        .detail-hero {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="detail-shell">
+    <div class="detail-hero">
+        <div class="detail-title">
+            <h2>Chi Tiết Thiết Bị</h2>
+            <p>Mã thiết bị: <strong>@Model.ID_ThietBi</strong></p>
+        </div>
+        <div class="detail-actions">
+            <a href="@Url.Action("QuanLyThietBi", "CSVC")">← Quay lại danh sách</a>
+        </div>
+    </div>
+
+    <div class="detail-grid">
+        <div class="detail-card detail-wide">
+            <span class="label">Tên thiết bị</span>
+            <div class="value">@Model.TenTB</div>
+        </div>
+
+        <div class="detail-card">
+            <span class="label">Trạng thái</span>
+            <div class="value"><span class="status-pill">@Model.TrangThaiTB</span></div>
+        </div>
+
+        <div class="detail-card">
+            <span class="label">Số seri</span>
+            <div class="value">@(Model.SoSeri.HasValue ? Model.SoSeri.Value.ToString() : "Chưa có")</div>
+        </div>
+
+        <div class="detail-card">
+            <span class="label">Danh mục</span>
+            <div class="value">@(string.IsNullOrWhiteSpace(Model.TenDanhMuc) ? Model.DanhMuc : Model.TenDanhMuc)</div>
+        </div>
+
+        <div class="detail-card">
+            <span class="label">Khoa</span>
+            <div class="value">@(string.IsNullOrWhiteSpace(Model.TenKhoaPhongBan) ? Model.KhoaPhongBan : Model.TenKhoaPhongBan)</div>
+        </div>
+
+        <div class="detail-card">
+            <span class="label">Nhà cung cấp</span>
+            <div class="value">@(string.IsNullOrWhiteSpace(Model.TenNhaCungCap) ? Model.NhaCungCap : Model.TenNhaCungCap)</div>
+        </div>
+
+        <div class="detail-card">
+            <span class="label">Giá trị</span>
+            <div class="value">@(Model.Gia.HasValue ? Model.Gia.Value.ToString("N0") + " đ" : "Chưa có")</div>
+        </div>
+
+        <div class="detail-card">
+            <span class="label">Mã đề xuất</span>
+            <div class="value">@(string.IsNullOrWhiteSpace(Model.DeXuatNo) ? "Ngoài đề xuất" : Model.DeXuatNo)</div>
+        </div>
+
+        <div class="detail-card detail-wide">
+            <span class="label">Vị trí hiện tại</span>
+            <div class="value">
+                @if (!string.IsNullOrWhiteSpace(Model.TenCoSo) || !string.IsNullOrWhiteSpace(Model.TenKhuVuc) || !string.IsNullOrWhiteSpace(Model.TenPhong))
+                {
+                    <text>@Model.TenCoSo @if (!string.IsNullOrWhiteSpace(Model.TenCoSo)) { <text>-</text> } @Model.TenKhuVuc @if (!string.IsNullOrWhiteSpace(Model.TenKhuVuc)) { <text>-</text> } @Model.TenPhong</text>
+                }
+                else
+                {
+                    <span class="muted">Chưa phân phòng</span>
+                }
+            </div>
+        </div>
+
+        <div class="detail-card">
+            <span class="label">Mã cơ sở</span>
+            <div class="value">@(string.IsNullOrWhiteSpace(Model.PhongCoSoNo) ? "Chưa có" : Model.PhongCoSoNo)</div>
+        </div>
+
+        <div class="detail-card">
+            <span class="label">Mã khu</span>
+            <div class="value">@(string.IsNullOrWhiteSpace(Model.PhongKhuVucNo) ? "Chưa có" : Model.PhongKhuVucNo)</div>
+        </div>
+
+        <div class="detail-card">
+            <span class="label">Mã phòng</span>
+            <div class="value">@(string.IsNullOrWhiteSpace(Model.PhongNo) ? "Chưa có" : Model.PhongNo)</div>
+        </div>
+    </div>
+</div>

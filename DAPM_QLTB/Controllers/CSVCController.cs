@@ -115,11 +115,17 @@ namespace QLTB.Controllers
                             ID_ThietBi = rd["ID_ThietBi"].ToString(),
                             TenTB = rd["TenTB"].ToString(),
                             DanhMuc = rd["TenDanhMuc"]?.ToString() ?? "",
+                            TenDanhMuc = rd["TenDanhMuc"]?.ToString() ?? "",
                             KhoaPhongBan = rd["TenPhongBanKhoa"]?.ToString() ?? "",
+                            TenKhoaPhongBan = rd["TenPhongBanKhoa"]?.ToString() ?? "",
                             PhongCoSoNo = rd["PhongCoSoNo"] == DBNull.Value ? "" : rd["PhongCoSoNo"].ToString(),
+                            TenCoSo = string.Empty,
                             PhongKhuVucNo = rd["PhongKhuVucNo"] == DBNull.Value ? "" : rd["PhongKhuVucNo"].ToString(),
+                            TenKhuVuc = string.Empty,
                             PhongNo = rd["PhongNo"] == DBNull.Value ? "" : rd["PhongNo"].ToString(),
+                            TenPhong = string.Empty,
                             NhaCungCap = rd["TenNhaCC"]?.ToString() ?? "",
+                            TenNhaCungCap = rd["TenNhaCC"]?.ToString() ?? "",
                             SoSeri = rd["SoSeri"] == DBNull.Value ? (int?)null : Convert.ToInt32(rd["SoSeri"]),
                             Gia = rd["Gia"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(rd["Gia"]),
                             TrangThaiTB = rd["TrangThaiTB"]?.ToString() ?? "",
@@ -129,6 +135,82 @@ namespace QLTB.Controllers
                 }
             }
             return View(list);
+        }
+
+        [HttpGet]
+        public ActionResult ChiTietThietBi(string id)
+        {
+            var r = CheckAuth(); if (r != null) return r;
+
+            if (string.IsNullOrWhiteSpace(id))
+                return RedirectToAction("QuanLyThietBi");
+
+            ThietBiViewModel detail = null;
+
+            using (var conn = DbHelper.GetConnection())
+            {
+                conn.Open();
+
+                const string sql = @"
+                    SELECT tb.ID_ThietBi, tb.TenTB, tb.DanhMucNo, tb.KhoaPhongBan, tb.NhaCCNo,
+                           dm.TenDanhMuc, kp.TenPhongBanKhoa, ncc.TenNhaCC,
+                           tb.SoSeri, tb.Gia, tb.TrangThaiTB, tb.DeXuatNo,
+                           ptb.PhongNo,
+                           ISNULL(p.TenPhong, '') AS TenPhong,
+                           ISNULL(p.KhuVucNo, '') AS PhongKhuVucNo,
+                           ISNULL(kv.TenKhuVuc, '') AS TenKhuVuc,
+                           ISNULL(kv.CoSoNo, '') AS PhongCoSoNo,
+                           ISNULL(cs.TenCoSo, '') AS TenCoSo
+                    FROM THIETBI tb
+                    LEFT JOIN DANHMUC dm ON tb.DanhMucNo = dm.ID_DanhMuc
+                    LEFT JOIN KHOA_PHONGBAN kp ON tb.KhoaPhongBan = kp.ID_KhoaPhongBan
+                    LEFT JOIN NHACUNGCAP ncc ON tb.NhaCCNo = ncc.ID_NhaCC
+                    OUTER APPLY (
+                        SELECT TOP 1 ptb.PhongNo
+                        FROM PHONG_THIETBI ptb
+                        WHERE ptb.ThietBiNo = tb.ID_ThietBi
+                        ORDER BY ISNULL(ptb.NgayHieuLuc, '19000101') DESC
+                    ) ptb
+                    LEFT JOIN PHONG p ON p.ID_Phong = ptb.PhongNo
+                    LEFT JOIN KHUVUC kv ON kv.ID_KhuVuc = p.KhuVucNo
+                    LEFT JOIN COSO cs ON cs.ID_CoSo = kv.CoSoNo
+                    WHERE tb.ID_ThietBi = @id";
+
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+
+                    using (var rd = cmd.ExecuteReader())
+                    {
+                        if (!rd.Read())
+                            return HttpNotFound();
+
+                        detail = new ThietBiViewModel
+                        {
+                            ID_ThietBi = rd["ID_ThietBi"].ToString(),
+                            TenTB = rd["TenTB"].ToString(),
+                            DanhMuc = rd["DanhMucNo"]?.ToString() ?? "",
+                            TenDanhMuc = rd["TenDanhMuc"]?.ToString() ?? "",
+                            KhoaPhongBan = rd["KhoaPhongBan"]?.ToString() ?? "",
+                            TenKhoaPhongBan = rd["TenPhongBanKhoa"]?.ToString() ?? "",
+                            PhongCoSoNo = rd["PhongCoSoNo"] == DBNull.Value ? "" : rd["PhongCoSoNo"].ToString(),
+                            TenCoSo = rd["TenCoSo"]?.ToString() ?? "",
+                            PhongKhuVucNo = rd["PhongKhuVucNo"] == DBNull.Value ? "" : rd["PhongKhuVucNo"].ToString(),
+                            TenKhuVuc = rd["TenKhuVuc"]?.ToString() ?? "",
+                            PhongNo = rd["PhongNo"] == DBNull.Value ? "" : rd["PhongNo"].ToString(),
+                            TenPhong = rd["TenPhong"]?.ToString() ?? "",
+                            NhaCungCap = rd["NhaCCNo"]?.ToString() ?? "",
+                            TenNhaCungCap = rd["TenNhaCC"]?.ToString() ?? "",
+                            SoSeri = rd["SoSeri"] == DBNull.Value ? (int?)null : Convert.ToInt32(rd["SoSeri"]),
+                            Gia = rd["Gia"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(rd["Gia"]),
+                            TrangThaiTB = rd["TrangThaiTB"]?.ToString() ?? "",
+                            DeXuatNo = rd["DeXuatNo"] == DBNull.Value ? "" : rd["DeXuatNo"].ToString()
+                        };
+                    }
+                }
+            }
+
+            return View("ChiTietThietBi", detail);
         }
 
         private List<SelectListItem> LoadDropdownItems(SqlConnection conn, string sql)
