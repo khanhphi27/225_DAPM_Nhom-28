@@ -301,5 +301,46 @@ namespace QLTB.Controllers
             }
             catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
         }
+        [HttpGet]
+        public JsonResult GetLichSuSuaChua(string id)
+        {
+            var history = new List<object>();
+            try
+            {
+                using (SqlConnection conn = DbHelper.GetConnection())
+                {
+                    conn.Open();
+                    // Truy vấn xuyên qua bảng trung gian CHITIET_KEHOACH
+                    string sql = @"
+                SELECT gn.NgayThucHien, gn.KetQua, gn.ChiPhiThucTe 
+                FROM GHINHAN_SUA_CHUA gn
+                INNER JOIN CHITIET_KEHOACH ckh ON gn.ChiTietKeHoachNo = ckh.ID_ChiTietKH
+                WHERE ckh.ThietBiNo = @id
+                ORDER BY gn.NgayThucHien DESC";
+
+                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", id);
+                        using (SqlDataReader rdr = cmd.ExecuteReader())
+                        {
+                            while (rdr.Read())
+                            {
+                                history.Add(new
+                                {
+                                    Ngay = Convert.ToDateTime(rdr["NgayThucHien"]).ToString("dd/MM/yyyy"),
+                                    NoiDung = rdr["KetQua"].ToString(),
+                                    Tien = Convert.ToDecimal(rdr["ChiPhiThucTe"])
+                                });
+                            }
+                        }
+                    }
+                }
+                return Json(new { ok = true, data = history }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { ok = false, msg = "Lỗi kết nối: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
     }
 }

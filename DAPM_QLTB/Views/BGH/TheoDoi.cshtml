@@ -1,13 +1,39 @@
 @{
     ViewBag.Title = "Theo Dõi Tình Trạng Thiết Bị";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var canChuY = ViewBag.CanChuY as List<QLTB.Models.TheDoiThietBiViewModel> ?? new List<QLTB.Models.TheDoiThietBiViewModel>();
+    var canChuY  = ViewBag.CanChuY  as List<QLTB.Models.TheDoiThietBiViewModel> ?? new List<QLTB.Models.TheDoiThietBiViewModel>();
     var hoatDong = ViewBag.HoatDong as List<QLTB.Models.TheDoiThietBiViewModel> ?? new List<QLTB.Models.TheDoiThietBiViewModel>();
-    int baoTri = canChuY.FindAll(x => x.TrangThaiTB == "Bảo trì").Count;
-    int hong = canChuY.FindAll(x => x.TrangThaiTB == "Hỏng").Count;
 }
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+    .badge-tt { display:inline-block; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+    .badge-tt.ok   { background:#e8f5e9; color:#2e7d32; }
+    .badge-tt.warn { background:#fff3e0; color:#e65100; }
+    .badge-tt.err  { background:#fce4ec; color:#c62828; }
+    .btn-ls { background:#e8eaf6; color:#1a237e; border:none; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:600; cursor:pointer; white-space:nowrap; }
+    .btn-ls:hover { background:#c5cae9; }
+    /* Modal */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:2000; align-items:center; justify-content:center; }
+    .modal-overlay.active { display:flex; }
+    .modal-box { background:#fff; border-radius:14px; padding:28px 30px; width:560px; max-width:95vw; max-height:80vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+    .modal-title { font-size:17px; font-weight:700; color:#1a237e; margin-bottom:16px; }
+    /* Timeline */
+    .ls-timeline { position:relative; padding-left:28px; }
+    .ls-timeline::before { content:''; position:absolute; left:10px; top:0; bottom:0; width:2px; background:#e0e0e0; }
+    .ls-item { position:relative; margin-bottom:18px; }
+    .ls-dot { position:absolute; left:-22px; top:3px; width:16px; height:16px; border-radius:50%; background:#fff; border:2px solid #ccc; }
+    .ls-dot.csvc   { background:#1e88e5; border-color:#1e88e5; }
+    .ls-dot.khtc   { background:#6a1b9a; border-color:#6a1b9a; }
+    .ls-dot.bgh    { background:#43a047; border-color:#43a047; }
+    .ls-dot.reject { background:#e53935; border-color:#e53935; }
+    .ls-cap  { font-size:10px; font-weight:700; text-transform:uppercase; color:#888; }
+    .ls-name { font-size:13px; font-weight:600; color:#333; }
+    .ls-time { font-size:11px; color:#aaa; }
+    .ls-tt   { font-size:12px; margin-top:3px; }
+    .ls-gc   { font-size:12px; color:#666; font-style:italic; }
+</style>
 
 <div class="container-fluid mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -25,6 +51,7 @@
         <div class="alert alert-warning">⚠️ @ViewBag.Error</div>
     }
 
+    <!-- Stat cards -->
     <div class="row g-3 mb-4">
         <div class="col-md-3">
             <div class="card border-0 shadow-sm text-center p-3">
@@ -34,14 +61,14 @@
         </div>
         <div class="col-md-3">
             <div class="card border-0 shadow-sm text-center p-3">
-                <p class="text-muted small mb-1">Đang bảo trì</p>
-                <h3 class="text-warning fw-bold">@baoTri</h3>
+                <p class="text-muted small mb-1">Cần bảo trì</p>
+                <h3 class="text-warning fw-bold">@canChuY.FindAll(x => x.TrangThaiTB == "Cần bảo trì").Count</h3>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card border-0 shadow-sm text-center p-3">
-                <p class="text-muted small mb-1">Hỏng / Chờ xử lý</p>
-                <h3 class="text-danger fw-bold">@hong</h3>
+                <p class="text-muted small mb-1">Báo hỏng</p>
+                <h3 class="text-danger fw-bold">@canChuY.FindAll(x => x.TrangThaiTB == "Báo hỏng").Count</h3>
             </div>
         </div>
         <div class="col-md-3">
@@ -52,97 +79,185 @@
         </div>
     </div>
 
+    <!-- Thiết bị cần chú ý -->
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-header bg-white border-0 pt-3">
             <h5 class="fw-bold text-danger mb-0">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>Thiết Bị Cần Chú Ý (@canChuY.Count)
             </h5>
         </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Mã TB</th>
-                            <th>Tên thiết bị</th>
-                            <th>Khoa / Vị trí</th>
-                            <th>Phòng</th>
-                            <th>Tình trạng</th>
-                            <th>Ngày báo</th>
-                            <th>Mô tả hỏng</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (!canChuY.Any())
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Mã TB</th>
+                        <th>Tên thiết bị</th>
+                        <th>Khoa / Vị trí</th>
+                        <th>Phòng</th>
+                        <th>Tình trạng</th>
+                        <th>Ngày báo</th>
+                        <th>Mô tả hỏng</th>
+                        <th class="text-center">Lịch sử duyệt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!canChuY.Any())
+                    {
+                        <tr><td colspan="8" class="text-center py-4 text-muted">Mọi thứ đều ổn định 🎉</td></tr>
+                    }
+                    else
+                    {
+                        foreach (var tb in canChuY)
                         {
-                            <tr><td colspan="7" class="text-center py-4 text-muted">Mọi thứ đều ổn định 🎉</td></tr>
+                            string badgeCls = tb.TrangThaiTB == "Báo hỏng" ? "err" : "warn";
+                            <tr>
+                                <td class="ps-3 fw-bold text-primary">#@tb.ID_ThietBi</td>
+                                <td class="fw-semibold">@tb.TenTB</td>
+                                <td><span class="badge bg-light text-dark">@tb.KhoaPhongBan</span></td>
+                                <td>@(string.IsNullOrEmpty(tb.Phong) ? "—" : tb.Phong)</td>
+                                <td><span class="badge-tt @badgeCls">@tb.TrangThaiTB</span></td>
+                                <td class="text-muted small">@(tb.NgayBaoHong.HasValue ? tb.NgayBaoHong.Value.ToString("dd/MM/yyyy") : "—")</td>
+                                <td class="small text-danger">@(string.IsNullOrEmpty(tb.MoTaHong) ? "—" : tb.MoTaHong)</td>
+                                <td class="text-center">
+                                    <button class="btn-ls" onclick="xemLichSu('@tb.TenTB.Replace("'","\\'")', '@tb.ID_ThietBi')">
+                                        📜 Xem
+                                    </button>
+                                </td>
+                            </tr>
                         }
-                        else
-                        {
-                            foreach (var tb in canChuY)
-                            {
-                                <tr>
-                                    <td class="fw-bold text-primary">#@tb.ID_ThietBi</td>
-                                    <td class="fw-semibold">@tb.TenTB</td>
-                                    <td><span class="badge bg-light text-dark">@tb.KhoaPhongBan</span></td>
-                                    <td>@(string.IsNullOrEmpty(tb.Phong) ? "—" : tb.Phong)</td>
-                                    <td>
-                                        @if (tb.TrangThaiTB == "Hỏng")
-                                        {
-                                            <span class="badge bg-danger">@tb.TrangThaiTB</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-warning text-dark">@tb.TrangThaiTB</span>
-                                        }
-                                    </td>
-                                    <td class="text-muted">@(tb.NgayBaoHong.HasValue ? tb.NgayBaoHong.Value.ToString("dd/MM/yyyy") : "—")</td>
-                                    <td class="small">@(string.IsNullOrEmpty(tb.MoTaHong) ? "—" : tb.MoTaHong)</td>
-                                </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
-            </div>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 
+    <!-- Hoạt động bình thường -->
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white border-0 pt-3">
             <h5 class="fw-bold text-success mb-0">
                 <i class="bi bi-check-circle-fill me-2"></i>Hoạt Động Bình Thường (@hoatDong.Count)
             </h5>
         </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Mã TB</th>
+                        <th>Tên thiết bị</th>
+                        <th>Khoa / Đơn vị</th>
+                        <th>Phòng</th>
+                        <th>Danh mục</th>
+                        <th>Nhà cung cấp</th>
+                        <th class="text-center">Tình trạng</th>
+                        <th class="text-center">Lịch sử duyệt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var tb in hoatDong)
+                    {
                         <tr>
-                            <th>Mã TB</th>
-                            <th>Tên thiết bị</th>
-                            <th>Khoa / Đơn vị</th>
-                            <th>Phòng</th>
-                            <th>Danh mục</th>
-                            <th>Nhà cung cấp</th>
-                            <th class="text-end">Tình trạng</th>
+                            <td class="ps-3 fw-bold">#@tb.ID_ThietBi</td>
+                            <td>@tb.TenTB</td>
+                            <td>@tb.KhoaPhongBan</td>
+                            <td>@(string.IsNullOrEmpty(tb.Phong) ? "—" : tb.Phong)</td>
+                            <td class="text-muted small">@tb.TenDanhMuc</td>
+                            <td class="small">@(string.IsNullOrEmpty(tb.NhaCungCap) ? "—" : tb.NhaCungCap)</td>
+                            <td class="text-center"><span class="badge-tt ok">Đang sử dụng</span></td>
+                            <td class="text-center">
+                                <button class="btn-ls" onclick="xemLichSu('@tb.TenTB.Replace("'","\\'")', '@tb.ID_ThietBi')">
+                                    📜 Xem
+                                </button>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var tb in hoatDong)
-                        {
-                            <tr>
-                                <td class="fw-bold">#@tb.ID_ThietBi</td>
-                                <td>@tb.TenTB</td>
-                                <td>@tb.KhoaPhongBan</td>
-                                <td>@(string.IsNullOrEmpty(tb.Phong) ? "—" : tb.Phong)</td>
-                                <td class="text-muted small">@tb.TenDanhMuc</td>
-                                <td class="small">@(string.IsNullOrEmpty(tb.NhaCungCap) ? "—" : tb.NhaCungCap)</td>
-                                <td class="text-end"><span class="badge bg-success">✅ Tốt</span></td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
+
+<!-- Modal lịch sử duyệt -->
+<div class="modal-overlay" id="lsModal">
+    <div class="modal-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div class="modal-title">📜 Lịch Sử Duyệt — <span id="lsTitle" style="color:#3949ab;"></span></div>
+            <button onclick="document.getElementById('lsModal').classList.remove('active')"
+                style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;">✕</button>
+        </div>
+        <div id="lsBody"><div style="text-align:center;padding:20px;color:#aaa;">Đang tải...</div></div>
+    </div>
+</div>
+
+@section scripts {
+<script>
+    var dotMap = { 'csvc':'csvc','khtc':'khtc','bgh':'bgh','1':'csvc','3':'khtc','4':'bgh' };
+    var capMap = { 'csvc':'CSVC','khtc':'KHTC','bgh':'BGH','1':'CSVC','3':'KHTC','4':'BGH' };
+
+    function xemLichSu(tenTB, maTB) {
+        document.getElementById('lsTitle').textContent = tenTB + ' (#' + maTB + ')';
+        document.getElementById('lsBody').innerHTML = '<div style="text-align:center;padding:20px;color:#aaa;">Đang tải...</div>';
+        document.getElementById('lsModal').classList.add('active');
+
+        $.get('@Url.Action("GetLichSuDuyetTheoThietBi","BGH")', { tenTB: tenTB }, function(res) {
+            if (!res.ok) {
+                document.getElementById('lsBody').innerHTML = '<div style="color:#e53935;padding:16px;">Lỗi: ' + res.msg + '</div>';
+                return;
+            }
+            if (!res.data || res.data.length === 0) {
+                document.getElementById('lsBody').innerHTML =
+                    '<div style="text-align:center;color:#aaa;padding:24px;">'
+                    + '📭 Chưa có lịch sử duyệt đề xuất mua sắm cho thiết bị này.'
+                    + '</div>';
+                return;
+            }
+
+            // Nhóm theo ID_DeXuat, loại trùng bước duyệt
+            var groups = {}, order = [];
+            res.data.forEach(function(item) {
+                if (!groups[item.ID_DeXuat]) {
+                    groups[item.ID_DeXuat] = { tt: item.TrangThaiDeXuat, ngay: item.NgayDeXuat, ten: item.TenThietBi, steps: [], seen: {} };
+                    order.push(item.ID_DeXuat);
+                }
+                var key = item.CapDuyet + '|' + item.ThoiGian;
+                if (!groups[item.ID_DeXuat].seen[key]) {
+                    groups[item.ID_DeXuat].seen[key] = true;
+                    groups[item.ID_DeXuat].steps.push(item);
+                }
+            });
+
+            var html = '';
+            order.forEach(function(idDX) {
+                var g = groups[idDX];
+                var bc = g.tt === 'Đã duyệt' ? 'ok' : g.tt.includes('Từ chối') ? 'err' : 'warn';
+                html += '<div style="margin-bottom:16px;border:1px solid #e8eaf6;border-radius:10px;overflow:hidden;">'
+                    + '<div style="background:#f5f6ff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;">'
+                    + '<div><b style="color:#1a237e;">' + idDX + '</b>'
+                    + ' <span style="font-size:11px;color:#888;">📅 ' + g.ngay + '</span>'
+                    + '<div style="font-size:11px;color:#666;margin-top:2px;">📦 ' + g.ten + '</div></div>'
+                    + '<span class="badge-tt ' + bc + '">' + g.tt + '</span>'
+                    + '</div>'
+                    + '<div style="padding:14px 16px 6px;" class="ls-timeline">';
+
+                g.steps.forEach(function(s) {
+                    var cap = String(s.CapDuyet).toLowerCase();
+                    var cls = s.TrangThaiSauDuyet.includes('Từ chối') ? 'reject' : (dotMap[cap] || '');
+                    html += '<div class="ls-item">'
+                        + '<div class="ls-dot ' + cls + '"></div>'
+                        + '<div class="ls-cap">' + (capMap[cap] || cap.toUpperCase()) + '</div>'
+                        + '<div class="ls-name">' + s.NguoiDuyet + '</div>'
+                        + '<div class="ls-time">🕒 ' + s.ThoiGian + '</div>'
+                        + '<div class="ls-tt">→ <b>' + s.TrangThaiSauDuyet + '</b></div>'
+                        + (s.GhiChu ? '<div class="ls-gc">💬 ' + s.GhiChu + '</div>' : '')
+                        + '</div>';
+                });
+                html += '</div></div>';
+            });
+            document.getElementById('lsBody').innerHTML = html;
+        });
+    }
+
+    document.getElementById('lsModal').addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('active');
+    });
+</script>
+}

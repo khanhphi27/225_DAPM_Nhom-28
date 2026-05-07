@@ -1,0 +1,309 @@
+@model IEnumerable<QLTB.Models.PhongViewModel>
+@{
+    ViewBag.Title = "Quản Lý Phòng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var khuVucList = ViewBag.KhuVucList as IEnumerable<System.Web.Mvc.SelectListItem> ?? new List<System.Web.Mvc.SelectListItem>();
+}
+
+<style>
+    .page-header { margin-bottom: 24px; }
+    .page-header h2 { color: #1a237e; font-weight: 700; font-size: 22px; margin: 0; }
+    .page-header p  { color: #666; font-size: 13px; margin: 4px 0 0; }
+
+    .card-table { background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.07); overflow: hidden; }
+    .card-table table { width: 100%; border-collapse: collapse; }
+    .card-table thead th {
+        background: #e8eaf6; color: #1a237e; font-size: 12px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .4px; padding: 12px 14px; white-space: nowrap;
+    }
+    .card-table tbody td { padding: 11px 14px; font-size: 13px; color: #333; border-bottom: 1px solid #f0f2f8; vertical-align: middle; }
+    .card-table tbody tr:last-child td { border-bottom: none; }
+    .card-table tbody tr:hover td { background: #f5f6ff; }
+
+    .badge-kv { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; background:#e8eaf6; color:#1a237e; }
+    .badge-tb { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; background:#e8f5e9; color:#2e7d32; }
+
+    .btn-icon { border:none; background:transparent; padding:5px 8px; border-radius:6px; cursor:pointer; font-size:15px; transition:.15s; }
+    .btn-icon.edit { color:#1a237e; } .btn-icon.edit:hover { background:#e8eaf6; }
+    .btn-icon.del  { color:#e53935; } .btn-icon.del:hover  { background:#fce4ec; }
+
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1050; align-items:center; justify-content:center; }
+    .modal-overlay.active { display:flex; }
+    .modal-box { background:#fff; border-radius:14px; padding:28px 30px; width:460px; max-width:95vw; box-shadow:0 20px 60px rgba(0,0,0,.2); }
+    .modal-title { font-size:18px; font-weight:700; color:#1a237e; margin-bottom:18px; }
+    .form-lbl { font-size:12px; font-weight:600; color:#555; margin-bottom:4px; display:block; }
+    .form-inp { width:100%; padding:9px 12px; border:1px solid #d0d5e8; border-radius:8px; font-size:13px; background:#f8f9fe; box-sizing:border-box; margin-bottom:12px; }
+    .form-inp:focus { border-color:#3949ab; outline:none; }
+    .modal-footer { display:flex; gap:10px; justify-content:flex-end; margin-top:6px; }
+    .btn-cancel { background:#f5f5f5; color:#555; border:none; border-radius:8px; padding:9px 20px; font-size:13px; font-weight:600; cursor:pointer; }
+    .btn-save   { background:#1a237e; color:#fff; border:none; border-radius:8px; padding:9px 24px; font-size:13px; font-weight:600; cursor:pointer; }
+    .btn-danger { background:#e53935; color:#fff; border:none; border-radius:8px; padding:9px 24px; font-size:13px; font-weight:600; cursor:pointer; }
+
+    .alert-box { padding:12px 16px; border-radius:8px; font-size:13px; margin-bottom:16px; display:none; }
+    .alert-box.success { background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7; }
+    .alert-box.error   { background:#fce4ec; color:#c62828; border:1px solid #ef9a9a; }
+</style>
+
+<div class="page-header">
+    <h2>🚪 Quản Lý Phòng</h2>
+    <p>Thêm, chỉnh sửa và xóa các phòng trong hệ thống</p>
+</div>
+
+@if (ViewBag.Error != null) { <div class="alert alert-danger">@ViewBag.Error</div> }
+<div id="alertBox" class="alert-box"></div>
+
+<!-- Toolbar -->
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+    <span style="font-size:13px; color:#666;">
+        Tổng: <strong id="lblTong">@Model.Count()</strong> phòng
+        <span id="lblLoc" style="color:#1a237e; display:none;"> — lọc ra: <strong id="lblLocSo">0</strong></span>
+    </span>
+    <button onclick="openCreate()" style="background:#1a237e;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;">
+        <i class="bi bi-plus-circle-fill"></i> Thêm phòng mới
+    </button>
+</div>
+
+<!-- Thanh lọc -->
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
+    <select id="filterKhuVuc" onchange="applyFilter()" style="padding:8px 12px;border:1px solid #d0d5e8;border-radius:8px;font-size:13px;background:#fff;min-width:180px;">
+        <option value="">🏗️ Tất cả khu vực</option>
+        @foreach (var kv in khuVucList)
+        {
+            <option value="@kv.Text">@kv.Text</option>
+        }
+        <option value="—">— Chưa có khu vực</option>
+    </select>
+    <button onclick="resetFilter()" style="padding:8px 14px;border:1px solid #d0d5e8;border-radius:8px;font-size:13px;background:#f5f5f5;color:#555;cursor:pointer;">
+        ✕ Bỏ lọc
+    </button>
+</div>
+
+<!-- Bảng -->
+<div class="card-table">
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>ID Phòng</th>
+                <th>Tên phòng</th>
+                <th>Khu vực</th>
+                <th style="text-align:center">Sức chứa</th>
+                <th style="text-align:center">Thiết bị</th>
+                <th style="text-align:center">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody id="tbodyPhong">
+            @{ int stt = 0; }
+            @foreach (var p in Model)
+            {
+                stt++;
+                string tenKvDisplay = string.IsNullOrEmpty(p.TenKhuVuc) ? "—" : p.TenKhuVuc;
+                <tr data-khuvuc="@tenKvDisplay">
+                    <td style="color:#999">@stt</td>
+                    <td><code style="font-size:11px;background:#f0f2f8;padding:2px 7px;border-radius:4px;">@p.ID_Phong</code></td>
+                    <td><strong>@p.TenPhong</strong></td>
+                    <td><span class="badge-kv">@tenKvDisplay</span></td>
+                    <td style="text-align:center">@(p.SucChua.HasValue ? p.SucChua.ToString() : "—")</td>
+                    <td style="text-align:center"><span class="badge-tb">💻 @p.SoThietBi</span></td>
+                    <td style="text-align:center; white-space:nowrap;">
+                        <button class="btn-icon edit" title="Sửa" onclick="openEdit('@p.ID_Phong')">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button class="btn-icon del" title="Xóa" onclick="openDelete('@p.ID_Phong', '@Html.Raw(p.TenPhong.Replace("'", "\\'"))')">
+                            <i class="bi bi-trash3-fill"></i>
+                        </button>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr><td colspan="7" style="text-align:center;color:#999;padding:30px;">Chưa có phòng nào.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- ===== MODAL TẠO ===== -->
+<div class="modal-overlay" id="modalCreate">
+    <div class="modal-box">
+        <div class="modal-title">➕ Thêm Phòng Mới</div>
+
+        <label class="form-lbl">ID Phòng <span style="color:red">*</span></label>
+        <input type="text" id="c_id" class="form-inp" placeholder="VD: P101" style="font-family:monospace;" />
+
+        <label class="form-lbl">Tên phòng <span style="color:red">*</span></label>
+        <input type="text" id="c_ten" class="form-inp" placeholder="VD: Phòng thực hành 101" />
+
+        <label class="form-lbl">Khu vực</label>
+        <select id="c_khuVuc" class="form-inp">
+            <option value="">-- Chưa xác định --</option>
+            @foreach (var kv in khuVucList)
+            {
+                <option value="@kv.Value">@kv.Text</option>
+            }
+        </select>
+
+        <label class="form-lbl">Sức chứa</label>
+        <input type="number" id="c_sucChua" class="form-inp" placeholder="VD: 40" min="0" />
+
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-save" onclick="submitCreate()">💾 Thêm</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL SỬA ===== -->
+<div class="modal-overlay" id="modalEdit">
+    <div class="modal-box">
+        <div class="modal-title">✏️ Chỉnh Sửa Phòng</div>
+        <input type="hidden" id="e_id" />
+
+        <label class="form-lbl">ID Phòng</label>
+        <input type="text" id="e_id_display" class="form-inp" readonly
+               style="font-family:monospace;background:#f0f2f8;color:#555;cursor:not-allowed;" />
+
+        <label class="form-lbl">Tên phòng <span style="color:red">*</span></label>
+        <input type="text" id="e_ten" class="form-inp" />
+
+        <label class="form-lbl">Khu vực</label>
+        <select id="e_khuVuc" class="form-inp">
+            <option value="">-- Chưa xác định --</option>
+            @foreach (var kv in khuVucList)
+            {
+                <option value="@kv.Value">@kv.Text</option>
+            }
+        </select>
+
+        <label class="form-lbl">Sức chứa</label>
+        <input type="number" id="e_sucChua" class="form-inp" min="0" />
+
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-save" onclick="submitEdit()">💾 Lưu thay đổi</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL XÓA ===== -->
+<div class="modal-overlay" id="modalDelete">
+    <div class="modal-box" style="width:400px;">
+        <div class="modal-title">🗑️ Xác Nhận Xóa</div>
+        <input type="hidden" id="d_id" />
+        <p style="font-size:14px;color:#444;margin-bottom:20px;">
+            Bạn có chắc muốn xóa phòng <strong id="d_ten"></strong>?<br>
+            <span style="color:#e53935;font-size:12px;">Chỉ xóa được khi phòng không còn thiết bị nào.</span>
+        </p>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-danger" onclick="submitDelete()">🗑️ Xóa</button>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+<script>
+    function showAlert(msg, type) {
+        var box = document.getElementById('alertBox');
+        box.textContent = msg;
+        box.className = 'alert-box ' + type;
+        box.style.display = 'block';
+        setTimeout(function () { box.style.display = 'none'; }, 4000);
+    }
+    function closeAll() {
+        document.querySelectorAll('.modal-overlay').forEach(function (m) { m.classList.remove('active'); });
+    }
+    document.querySelectorAll('.modal-overlay').forEach(function (m) {
+        m.addEventListener('click', function (e) { if (e.target === m) closeAll(); });
+    });
+
+    // ── Lọc ──────────────────────────────────────────────────
+    function applyFilter() {
+        var khuVuc = document.getElementById('filterKhuVuc').value;
+        var rows = document.querySelectorAll('#tbodyPhong tr');
+        var visible = 0;
+        rows.forEach(function (row) {
+            var ok = !khuVuc || (row.getAttribute('data-khuvuc') || '') === khuVuc;
+            row.style.display = ok ? '' : 'none';
+            if (ok) visible++;
+        });
+        var isFiltering = !!khuVuc;
+        document.getElementById('lblLoc').style.display = isFiltering ? '' : 'none';
+        document.getElementById('lblLocSo').textContent = visible;
+    }
+    function resetFilter() {
+        document.getElementById('filterKhuVuc').value = '';
+        applyFilter();
+    }
+
+    // ── Tạo ──────────────────────────────────────────────────
+    function openCreate() {
+        document.getElementById('c_id').value      = '';
+        document.getElementById('c_ten').value     = '';
+        document.getElementById('c_khuVuc').value  = '';
+        document.getElementById('c_sucChua').value = '';
+        document.getElementById('modalCreate').classList.add('active');
+        setTimeout(function () { document.getElementById('c_id').focus(); }, 100);
+    }
+    function submitCreate() {
+        var id  = document.getElementById('c_id').value.trim();
+        var ten = document.getElementById('c_ten').value.trim();
+        if (!id)  { showAlert('Vui lòng nhập ID phòng.', 'error'); return; }
+        if (!ten) { showAlert('Vui lòng nhập tên phòng.', 'error'); return; }
+
+        $.post('@Url.Action("TaoPhong", "BGH")', {
+            id:       id,
+            ten:      ten,
+            khuVucNo: document.getElementById('c_khuVuc').value,
+            sucChua:  document.getElementById('c_sucChua').value || null
+        }, function (res) {
+            if (res.ok) { showAlert(res.msg, 'success'); closeAll(); setTimeout(function () { location.reload(); }, 1200); }
+            else showAlert(res.msg, 'error');
+        });
+    }
+
+    // ── Sửa ──────────────────────────────────────────────────
+    function openEdit(id) {
+        $.get('@Url.Action("GetPhong", "BGH")', { id: id }, function (res) {
+            if (!res.ok) { showAlert(res.msg, 'error'); return; }
+            var d = res.data;
+            document.getElementById('e_id').value         = d.id;
+            document.getElementById('e_id_display').value = d.id;
+            document.getElementById('e_ten').value        = d.ten;
+            document.getElementById('e_khuVuc').value     = d.khuVucNo;
+            document.getElementById('e_sucChua').value    = d.sucChua !== null ? d.sucChua : '';
+            document.getElementById('modalEdit').classList.add('active');
+            setTimeout(function () { document.getElementById('e_ten').focus(); }, 100);
+        });
+    }
+    function submitEdit() {
+        var ten = document.getElementById('e_ten').value.trim();
+        if (!ten) { showAlert('Tên phòng không được để trống.', 'error'); return; }
+
+        $.post('@Url.Action("SuaPhong", "BGH")', {
+            id:       document.getElementById('e_id').value,
+            ten:      ten,
+            khuVucNo: document.getElementById('e_khuVuc').value,
+            sucChua:  document.getElementById('e_sucChua').value || null
+        }, function (res) {
+            if (res.ok) { showAlert(res.msg, 'success'); closeAll(); setTimeout(function () { location.reload(); }, 1200); }
+            else showAlert(res.msg, 'error');
+        });
+    }
+
+    // ── Xóa ──────────────────────────────────────────────────
+    function openDelete(id, ten) {
+        document.getElementById('d_id').value = id;
+        document.getElementById('d_ten').textContent = ten;
+        document.getElementById('modalDelete').classList.add('active');
+    }
+    function submitDelete() {
+        $.post('@Url.Action("XoaPhong", "BGH")', {
+            id: document.getElementById('d_id').value
+        }, function (res) {
+            if (res.ok) { showAlert('Đã xóa phòng.', 'success'); closeAll(); setTimeout(function () { location.reload(); }, 1200); }
+            else showAlert(res.msg, 'error');
+        });
+    }
+</script>
+}

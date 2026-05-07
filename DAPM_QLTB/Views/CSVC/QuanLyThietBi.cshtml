@@ -4,6 +4,9 @@
     ViewBag.Title = "Quản Lý Thiết Bị - Phòng CSVC";
     var importDeXuatNo = (ViewBag.ImportDeXuatNo ?? "").ToString();
     bool importMode = !string.IsNullOrWhiteSpace(importDeXuatNo);
+    var danhMucList = ViewBag.DanhMucList as IEnumerable<System.Web.Mvc.SelectListItem> ?? Enumerable.Empty<System.Web.Mvc.SelectListItem>();
+    var khoaList = ViewBag.KhoaList as IEnumerable<System.Web.Mvc.SelectListItem> ?? Enumerable.Empty<System.Web.Mvc.SelectListItem>();
+    var nhaCungCapList = ViewBag.NhaCungCapList as IEnumerable<System.Web.Mvc.SelectListItem> ?? Enumerable.Empty<System.Web.Mvc.SelectListItem>();
 }
 <style>
     .tb-header {
@@ -509,10 +512,31 @@
             <div>
                 <label class="form-lbl">Danh mục</label>
                 <select class="form-inp" id="fCat">
-                    <option value="DM_MT">Máy tính &amp; Laptop</option>
-                    <option value="DM_MC">Máy chiếu</option>
-                    <option value="DM_TH">Thiết bị thực hành</option>
-                    <option value="DM_VP">Thiết bị văn phòng</option>
+                    <option value="">-- Chọn danh mục --</option>
+                    @foreach (var item in danhMucList)
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="form-lbl">Khoa / phòng ban</label>
+                <select class="form-inp" id="fKhoa">
+                    <option value="">-- Chọn khoa / phòng ban --</option>
+                    @foreach (var item in khoaList)
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                </select>
+            </div>
+            <div class="full">
+                <label class="form-lbl">Nhà cung cấp</label>
+                <select class="form-inp" id="fNcc">
+                    <option value="">-- Chọn nhà cung cấp --</option>
+                    @foreach (var item in nhaCungCapList)
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
                 </select>
             </div>
             <div>
@@ -630,7 +654,9 @@
         $('#fSeri').val('');
         $('#fPrice').val('');
         $('#fStatus').val('Mới nhập');
-        $('#fCat').val('DM_MT');
+        $('#fCat').val('');
+        $('#fKhoa').val('');
+        $('#fNcc').val('');
         $('#fDeXuat').val('');
         $('#importCodeBox').hide();
         $('#fDeXuatReadonly').val('');
@@ -673,6 +699,8 @@
                 $('#fPrice').val(d.Gia ? Number(d.Gia).toLocaleString('vi-VN') : '');
                 $('#fStatus').val(d.TrangThaiTB || 'Đang sử dụng');
                 $('#fCat').val(d.DanhMuc || '');
+                $('#fKhoa').val(d.KhoaPhongBan || '');
+                $('#fNcc').val(d.NhaCungCap || '');
                 $('#fDeXuat').val(d.DeXuatNo || '');
                 $('#importCodeBox').hide();
                 $('#fDeXuatReadonly').val('');
@@ -717,6 +745,8 @@
             ID_ThietBi: isEdit ? $('#fCode').val().trim() : '',
             TenTB: $('#fName').val().trim(),
             DanhMuc: $('#fCat').val(),
+            KhoaPhongBan: $('#fKhoa').val(),
+            NhaCungCap: $('#fNcc').val(),
             SoSeri: seriVal === '' ? null : parseInt(seriVal), // 🔥 OK
             Gia: giaValue,
             TrangThaiTB: $('#fStatus').val(),

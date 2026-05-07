@@ -370,6 +370,14 @@
     <Content Include="Views\TruongKhoa\DanhSachThietBi.cshtml" />
     <Content Include="Views\TruongKhoa\GuiDeXuat.cshtml" />
     <Content Include="Views\TruongKhoa\XemDeXuat.cshtml" />
+    <Content Include="Views\BGH\QuanLyKhoa.cshtml" />
+    <Content Include="Views\BGH\QuanLyNguoiDung.cshtml" />
+    <Content Include="Views\BGH\QuanLyPhong.cshtml" />
+    <Content Include="Views\CSVC\QuanLyDanhMuc.cshtml" />
+    <Content Include="Views\CSVC\QuanLyNhaCungCap.cshtml" />
+    <Content Include="Views\CSVC\TaoPhieuKiemKe.cshtml" />
+    <Content Include="Views\TruongKhoa\ChiTietThietBi.cshtml" />
+    <Content Include="Views\TruongKhoa\DeXuatMuaSam.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

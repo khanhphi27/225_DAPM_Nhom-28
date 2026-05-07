@@ -1,0 +1,309 @@
+﻿
+@model IEnumerable<QLTB.Models.DanhMucViewModel>
+@{
+    ViewBag.Title = "Quản Lý Danh Mục";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var list = Model ?? Enumerable.Empty<QLTB.Models.DanhMucViewModel>();
+}
+
+<style>
+    .page-header { margin-bottom: 24px; }
+    .page-header h2 { color: #1a237e; font-weight: 700; font-size: 22px; margin: 0; }
+    .page-header p { color: #666; font-size: 13px; margin: 4px 0 0; }
+
+    .toolbar {
+        display: flex; justify-content: space-between; align-items: center;
+        gap: 12px; margin-bottom: 14px; flex-wrap: wrap;
+    }
+    .toolbar .count { font-size: 13px; color: #666; }
+    .toolbar .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .search-box {
+        min-width: 280px; padding: 9px 12px; border: 1px solid #d0d5e8;
+        border-radius: 8px; background: #f8f9fe; font-size: 13px;
+    }
+    .btn-primary-soft, .btn-secondary-soft, .btn-danger-soft {
+        border: none; border-radius: 8px; padding: 9px 16px; font-size: 13px;
+        font-weight: 600; cursor: pointer;
+    }
+    .btn-primary-soft { background: #1a237e; color: #fff; }
+    .btn-secondary-soft { background: #e8eaf6; color: #1a237e; }
+    .btn-danger-soft { background: #fce4ec; color: #c62828; }
+
+    .card-table {
+        background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.07); overflow: hidden;
+    }
+    .card-table table { width: 100%; border-collapse: collapse; }
+    .card-table thead th {
+        background: #e8eaf6; color: #1a237e; font-size: 12px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .4px; padding: 12px 14px; white-space: nowrap;
+    }
+    .card-table tbody td {
+        padding: 11px 14px; font-size: 13px; color: #333; border-bottom: 1px solid #f0f2f8; vertical-align: middle;
+    }
+    .card-table tbody tr:last-child td { border-bottom: none; }
+    .card-table tbody tr:hover td { background: #f5f6ff; }
+
+    .btn-icon {
+        border: none; background: transparent; padding: 5px 8px; border-radius: 6px;
+        cursor: pointer; font-size: 15px; transition: .15s;
+    }
+    .btn-icon.edit { color: #1a237e; }
+    .btn-icon.edit:hover { background: #e8eaf6; }
+    .btn-icon.del { color: #e53935; }
+    .btn-icon.del:hover { background: #fce4ec; }
+
+    .modal-overlay {
+        display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 1050;
+        align-items: center; justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+        background: #fff; border-radius: 14px; padding: 28px 30px; width: 520px; max-width: 95vw;
+        box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    }
+    .modal-title { font-size: 18px; font-weight: 700; color: #1a237e; margin-bottom: 18px; }
+    .form-lbl { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 4px; display: block; }
+    .form-inp, .form-textarea {
+        width: 100%; padding: 9px 12px; border: 1px solid #d0d5e8; border-radius: 8px; font-size: 13px;
+        background: #f8f9fe; box-sizing: border-box; margin-bottom: 12px;
+    }
+    .form-inp:focus, .form-textarea:focus { border-color: #3949ab; outline: none; }
+    .form-textarea { resize: vertical; min-height: 80px; font-family: 'Inter', sans-serif; }
+    .form-note { font-size: 12px; color: #6b7280; margin-top: -6px; margin-bottom: 12px; }
+    .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
+    .btn-cancel { background: #f5f5f5; color: #555; border: none; border-radius: 8px; padding: 9px 20px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-save { background: #1a237e; color: #fff; border: none; border-radius: 8px; padding: 9px 24px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+    .alert-box {
+        padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none;
+    }
+    .alert-box.success { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+    .alert-box.error { background: #fce4ec; color: #c62828; border: 1px solid #ef9a9a; }
+</style>
+
+<div class="page-header">
+    <h2>📂 Quản Lý Danh Mục</h2>
+    <p>Thêm mới, cập nhật và xóa danh mục thiết bị trong phòng CSVC</p>
+</div>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+<div id="alertBox" class="alert-box"></div>
+
+<div class="toolbar">
+    <div class="count">Tổng: <strong>@list.Count()</strong> danh mục</div>
+    <div class="actions">
+        <input type="text" id="searchInput" class="search-box" placeholder="Tìm theo mã, tên, mô tả..." />
+        <button class="btn-primary-soft" onclick="openCreate()"><i class="bi bi-plus-circle-fill"></i> Thêm danh mục</button>
+    </div>
+</div>
+
+<div class="card-table">
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Mã</th>
+                <th>Tên danh mục</th>
+                <th>Mô tả</th>
+                <th style="text-align:center;">Thiết bị</th>
+                <th style="text-align:center;">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody id="categoryTableBody">
+            @{ int stt = 0; }
+            @foreach (var dm in list)
+            {
+                stt++;
+                <tr data-search="@((dm.ID_DanhMuc + " " + dm.TenDanhMuc + " " + dm.MoTa).ToLower())">
+                    <td style="color:#999">@stt</td>
+                    <td><code style="font-size:11px;background:#f0f2f8;padding:2px 7px;border-radius:4px;">@dm.ID_DanhMuc</code></td>
+                    <td><strong>@dm.TenDanhMuc</strong></td>
+                    <td style="color:#666;font-size:12px;">@(string.IsNullOrWhiteSpace(dm.MoTa) ? "—" : dm.MoTa)</td>
+                    <td style="text-align:center;">@dm.SoThietBi</td>
+                    <td style="text-align:center; white-space:nowrap;">
+                        <button class="btn-icon edit" title="Sửa" onclick="openEdit('@dm.ID_DanhMuc')"><i class="bi bi-pencil-fill"></i></button>
+                        <button class="btn-icon del" title="Xóa" onclick="openDelete('@dm.ID_DanhMuc', '@Html.Raw(dm.TenDanhMuc.Replace("'", "\\'"))')"><i class="bi bi-trash3-fill"></i></button>
+                    </td>
+                </tr>
+            }
+            @if (!list.Any())
+            {
+                <tr><td colspan="6" style="text-align:center;color:#999;padding:30px;">Chưa có danh mục nào.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="modal-overlay" id="modalCreate">
+    <div class="modal-box">
+        <div class="modal-title">➕ Thêm Danh Mục</div>
+
+        <label class="form-lbl">Mã danh mục <span style="color:red">*</span></label>
+        <input type="text" id="c_id" class="form-inp" placeholder="VD: DM001" style="font-family:monospace;" />
+        <div class="form-note">Mã này sẽ dùng để liên kết với thiết bị.</div>
+
+        <label class="form-lbl">Tên danh mục <span style="color:red">*</span></label>
+        <input type="text" id="c_ten" class="form-inp" placeholder="VD: Máy tính để bàn" />
+
+        <label class="form-lbl">Mô tá</label>
+        <textarea id="c_moTa" class="form-textarea" placeholder="VD: Thiết bị công nghệ thông tin..."></textarea>
+
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-save" onclick="submitCreate()">💾 Thêm</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalEdit">
+    <div class="modal-box">
+        <div class="modal-title">✏️ Cập Nhật Danh Mục</div>
+        <input type="hidden" id="e_id" />
+
+        <label class="form-lbl">Mã danh mục</label>
+        <input type="text" id="e_id_display" class="form-inp" readonly style="font-family:monospace;background:#eef1f6;color:#8a93a7;" />
+
+        <label class="form-lbl">Tên danh mục <span style="color:red">*</span></label>
+        <input type="text" id="e_ten" class="form-inp" />
+
+        <label class="form-lbl">Mô tá</label>
+        <textarea id="e_moTa" class="form-textarea"></textarea>
+
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-save" onclick="submitEdit()">💾 Lưu thay đổi</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalDelete">
+    <div class="modal-box" style="width:430px;">
+        <div class="modal-title">🗑️ Xác Nhận Xóa</div>
+        <input type="hidden" id="d_id" />
+        <p style="font-size:14px;color:#444;margin-bottom:20px;">
+            Bạn có chắc muốn xóa danh mục <strong id="d_ten"></strong>?
+            <br><span style="color:#e53935;font-size:12px;">Không thể xóa nếu danh mục đang được gắn với thiết bị.</span>
+        </p>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-danger-soft" onclick="submitDelete()">🗑️ Xóa</button>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+<script>
+    var allRows = [];
+
+    function showAlert(msg, type) {
+        var box = document.getElementById('alertBox');
+        box.textContent = msg;
+        box.className = 'alert-box ' + type;
+        box.style.display = 'block';
+        setTimeout(function () { box.style.display = 'none'; }, 4000);
+    }
+
+    function closeAll() {
+        document.querySelectorAll('.modal-overlay').forEach(function (m) { m.classList.remove('active'); });
+    }
+
+    document.querySelectorAll('.modal-overlay').forEach(function (m) {
+        m.addEventListener('click', function (e) { if (e.target === m) closeAll(); });
+    });
+
+    // ─────────────────────────────────────────────────────────
+    // Search functionality
+    // ─────────────────────────────────────────────────────────
+    document.getElementById('searchInput').addEventListener('keyup', function () {
+        var query = this.value.toLowerCase();
+        document.querySelectorAll('#categoryTableBody tr').forEach(function (row) {
+            if (row.getAttribute('data-search').includes(query)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // ─────────────────────────────────────────────────────────
+    // Create modal
+    // ─────────────────────────────────────────────────────────
+    function openCreate() {
+        document.getElementById('c_id').value = '';
+        document.getElementById('c_ten').value = '';
+        document.getElementById('c_moTa').value = '';
+        document.getElementById('modalCreate').classList.add('active');
+        setTimeout(function () { document.getElementById('c_id').focus(); }, 100);
+    }
+
+    function submitCreate() {
+        var id = document.getElementById('c_id').value.trim();
+        var ten = document.getElementById('c_ten').value.trim();
+        var moTa = document.getElementById('c_moTa').value.trim();
+
+        if (!id) { showAlert('Vui lòng nhập mã danh mục.', 'error'); return; }
+        if (!ten) { showAlert('Vui lòng nhập tên danh mục.', 'error'); return; }
+
+        $.post('@Url.Action("SaveDanhMuc", "CSVC")', {
+            id: id,
+            ten: ten,
+            moTa: moTa
+        }, function (res) {
+            if (res.ok) { showAlert(res.msg, 'success'); closeAll(); setTimeout(function () { location.reload(); }, 1200); }
+            else showAlert(res.msg, 'error');
+        });
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // Edit modal
+    // ─────────────────────────────────────────────────────────
+    function openEdit(id) {
+        $.get('@Url.Action("GetDanhMuc", "CSVC")', { id: id }, function (res) {
+            if (!res.ok) { showAlert(res.msg, 'error'); return; }
+            document.getElementById('e_id').value = res.data.id;
+            document.getElementById('e_id_display').value = res.data.id;
+            document.getElementById('e_ten').value = res.data.ten || '';
+            document.getElementById('e_moTa').value = res.data.moTa || '';
+            document.getElementById('modalEdit').classList.add('active');
+            setTimeout(function () { document.getElementById('e_ten').focus(); }, 100);
+        });
+    }
+
+    function submitEdit() {
+        var ten = document.getElementById('e_ten').value.trim();
+        if (!ten) { showAlert('Tên danh mục không được để trống.', 'error'); return; }
+
+        $.post('@Url.Action("SaveDanhMuc", "CSVC")', {
+            id: document.getElementById('e_id').value,
+            ten: ten,
+            moTa: document.getElementById('e_moTa').value.trim()
+        }, function (res) {
+            if (res.ok) { showAlert(res.msg, 'success'); closeAll(); setTimeout(function () { location.reload(); }, 1200); }
+            else showAlert(res.msg, 'error');
+        });
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // Delete modal
+    // ─────────────────────────────────────────────────────────
+    function openDelete(id, ten) {
+        document.getElementById('d_id').value = id;
+        document.getElementById('d_ten').textContent = ten;
+        document.getElementById('modalDelete').classList.add('active');
+    }
+
+    function submitDelete() {
+        var id = document.getElementById('d_id').value;
+        $.post('@Url.Action("XoaDanhMuc", "CSVC")', { id: id }, function (res) {
+            if (res.ok) { showAlert(res.msg, 'success'); closeAll(); setTimeout(function () { location.reload(); }, 1200); }
+            else showAlert(res.msg, 'error');
+        });
+    }
+</script>
+}
+

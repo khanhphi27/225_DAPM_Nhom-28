@@ -156,13 +156,19 @@ namespace QLTB.Models
 
     public class BaoCaoTaiSanViewModel
     {
-        public string  ID_ThietBi        { get; set; }
-        public string  TenTB             { get; set; }
-        public string  TenDanhMuc        { get; set; }
-        public string  TenPhongBanKhoa   { get; set; }
-        public decimal Gia               { get; set; }
-        public string  TrangThaiTB       { get; set; }
-        public decimal TongChiPhiSuaChua { get; set; }
+        public string ID_ThietBi { get; set; }
+        public string TenTB { get; set; }
+        public string SoSeri { get; set; }
+        public string ThongSoKT { get; set; }
+        public string TenDanhMuc { get; set; }
+        public string TenPhongBanKhoa { get; set; }
+        public decimal Gia { get; set; } // Nguyên giá
+        public string TrangThaiTB { get; set; }
+        public decimal TongChiPhiSuaChua { get; set; } // Tổng tiền đã chi sửa chữa
+
+        // Các trường tính toán (Logic kế toán)
+        public decimal KhauHao { get { return Gia * 0.2m; } } // Giả định khấu hao 20% cho demo
+        public decimal GiaTriConLai { get { return Gia - KhauHao; } }
     }
     // ── Báo hỏng thiết bị ────────────────────────────────────
     public class BaoHongViewModel
@@ -272,6 +278,58 @@ namespace QLTB.Models
             LichSuGhiNhan = new List<GhiNhanViewModel>();
         }
     }
+
+    // ── Quản lý người dùng ───────────────────────────────────
+    public class NguoiDungViewModel
+    {
+        public string ID_NguoiDung { get; set; }
+        public string HoTen        { get; set; }
+        public string Email        { get; set; }
+        public bool   TrangThaiTK  { get; set; }
+        public string TenKhoa      { get; set; }
+        public string VaiTroNo     { get; set; }
+        public string TenVaiTro    { get; set; }
+    }
+
+    // ── Quản lý khoa / phòng ban ─────────────────────────────
+    public class KhoaPhongBanViewModel
+    {
+        public string ID_KhoaPhongBan { get; set; }
+        public string TenPhongBanKhoa { get; set; }
+        public int    SoNguoiDung     { get; set; }
+        public int    SoThietBi       { get; set; }
+    }
+
+    // ── Quản lý phòng ────────────────────────────────────────
+    public class PhongViewModel
+    {
+        public string ID_Phong  { get; set; }
+        public string TenPhong  { get; set; }
+        public string KhuVucNo  { get; set; }
+        public string TenKhuVuc { get; set; }
+        public int?   SucChua   { get; set; }
+        public int    SoThietBi { get; set; }
+    }
+
+    // ── Quản lý nhà cung cấp ────────────────────────────────
+    public class NhaCungCapViewModel
+    {
+        public string ID_NhaCC   { get; set; }
+        public string TenNhaCC   { get; set; }
+        public int?   LoaiDichVu { get; set; }
+        public string DiaChi     { get; set; }
+        public string Sdt        { get; set; }
+        public int     SoThietBi  { get; set; }
+    }
+
+    // ── Quản lý danh mục ────────────────────────────────────
+    public class DanhMucViewModel
+    {
+        public string ID_DanhMuc { get; set; }
+        public string TenDanhMuc { get; set; }
+        public string MoTa       { get; set; }
+        public int    SoThietBi  { get; set; }
+    }
 }
 
 // ViewModels kiểm kê — thêm vào namespace chính
@@ -333,4 +391,5 @@ namespace QLTB.Models
             DanhSachChuaKiem = new List<ItemTaoKiemKe>();
         }
     }
+
 }
