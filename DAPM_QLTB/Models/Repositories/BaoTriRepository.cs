@@ -113,14 +113,13 @@ namespace QLTB.Models.Repositories
                                 using (var cmd2 = new SqlCommand("SELECT LEFT(REPLACE(NEWID(),'-',''),10)", conn, tran))
                                     ctId = cmd2.ExecuteScalar().ToString();
 
-                                using (var cmd = new SqlCommand(@"INSERT INTO CHITIET_KEHOACH (ID_ChiTietKH,KeHoachNo,ThietBiNo,BaoHongNo,NguonGoc,GhiChuChiTiet)
-                                    VALUES (@ID,@KH,@TB,@BH,@NG,@GC)", conn, tran))
+                                using (var cmd = new SqlCommand(@"INSERT INTO CHITIET_KEHOACH (ID_ChiTietKH,KeHoachNo,ThietBiNo,BaoHongNo,GhiChuChiTiet)
+                                    VALUES (@ID,@KH,@TB,@BH,@GC)", conn, tran))
                                 {
                                     cmd.Parameters.AddWithValue("@ID", ctId);
                                     cmd.Parameters.AddWithValue("@KH", idKH);
                                     cmd.Parameters.AddWithValue("@TB", thietBiNos[i]);
                                     cmd.Parameters.AddWithValue("@BH", baoHongNos != null && i < baoHongNos.Length && !string.IsNullOrWhiteSpace(baoHongNos[i]) ? (object)baoHongNos[i] : DBNull.Value);
-                                    cmd.Parameters.AddWithValue("@NG", nguonGocs != null && i < nguonGocs.Length ? (object)nguonGocs[i] : "Định kỳ");
                                     cmd.Parameters.AddWithValue("@GC", ghiChuCTs != null && i < ghiChuCTs.Length ? (object)ghiChuCTs[i] : DBNull.Value);
                                     cmd.ExecuteNonQuery();
                                 }
@@ -156,8 +155,79 @@ namespace QLTB.Models.Repositories
             return (true, "Đã xóa kế hoạch.");
         }
 
-        #endregion
+        public object GetKeHoachDetail(string id)
+        {
+            using (var conn = DbHelper.GetConnection())
+            {
+                conn.Open();
+                object kh = null;
+                using (var cmd = new SqlCommand(@"SELECT kh.*, ISNULL(nd.HoTen,'') AS HoTen 
+                    FROM KEHOACH_BAOTRI kh LEFT JOIN NGUOIDUNG nd ON kh.NguoiLapNo=nd.ID_NguoiDung 
+                    WHERE kh.ID_KeHoach=@id", conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+                    using (var r = cmd.ExecuteReader())
+                        if (r.Read())
+                            kh = new
+                            {
+                                ID_KeHoach = r["ID_KeHoach"].ToString(),
+                                LoaiKeHoach = r["LoaiKeHoach"].ToString(),
+                                DonViThucHien = r["DonViThucHien"]?.ToString(),
+                                NgayLap = Convert.ToDateTime(r["NgayLap"]).ToString("dd/MM/yyyy"),
+                                NgayDuKienHT = r["NgayDuKienHT"] == DBNull.Value ? "" : Convert.ToDateTime(r["NgayDuKienHT"]).ToString("dd/MM/yyyy"),
+                                ChiPhiDuKien = r["ChiPhiDuKien"] == DBNull.Value ? 0 : Convert.ToDecimal(r["ChiPhiDuKien"]),
+                                TrangThai = r["TrangThai"].ToString(),
+                                GhiChu = r["GhiChu"]?.ToString(),
+                                HoTen = r["HoTen"].ToString()
+                            };
+                }
+                if (kh == null) return null;
 
+                var ct = new List<object>();
+                using (var cmd = new SqlCommand(@"SELECT ckh.*, tb.TenTB, ISNULL(dm.TenDanhMuc,'') AS TenDanhMuc 
+                    FROM CHITIET_KEHOACH ckh JOIN THIETBI tb ON ckh.ThietBiNo=tb.ID_ThietBi 
+                    LEFT JOIN DANHMUC dm ON tb.DanhMucNo=dm.ID_DanhMuc 
+                    WHERE ckh.KeHoachNo=@id", conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+                    using (var r = cmd.ExecuteReader())
+                        while (r.Read())
+                            ct.Add(new
+                            {
+                                ThietBiNo = r["ThietBiNo"].ToString(),
+                                TenTB = r["TenTB"].ToString(),
+                                TenDanhMuc = r["TenDanhMuc"].ToString(),
+                                BaoHongNo = r["BaoHongNo"]?.ToString(),
+                                GhiChuChiTiet = r["GhiChuChiTiet"]?.ToString()
+                            });
+                }
+
+                var ls = new List<object>();
+                using (var cmd = new SqlCommand(@"SELECT gn.*, ckh.ThietBiNo, tb.TenTB, ckh.BaoHongNo 
+                    FROM GHINHAN_SUA_CHUA gn JOIN CHITIET_KEHOACH ckh ON gn.ChiTietKeHoachNo=ckh.ID_ChiTietKH 
+                    JOIN THIETBI tb ON ckh.ThietBiNo=tb.ID_ThietBi 
+                    WHERE gn.KeHoachNo=@id ORDER BY gn.NgayThucHien DESC", conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+                    using (var r = cmd.ExecuteReader())
+                        while (r.Read())
+                            ls.Add(new
+                            {
+                                ID_GhiNhan = r["ID_GhiNhan"].ToString(),
+                                NgayThucHien = Convert.ToDateTime(r["NgayThucHien"]).ToString("dd/MM/yyyy"),
+                                ThietBiNo = r["ThietBiNo"].ToString(),
+                                TenTB = r["TenTB"].ToString(),
+                                BaoHongNo = r["BaoHongNo"]?.ToString(),
+                                TrangThaiSauSua = r["TrangThaiSauSua"]?.ToString(),
+                                ChiPhiThucTe = r["ChiPhiThucTe"] == DBNull.Value ? 0 : Convert.ToDecimal(r["ChiPhiThucTe"]),
+                                KetQua = r["KetQua"]?.ToString()
+                            });
+                }
+                return new { ok = true, keHoach = kh, chiTiet = ct, lichSu = ls };
+            }
+        }
+
+        #endregion
         #region ── Ghi nhận sửa chữa ──────────────────────────
 
         public GhiNhanPageViewModel GetGhiNhanData()
@@ -189,7 +259,7 @@ namespace QLTB.Models.Repositories
                 var ctDict = new Dictionary<string, List<ChiTietKeHoachViewModel>>();
                 const string sqlCT = @"SELECT ckh.ID_ChiTietKH, ckh.KeHoachNo, ckh.ThietBiNo, ISNULL(tb.TenTB,'—') AS TenTB,
                        ISNULL(dm.TenDanhMuc,'') AS TenDanhMuc, ckh.BaoHongNo, ISNULL(bh.MoTaHong,'') AS MoTaHong,
-                       ckh.NguonGoc, ckh.GhiChuChiTiet
+                       ckh.GhiChuChiTiet
                 FROM CHITIET_KEHOACH ckh LEFT JOIN THIETBI tb ON tb.ID_ThietBi=ckh.ThietBiNo
                 LEFT JOIN DANHMUC dm ON dm.ID_DanhMuc=tb.DanhMucNo LEFT JOIN BAOHONG_THIETBI bh ON bh.ID_BaoHong=ckh.BaoHongNo
                 WHERE ckh.KeHoachNo IN (SELECT kh.ID_KeHoach FROM KEHOACH_BAOTRI kh WHERE kh.TrangThai IN (N'Chờ thực hiện',N'Đang thực hiện'))
@@ -206,7 +276,7 @@ namespace QLTB.Models.Repositories
                             ThietBiNo = rd["ThietBiNo"] == DBNull.Value ? null : rd["ThietBiNo"].ToString(),
                             TenTB = rd["TenTB"].ToString(), TenDanhMuc = rd["TenDanhMuc"].ToString(),
                             BaoHongNo = rd["BaoHongNo"] == DBNull.Value ? null : rd["BaoHongNo"].ToString(),
-                            MoTaBaoHong = rd["MoTaHong"].ToString(), NguonGoc = rd["NguonGoc"].ToString(),
+                            MoTaBaoHong = rd["MoTaHong"].ToString(), NguonGoc = rd["BaoHongNo"] == DBNull.Value ? "Định kỳ" : "Báo hỏng",
                             GhiChuChiTiet = rd["GhiChuChiTiet"].ToString()
                         });
                     }

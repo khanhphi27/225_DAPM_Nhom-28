@@ -39,6 +39,13 @@ namespace QLTB.Controllers
             catch (Exception ex) { ViewBag.Error = ex.Message; return View(new System.Collections.Generic.List<TheDoiThietBiViewModel>()); }
         }
 
+        [HttpGet]
+        public JsonResult GetLichSuDuyetTheoThietBi(string tenTB)
+        {
+            try { return Json(new { ok = true, data = _svc.GetLichSuDuyetTheoThietBi(tenTB) }, JsonRequestBehavior.AllowGet); }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
+        }
+
         // ── KHTC ─────────────────────────────────────────────
         public ActionResult DashboardKHTC()
         {

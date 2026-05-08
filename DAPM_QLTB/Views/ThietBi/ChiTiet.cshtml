@@ -1,18 +1,17 @@
-﻿@model System.Data.DataTable
+@model QLTB.Models.ThietBiViewModel
 @{
-    ViewBag.Title = "Chi tiáº¿t thiáº¿t bá»‹";
-    var row = Model.Rows[0];
+    ViewBag.Title = "Chi tiết thiết bị";
 }
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="mb-0"><i class="fa fa-info-circle text-primary"></i> Chi Tiáº¿t Thiáº¿t Bá»‹</h3>
-        <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("QuanLy", "ThietBi")">â† Quay láº¡i danh sĂ¡ch</a>
+        <h3 class="mb-0"><i class="fa fa-info-circle text-primary"></i> Chi Tiết Thiết Bị</h3>
+        <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("QuanLy", "ThietBi")">← Quay lại danh sách</a>
     </div>
 
     @if (ViewBag.TenKhoaPhongBan != null && !string.IsNullOrWhiteSpace(ViewBag.TenKhoaPhongBan.ToString()))
     {
-        <div class="alert alert-info py-2">ÄÆ¡n vá»‹: <strong>@ViewBag.TenKhoaPhongBan</strong></div>
+        <div class="alert alert-info py-2">Đơn vị: <strong>@ViewBag.TenKhoaPhongBan</strong></div>
     }
 
     @if (TempData["Error"] != null)
@@ -29,32 +28,40 @@
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-6">
-                    <div><strong>MĂ£ thiáº¿t bá»‹:</strong> @row["ID_ThietBi"]</div>
+                    <div><strong>Mã thiết bị:</strong> @Model.ID_ThietBi</div>
                 </div>
                 <div class="col-md-6">
-                    <div><strong>TĂªn thiáº¿t bá»‹:</strong> @row["TenTB"]</div>
+                    <div><strong>Tên thiết bị:</strong> @Model.TenTB</div>
                 </div>
                 <div class="col-md-6">
-                    <div><strong>Danh má»¥c:</strong> @row["TenDanhMuc"]</div>
+                    <div><strong>Danh mục:</strong> @Model.TenDanhMuc</div>
                 </div>
                 <div class="col-md-6">
-                    <div><strong>Tráº¡ng thĂ¡i:</strong> @row["TrangThaiTB"]</div>
+                    <div><strong>Trạng thái:</strong> @Model.TrangThaiTB</div>
                 </div>
                 <div class="col-md-6">
-                    <div><strong>GiĂ¡ trá»‹:</strong> @string.Format("{0:N0} Ä‘", row["Gia"])</div>
+                    <div><strong>Giá trị:</strong> @(Model.Gia.HasValue ? string.Format("{0:N0} đ", Model.Gia.Value) : "—")</div>
                 </div>
                 <div class="col-md-6">
-                    <div><strong>Sá»‘ seri:</strong> @row["SoSeri"]</div>
+                    <div><strong>Số seri:</strong> @(Model.SoSeri.HasValue ? Model.SoSeri.ToString() : "—")</div>
                 </div>
                 <div class="col-md-6">
-                    <div><strong>NhĂ  cung cáº¥p:</strong> @row["TenNhaCC"]</div>
+                    <div><strong>Nhà cung cấp:</strong> @(string.IsNullOrWhiteSpace(Model.TenNhaCungCap) ? "—" : Model.TenNhaCungCap)</div>
                 </div>
                 <div class="col-md-6">
-                    <div><strong>Khoa/PhĂ²ng ban:</strong> @row["TenKhoaPhongBan"]</div>
+                    <div><strong>Khoa/Phòng ban:</strong> @(string.IsNullOrWhiteSpace(Model.TenKhoaPhongBan) ? "—" : Model.TenKhoaPhongBan)</div>
                 </div>
                 <div class="col-12">
-                    <div><strong>ThĂ´ng sá»‘ ká»¹ thuáº­t:</strong></div>
-                    <div class="border rounded p-2 bg-light">@row["ThongSoKT"]</div>
+                    <div><strong>Vị trí đặt:</strong></div>
+                    <div class="border rounded p-2 bg-light">
+                        @(string.IsNullOrWhiteSpace(Model.TenPhong) ? "Chưa bố trí phòng" : $"{Model.TenPhong} ({Model.TenKhuVuc} - {Model.TenCoSo})")
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div><strong>Thông số kỹ thuật:</strong></div>
+                    <div class="border rounded p-2 bg-light">
+                        @(string.IsNullOrWhiteSpace(Model.ThongSoKT) ? "Không có thông số kỹ thuật" : Model.ThongSoKT)
+                    </div>
                 </div>
             </div>
         </div>
@@ -62,22 +69,21 @@
 
     <div class="card border-danger shadow-sm">
         <div class="card-header bg-danger text-white py-2">
-            <strong>BĂ¡o há»ng thiáº¿t bá»‹</strong>
+            <strong>Báo hỏng thiết bị</strong>
         </div>
         <div class="card-body">
             @using (Html.BeginForm("BaoHong", "TruongKhoa", FormMethod.Post))
             {
-                <input type="hidden" name="id" value="@row["ID_ThietBi"]" />
+                <input type="hidden" name="id" value="@Model.ID_ThietBi" />
                 <input type="hidden" name="fromDetail" value="true" />
 
                 <div class="mb-3">
-                    <label class="form-label">MĂ´ táº£ hÆ° há»ng *</label>
-                    <textarea name="mota" class="form-control" rows="3" placeholder="Nháº­p mĂ´ táº£ chi tiáº¿t lá»—i cá»§a thiáº¿t bá»‹..." required></textarea>
+                    <label class="form-label">Mô tả hư hỏng *</label>
+                    <textarea name="mota" class="form-control" rows="3" placeholder="Nhập mô tả chi tiết lỗi của thiết bị..." required></textarea>
                 </div>
 
-                <button type="submit" class="btn btn-danger">Gá»­i bĂ¡o há»ng</button>
+                <button type="submit" class="btn btn-danger">Gửi báo hỏng</button>
             }
         </div>
     </div>
 </div>
-

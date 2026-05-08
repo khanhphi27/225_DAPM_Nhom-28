@@ -61,7 +61,7 @@ namespace QLTB.Models.Repositories
             {
                 conn.Open();
                 // Sinh ID mới
-                using (var cmd = new SqlCommand("SELECT 'KK' + RIGHT('00000' + CAST(ISNULL(MAX(CAST(SUBSTRING(ID_KiemKe,3,LEN(ID_KiemKe)) AS INT)),0)+1 AS VARCHAR), 5) FROM KIEMKE", conn))
+                using (var cmd = new SqlCommand("SELECT 'KK' + RIGHT('00000' + CAST(ISNULL(MAX(TRY_CAST(SUBSTRING(ID_KiemKe,3,LEN(ID_KiemKe)) AS INT)),0)+1 AS VARCHAR), 5) FROM KIEMKE", conn))
                     vm.ID_KiemKe = cmd.ExecuteScalar()?.ToString() ?? "KK00001";
 
                 // Thiết bị chưa kiểm kê

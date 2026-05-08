@@ -150,6 +150,54 @@ namespace QLTB.Models.Repositories
             return list;
         }
 
+        public List<object> GetLichSuDuyetTheoThietBi(string tenTB)
+        {
+            var list = new List<object>();
+            using (var conn = DbHelper.GetConnection())
+            {
+                conn.Open();
+                var words = (tenTB ?? "").Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                if (words.Length == 0) return list;
+
+                var likes = new List<string>();
+                for (int i = 0; i < words.Length; i++) likes.Add("ct.TenThietBiDeXuat LIKE @W" + i);
+
+                string sql = @"
+                    SELECT ls.CapDuyet, ls.ThoiGianDuyet, ls.TrangThaiSauDuyet, ls.GhiChu,
+                           nd.HoTen AS NguoiDuyet,
+                           dx.ID_DeXuat, dx.TrangThai AS TrangThaiDeXuat,
+                           dx.NgayDeXuat, dx.MoTa, ct.TenThietBiDeXuat
+                    FROM LICHSUDUYET ls
+                    JOIN NGUOIDUNG nd ON nd.ID_NguoiDung = ls.NguoiDuyetNo
+                    JOIN DEXUAT_MUASAM dx ON dx.ID_DeXuat = ls.DeXuatNo
+                    JOIN CHITIET_DEXUAT ct ON ct.DeXuatNo = dx.ID_DeXuat
+                    WHERE (" + string.Join(" OR ", likes) + @")
+                    ORDER BY dx.NgayDeXuat DESC, ls.ThoiGianDuyet";
+
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    for (int i = 0; i < words.Length; i++)
+                        cmd.Parameters.AddWithValue("@W" + i, "%" + words[i] + "%");
+                    using (var r = cmd.ExecuteReader())
+                        while (r.Read())
+                            list.Add(new
+                            {
+                                CapDuyet = r["CapDuyet"].ToString(),
+                                NguoiDuyet = r["NguoiDuyet"].ToString(),
+                                ThoiGian = Convert.ToDateTime(r["ThoiGianDuyet"]).ToString("dd/MM/yyyy HH:mm"),
+                                TrangThaiSauDuyet = r["TrangThaiSauDuyet"].ToString(),
+                                GhiChu = r["GhiChu"] == DBNull.Value ? "" : r["GhiChu"].ToString(),
+                                ID_DeXuat = r["ID_DeXuat"].ToString(),
+                                TrangThaiDeXuat = r["TrangThaiDeXuat"].ToString(),
+                                NgayDeXuat = Convert.ToDateTime(r["NgayDeXuat"]).ToString("dd/MM/yyyy"),
+                                MoTa = r["MoTa"] == DBNull.Value ? "" : r["MoTa"].ToString(),
+                                TenThietBiDeXuat = r["TenThietBiDeXuat"].ToString()
+                            });
+                }
+            }
+            return list;
+        }
+
         #endregion
 
         #region ── KHTC Dashboard ──────────────────────────────

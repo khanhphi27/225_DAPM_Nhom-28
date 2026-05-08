@@ -46,6 +46,18 @@ namespace QLTB.Controllers
             catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
         }
 
+        [HttpGet]
+        public JsonResult GetKeHoachDetail(string id)
+        {
+            try
+            {
+                var data = _svc.GetKeHoachDetail(id);
+                if (data == null) return Json(new { ok = false, msg = "Không tìm thấy kế hoạch" }, JsonRequestBehavior.AllowGet);
+                return Json(data, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
+        }
+
         public ActionResult GhiNhan()
         {
             var r = CheckAuth(); if (r != null) return r;

@@ -14,6 +14,7 @@ namespace QLTB.Models.Services
             => _repo.LuuKeHoach(idKH, loai, donVi, ngayDuKienHT, chiPhi, ghiChu, thietBiNos, baoHongNos, nguonGocs, ghiChuCTs, nguoiLapId);
 
         public (bool ok, string msg) XoaKeHoach(string id) => _repo.XoaKeHoach(id);
+        public object GetKeHoachDetail(string id) => _repo.GetKeHoachDetail(id);
 
         public GhiNhanPageViewModel GetGhiNhanData() => _repo.GetGhiNhanData();
 

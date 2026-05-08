@@ -1,4 +1,4 @@
-﻿@model QLTB.Models.GhiNhanPageViewModel
+@model QLTB.Models.GhiNhanPageViewModel
 @{ ViewBag.Title = "Ghi Nhận Sửa Chữa - Phòng CSVC"; }
 
 <style>
@@ -770,7 +770,7 @@
         document.getElementById('completedDevices').innerHTML = '<div style="color:#888;font-size:12px">Đang tải...</div>';
         document.getElementById('completedHistory').innerHTML = '<div style="color:#888;font-size:12px">Đang tải...</div>';
 
-        fetch('/CSVC/GetKeHoachDetail?id=' + encodeURIComponent(khId))
+        fetch('/BaoTri/GetKeHoachDetail?id=' + encodeURIComponent(khId))
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 if (!data.ok) { showToast('Lỗi: ' + data.msg, false); return; }
@@ -882,7 +882,7 @@
             trangThaiSauSua: tt
         });
 
-        fetch('/CSVC/LuuGhiNhan', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() })
+        fetch('/BaoTri/LuuGhiNhan', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() })
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 if (data.ok) {

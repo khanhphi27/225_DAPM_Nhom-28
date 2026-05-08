@@ -11,6 +11,7 @@ namespace QLTB.Models.Services
         public BGHDashboardViewModel GetBGHDashboard() => _repo.GetBGHDashboard();
         public ThongKeTaiSanViewModel GetThongKeTaiSan() => _repo.GetThongKeTaiSan();
         public List<TheDoiThietBiViewModel> GetTheoDoi() => _repo.GetTheoDoi();
+        public List<object> GetLichSuDuyetTheoThietBi(string tenTB) => _repo.GetLichSuDuyetTheoThietBi(tenTB);
 
         // KHTC
         public KHTCDashboardViewModel GetKHTCDashboard() => _repo.GetKHTCDashboard();

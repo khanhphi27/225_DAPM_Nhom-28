@@ -1,6 +1,6 @@
 ﻿@model IEnumerable<QLTB.Models.KhoaPhongBanViewModel>
 @{
-    ViewBag.Title = "Quáº£n LĂ½ Khoa / PhĂ²ng Ban";
+    ViewBag.Title = "Quản Lý Khoa / Phòng Ban";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -76,8 +76,8 @@
 </style>
 
 <div class="page-header">
-    <h2>đŸ¢ Quáº£n LĂ½ Khoa / PhĂ²ng Ban</h2>
-    <p>ThĂªm, chá»‰nh sá»­a vĂ  xĂ³a cĂ¡c khoa, phĂ²ng ban trong há»‡ thá»‘ng</p>
+    <h2>🏢 Quản Lý Khoa / Phòng Ban</h2>
+    <p>Thêm, chỉnh sửa và xóa các khoa, phòng ban trong hệ thống</p>
 </div>
 
 @if (ViewBag.Error != null)
@@ -89,23 +89,23 @@
 
 <!-- Toolbar -->
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-    <span style="font-size:13px; color:#666;">Tá»•ng: <strong>@Model.Count()</strong> khoa / phĂ²ng ban</span>
+    <span style="font-size:13px; color:#666;">Tổng: <strong>@Model.Count()</strong> khoa / phòng ban</span>
     <button onclick="openCreate()" style="background:#1a237e;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;">
-        <i class="bi bi-plus-circle-fill"></i> ThĂªm khoa má»›i
+        <i class="bi bi-plus-circle-fill"></i> Thêm khoa mới
     </button>
 </div>
 
-<!-- Báº£ng danh sĂ¡ch -->
+<!-- Bảng danh sách -->
 <div class="card-table">
     <table>
         <thead>
             <tr>
                 <th>#</th>
                 <th>ID Khoa</th>
-                <th>TĂªn khoa / phĂ²ng ban</th>
-                <th style="text-align:center">NgÆ°á»i dĂ¹ng</th>
-                <th style="text-align:center">Thiáº¿t bá»‹</th>
-                <th style="text-align:center">Thao tĂ¡c</th>
+                <th>Tên khoa / phòng ban</th>
+                <th style="text-align:center">Người dùng</th>
+                <th style="text-align:center">Thiết bị</th>
+                <th style="text-align:center">Thao tác</th>
             </tr>
         </thead>
         <tbody>
@@ -118,17 +118,17 @@
                     <td><code style="font-size:11px;background:#f0f2f8;padding:2px 7px;border-radius:4px;">@kp.ID_KhoaPhongBan</code></td>
                     <td><strong>@kp.TenPhongBanKhoa</strong></td>
                     <td style="text-align:center">
-                        <span class="badge-count nd">đŸ‘¤ @kp.SoNguoiDung</span>
+                        <span class="badge-count nd">👤 @kp.SoNguoiDung</span>
                     </td>
                     <td style="text-align:center">
-                        <span class="badge-count tb">đŸ’» @kp.SoThietBi</span>
+                        <span class="badge-count tb">💻 @kp.SoThietBi</span>
                     </td>
                     <td style="text-align:center; white-space:nowrap;">
-                        <button class="btn-icon edit" title="Sá»­a"
+                        <button class="btn-icon edit" title="Sửa"
                                 onclick="openEdit('@kp.ID_KhoaPhongBan')">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
-                        <button class="btn-icon del" title="XĂ³a"
+                        <button class="btn-icon del" title="Xóa"
                                 onclick="openDelete('@kp.ID_KhoaPhongBan', '@Html.Raw(kp.TenPhongBanKhoa.Replace("'", "\\'"))')">
                             <i class="bi bi-trash3-fill"></i>
                         </button>
@@ -137,62 +137,62 @@
             }
             @if (!Model.Any())
             {
-                <tr><td colspan="6" style="text-align:center;color:#999;padding:30px;">ChÆ°a cĂ³ khoa nĂ o.</td></tr>
+                <tr><td colspan="6" style="text-align:center;color:#999;padding:30px;">Chưa có khoa nào.</td></tr>
             }
         </tbody>
     </table>
 </div>
 
-<!-- ===== MODAL Táº O ===== -->
+<!-- ===== MODAL TẠO ===== -->
 <div class="modal-overlay" id="modalCreate">
     <div class="modal-box">
-        <div class="modal-title">â• ThĂªm Khoa / PhĂ²ng Ban Má»›i</div>
+        <div class="modal-title">➕ Thêm Khoa / Phòng Ban Mới</div>
 
         <label class="form-lbl">ID Khoa <span style="color:red">*</span></label>
         <input type="text" id="c_id" class="form-inp" placeholder="VD: KH001" style="font-family:monospace;" />
 
-        <label class="form-lbl">TĂªn khoa / phĂ²ng ban <span style="color:red">*</span></label>
-        <input type="text" id="c_ten" class="form-inp" placeholder="VD: Khoa CĂ´ng nghá»‡ thĂ´ng tin" />
+        <label class="form-lbl">Tên khoa / phòng ban <span style="color:red">*</span></label>
+        <input type="text" id="c_ten" class="form-inp" placeholder="VD: Khoa Công nghệ thông tin" />
 
         <div class="modal-footer">
-            <button class="btn-cancel" onclick="closeAll()">Há»§y</button>
-            <button class="btn-save" onclick="submitCreate()">đŸ’¾ ThĂªm</button>
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-save" onclick="submitCreate()">💾 Thêm</button>
         </div>
     </div>
 </div>
 
-<!-- ===== MODAL Sá»¬A ===== -->
+<!-- ===== MODAL SỬA ===== -->
 <div class="modal-overlay" id="modalEdit">
     <div class="modal-box">
-        <div class="modal-title">âœï¸ Chá»‰nh Sá»­a Khoa / PhĂ²ng Ban</div>
+        <div class="modal-title">✏️ Chỉnh Sửa Khoa / Phòng Ban</div>
         <input type="hidden" id="e_id" />
 
         <label class="form-lbl">ID Khoa</label>
         <input type="text" id="e_id_display" class="form-inp" readonly
                style="font-family:monospace;background:#f0f2f8;color:#555;cursor:not-allowed;" />
 
-        <label class="form-lbl">TĂªn khoa / phĂ²ng ban <span style="color:red">*</span></label>
+        <label class="form-lbl">Tên khoa / phòng ban <span style="color:red">*</span></label>
         <input type="text" id="e_ten" class="form-inp" />
 
         <div class="modal-footer">
-            <button class="btn-cancel" onclick="closeAll()">Há»§y</button>
-            <button class="btn-save" onclick="submitEdit()">đŸ’¾ LÆ°u thay Ä‘á»•i</button>
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-save" onclick="submitEdit()">💾 Lưu thay đổi</button>
         </div>
     </div>
 </div>
 
-<!-- ===== MODAL XĂ“A ===== -->
+<!-- ===== MODAL XÓA ===== -->
 <div class="modal-overlay" id="modalDelete">
     <div class="modal-box" style="width:400px;">
-        <div class="modal-title">đŸ—‘ï¸ XĂ¡c Nháº­n XĂ³a</div>
+        <div class="modal-title">🗑️ Xác Nhận Xóa</div>
         <input type="hidden" id="d_id" />
         <p style="font-size:14px;color:#444;margin-bottom:20px;">
-            Báº¡n cĂ³ cháº¯c muá»‘n xĂ³a khoa <strong id="d_ten"></strong>?<br>
-            <span style="color:#e53935;font-size:12px;">Chá»‰ xĂ³a Ä‘Æ°á»£c khi khĂ´ng cĂ²n ngÆ°á»i dĂ¹ng vĂ  thiáº¿t bá»‹ thuá»™c khoa nĂ y.</span>
+            Bạn có chắc muốn xóa khoa <strong id="d_ten"></strong>?<br>
+            <span style="color:#e53935;font-size:12px;">Chỉ xóa được khi không còn người dùng và thiết bị thuộc khoa này.</span>
         </p>
         <div class="modal-footer">
-            <button class="btn-cancel" onclick="closeAll()">Há»§y</button>
-            <button class="btn-danger" onclick="submitDelete()">đŸ—‘ï¸ XĂ³a</button>
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-danger" onclick="submitDelete()">🗑️ Xóa</button>
         </div>
     </div>
 </div>
@@ -213,7 +213,7 @@
         m.addEventListener('click', function (e) { if (e.target === m) closeAll(); });
     });
 
-    // â”€â”€ Táº¡o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Tạo ──────────────────────────────────────────────────
     function openCreate() {
         document.getElementById('c_id').value  = '';
         document.getElementById('c_ten').value = '';
@@ -223,8 +223,8 @@
     function submitCreate() {
         var id  = document.getElementById('c_id').value.trim();
         var ten = document.getElementById('c_ten').value.trim();
-        if (!id)  { showAlert('Vui lĂ²ng nháº­p ID khoa.', 'error'); return; }
-        if (!ten) { showAlert('Vui lĂ²ng nháº­p tĂªn khoa.', 'error'); return; }
+        if (!id)  { showAlert('Vui lòng nhập ID khoa.', 'error'); return; }
+        if (!ten) { showAlert('Vui lòng nhập tên khoa.', 'error'); return; }
 
         $.post('@Url.Action("TaoKhoa", "Khoa")', { id: id, ten: ten }, function (res) {
             if (res.ok) { showAlert(res.msg, 'success'); closeAll(); setTimeout(function () { location.reload(); }, 1200); }
@@ -232,7 +232,7 @@
         });
     }
 
-    // â”€â”€ Sá»­a â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Sửa ──────────────────────────────────────────────────
     function openEdit(id) {
         $.get('@Url.Action("GetKhoa", "Khoa")', { id: id }, function (res) {
             if (!res.ok) { showAlert(res.msg, 'error'); return; }
@@ -245,7 +245,7 @@
     }
     function submitEdit() {
         var ten = document.getElementById('e_ten').value.trim();
-        if (!ten) { showAlert('TĂªn khoa khĂ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.', 'error'); return; }
+        if (!ten) { showAlert('Tên khoa không được để trống.', 'error'); return; }
 
         $.post('@Url.Action("SuaKhoa", "Khoa")', {
             id:  document.getElementById('e_id').value,
@@ -256,7 +256,7 @@
         });
     }
 
-    // â”€â”€ XĂ³a â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Xóa ──────────────────────────────────────────────────
     function openDelete(id, ten) {
         document.getElementById('d_id').value = id;
         document.getElementById('d_ten').textContent = ten;
@@ -266,10 +266,9 @@
         $.post('@Url.Action("XoaKhoa", "Khoa")', {
             id: document.getElementById('d_id').value
         }, function (res) {
-            if (res.ok) { showAlert('ÄĂ£ xĂ³a khoa.', 'success'); closeAll(); setTimeout(function () { location.reload(); }, 1200); }
+            if (res.ok) { showAlert('Đã xóa khoa.', 'success'); closeAll(); setTimeout(function () { location.reload(); }, 1200); }
             else showAlert(res.msg, 'error');
         });
     }
 </script>
 }
-

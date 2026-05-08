@@ -48,5 +48,20 @@ namespace QLTB.Models.Services
 
         public List<object> GetLichSuDuyet(string idDX) => _repo.GetLichSuDuyet(idDX);
         public List<object> GetDanhSachDeXuat() => _repo.GetDanhSachDeXuat();
+
+        // ── BGH: Xét duyệt yêu cầu ──────────────────────────
+        public (List<DeXuatViewModel> choDuyet, List<DeXuatViewModel> lichSu) GetDeXuatForBGH()
+            => _repo.GetDeXuatForBGH();
+
+        public (bool ok, string msg) DuyetDeXuatBGH(string id, string action, string ghiChu, string nguoiDuyetId)
+            => _repo.DuyetDeXuatBGH(id, action, ghiChu, nguoiDuyetId);
+
+        // ── KHTC: Phê duyệt ngân sách ────────────────────────
+        public List<DeXuatViewModel> GetDeXuatForKHTC() => _repo.GetDeXuatForKHTC();
+        public (bool ok, string msg) XuLyNganSachKHTC(string id, string action, string ghiChu, string nguoiDuyetId)
+            => _repo.XuLyNganSachKHTC(id, action, ghiChu, nguoiDuyetId);
+        public List<ChiPhiViewModel> GetChiPhiList() => _repo.GetChiPhiList();
+        public (bool ok, string msg) CapNhatChiPhi(string id, decimal chiPhiMoi) => _repo.CapNhatChiPhi(id, chiPhiMoi);
+        public List<object> GetLichSuSuaChua(string idThietBi) => _repo.GetLichSuSuaChua(idThietBi);
     }
 }

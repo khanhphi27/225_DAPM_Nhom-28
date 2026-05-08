@@ -1,6 +1,6 @@
 ﻿@model IEnumerable<QLTB.Models.NguoiDungViewModel>
 @{
-    ViewBag.Title = "Quáº£n LĂ½ NgÆ°á»i DĂ¹ng";
+    ViewBag.Title = "Quản Lý Người Dùng";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var vaiTros = ViewBag.VaiTros as IEnumerable<System.Web.Mvc.SelectListItem> ?? new List<System.Web.Mvc.SelectListItem>();
     var khoaList = ViewBag.KhoaList as IEnumerable<System.Web.Mvc.SelectListItem> ?? new List<System.Web.Mvc.SelectListItem>();
@@ -91,8 +91,8 @@
 </style>
 
 <div class="page-header">
-    <h2>đŸ‘¥ Quáº£n LĂ½ NgÆ°á»i DĂ¹ng</h2>
-    <p>Táº¡o, chá»‰nh sá»­a vĂ  phĂ¢n quyá»n tĂ i khoáº£n trong há»‡ thá»‘ng</p>
+    <h2>👥 Quản Lý Người Dùng</h2>
+    <p>Tạo, chỉnh sửa và phân quyền tài khoản trong hệ thống</p>
 </div>
 
 @if (ViewBag.Error != null)
@@ -104,41 +104,41 @@
 
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
     <span style="font-size:13px; color:#666;">
-        Tá»•ng: <strong id="lblTong">@list.Count()</strong> tĂ i khoáº£n
-        <span id="lblLoc" style="color:#1a237e; display:none;"> â€” lá»c ra: <strong id="lblLocSo">0</strong></span>
+        Tổng: <strong id="lblTong">@list.Count()</strong> tài khoản
+        <span id="lblLoc" style="color:#1a237e; display:none;"> – lọc ra: <strong id="lblLocSo">0</strong></span>
     </span>
     <button class="btn btn-primary" onclick="openCreate()" style="background:#1a237e;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;">
-        <i class="bi bi-person-plus-fill"></i> Táº¡o tĂ i khoáº£n má»›i
+        <i class="bi bi-person-plus-fill"></i> Tạo tài khoản mới
     </button>
 </div>
 
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
     <select id="filterKhoa" onchange="applyFilter()" style="padding:8px 12px;border:1px solid #d0d5e8;border-radius:8px;font-size:13px;background:#fff;min-width:180px;">
-        <option value="">đŸ¢ Táº¥t cáº£ khoa / phĂ²ng ban</option>
+        <option value="">🏢 Tất cả khoa / phòng ban</option>
         @foreach (var kp in khoaList)
         {
             <option value="@kp.Text">@kp.Text</option>
         }
-        <option value="â€”">â€” ChÆ°a thuá»™c Ä‘Æ¡n vá»‹</option>
+        <option value="—">— Chưa thuộc đơn vị</option>
     </select>
 
     <select id="filterVaiTro" onchange="applyFilter()" style="padding:8px 12px;border:1px solid #d0d5e8;border-radius:8px;font-size:13px;background:#fff;min-width:160px;">
-        <option value="">đŸ”‘ Táº¥t cáº£ vai trĂ²</option>
+        <option value="">🔑 Tất cả vai trò</option>
         @foreach (var vt in vaiTros)
         {
             <option value="@vt.Text">@vt.Text</option>
         }
-        <option value="ChÆ°a phĂ¢n quyá»n">ChÆ°a phĂ¢n quyá»n</option>
+        <option value="Chưa phân quyền">Chưa phân quyền</option>
     </select>
 
     <select id="filterTrangThai" onchange="applyFilter()" style="padding:8px 12px;border:1px solid #d0d5e8;border-radius:8px;font-size:13px;background:#fff;min-width:150px;">
-        <option value="">đŸ”µ Táº¥t cáº£ tráº¡ng thĂ¡i</option>
-        <option value="active">âœ… Hoáº¡t Ä‘á»™ng</option>
-        <option value="inactive">đŸ”’ KhĂ³a</option>
+        <option value="">🔵 Tất cả trạng thái</option>
+        <option value="active">✅ Hoạt động</option>
+        <option value="inactive">🔒 Khóa</option>
     </select>
 
     <button onclick="resetFilter()" style="padding:8px 14px;border:1px solid #d0d5e8;border-radius:8px;font-size:13px;background:#f5f5f5;color:#555;cursor:pointer;">
-        âœ• Bá» lá»c
+        ✕ Bỏ lọc
     </button>
 </div>
 
@@ -147,13 +147,13 @@
         <thead>
             <tr>
                 <th>#</th>
-                <th>ID NgÆ°á»i dĂ¹ng</th>
-                <th>Há» tĂªn</th>
+                <th>ID Người dùng</th>
+                <th>Họ tên</th>
                 <th>Email</th>
-                <th>Khoa / PhĂ²ng ban</th>
-                <th>Vai trĂ²</th>
-                <th>Tráº¡ng thĂ¡i</th>
-                <th style="text-align:center">Thao tĂ¡c</th>
+                <th>Khoa / Phòng ban</th>
+                <th>Vai trò</th>
+                <th>Trạng thái</th>
+                <th style="text-align:center">Thao tác</th>
             </tr>
         </thead>
         <tbody id="tbodyNguoiDung">
@@ -165,26 +165,26 @@
                                  : nd.VaiTroNo.Contains("CSVC") ? "csvc"
                                  : nd.VaiTroNo.Contains("KHTC") ? "khtc"
                                  : nd.VaiTroNo.Contains("BGH") ? "bgh" : "none";
-                string tenKhoaDisplay = string.IsNullOrEmpty(nd.TenKhoa) ? "â€”" : nd.TenKhoa;
+                string tenKhoaDisplay = string.IsNullOrEmpty(nd.TenKhoa) ? "—" : nd.TenKhoa;
                 <tr data-khoa="@tenKhoaDisplay"
                     data-vaitro="@nd.TenVaiTro"
                     data-trangthai="@(nd.TrangThaiTK ? "active" : "inactive")">
                     <td style="color:#999">@stt</td>
                     <td><code style="font-size:11px;background:#f0f2f8;padding:2px 7px;border-radius:4px;">@nd.ID_NguoiDung</code></td>
                     <td><strong>@nd.HoTen</strong></td>
-                    <td>@(string.IsNullOrEmpty(nd.Email) ? "â€”" : nd.Email)</td>
+                    <td>@(string.IsNullOrEmpty(nd.Email) ? "—" : nd.Email)</td>
                     <td>@tenKhoaDisplay</td>
                     <td><span class="badge-role @roleClass">@nd.TenVaiTro</span></td>
                     <td>
                         <span class="badge-status @(nd.TrangThaiTK ? "active" : "inactive")">
-                            @(nd.TrangThaiTK ? "âœ… Hoáº¡t Ä‘á»™ng" : "đŸ”’ KhĂ³a")
+                            @(nd.TrangThaiTK ? "✅ Hoạt động" : "🔒 Khóa")
                         </span>
                     </td>
                     <td style="text-align:center; white-space:nowrap;">
-                        <button class="btn-icon edit" title="Sá»­a" onclick="openEdit('@nd.ID_NguoiDung')">
+                        <button class="btn-icon edit" title="Sửa" onclick="openEdit('@nd.ID_NguoiDung')">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
-                        <button class="btn-icon del" title="XĂ³a" onclick="openDelete('@nd.ID_NguoiDung', '@Html.Raw(nd.HoTen.Replace("'","\\'"))')">
+                        <button class="btn-icon del" title="Xóa" onclick="openDelete('@nd.ID_NguoiDung', '@Html.Raw(nd.HoTen.Replace("'","\\'"))')">
                             <i class="bi bi-trash3-fill"></i>
                         </button>
                     </td>
@@ -192,7 +192,7 @@
             }
             @if (!list.Any())
             {
-                <tr><td colspan="8" style="text-align:center;color:#999;padding:30px;">ChÆ°a cĂ³ tĂ i khoáº£n nĂ o.</td></tr>
+                <tr><td colspan="8" style="text-align:center;color:#999;padding:30px;">Chưa có tài khoản nào.</td></tr>
             }
         </tbody>
     </table>
@@ -200,32 +200,32 @@
 
 <div class="modal-overlay" id="modalCreate">
     <div class="modal-box">
-        <div class="modal-title">â• Táº¡o TĂ i Khoáº£n Má»›i</div>
+        <div class="modal-title">➕ Tạo Tài Khoản Mới</div>
 
-        <label class="form-lbl">ID NgÆ°á»i dĂ¹ng <span style="color:red">*</span></label>
+        <label class="form-lbl">ID Người dùng <span style="color:red">*</span></label>
         <input type="text" id="c_id" class="form-inp" placeholder="VD: ND001" style="font-family:monospace;" />
 
-        <label class="form-lbl">Há» vĂ  tĂªn <span style="color:red">*</span></label>
-        <input type="text" id="c_hoTen" class="form-inp" placeholder="Nguyá»…n VÄƒn A" />
+        <label class="form-lbl">Họ và tên <span style="color:red">*</span></label>
+        <input type="text" id="c_hoTen" class="form-inp" placeholder="Nguyễn Văn A" />
 
         <label class="form-lbl">Email</label>
         <input type="email" id="c_email" class="form-inp" placeholder="example@spkt.edu.vn" />
 
-        <label class="form-lbl">Máº­t kháº©u <span style="color:red">*</span></label>
-        <input type="password" id="c_matKhau" class="form-inp" placeholder="Nháº­p máº­t kháº©u" />
+        <label class="form-lbl">Mật khẩu <span style="color:red">*</span></label>
+        <input type="password" id="c_matKhau" class="form-inp" placeholder="Nhập mật khẩu" />
 
-        <label class="form-lbl">Vai trĂ²</label>
+        <label class="form-lbl">Vai trò</label>
         <select id="c_vaiTro" class="form-inp">
-            <option value="">-- ChÆ°a phĂ¢n quyá»n --</option>
+            <option value="">-- Chưa phân quyền --</option>
             @foreach (var vt in vaiTros)
             {
                 <option value="@vt.Value">@vt.Text</option>
             }
         </select>
 
-        <label class="form-lbl">Khoa / PhĂ²ng ban</label>
+        <label class="form-lbl">Khoa / Phòng ban</label>
         <select id="c_khoa" class="form-inp">
-            <option value="">-- KhĂ´ng thuá»™c Ä‘Æ¡n vá»‹ --</option>
+            <option value="">-- Không thuộc đơn vị --</option>
             @foreach (var kp in khoaList)
             {
                 <option value="@kp.Value">@kp.Text</option>
@@ -233,71 +233,71 @@
         </select>
 
         <div class="modal-footer">
-            <button class="btn-cancel" onclick="closeAll()">Há»§y</button>
-            <button class="btn-save" onclick="submitCreate()">đŸ’¾ Táº¡o tĂ i khoáº£n</button>
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-save" onclick="submitCreate()">💾 Tạo tài khoản</button>
         </div>
     </div>
 </div>
 
 <div class="modal-overlay" id="modalEdit">
     <div class="modal-box">
-        <div class="modal-title">âœï¸ Chá»‰nh Sá»­a TĂ i Khoáº£n</div>
+        <div class="modal-title">✏️ Chỉnh Sửa Tài Khoản</div>
         <input type="hidden" id="e_id" />
 
-        <label class="form-lbl">ID NgÆ°á»i dĂ¹ng</label>
+        <label class="form-lbl">ID Người dùng</label>
         <input type="text" id="e_id_display" class="form-inp" readonly style="font-family:monospace;background:#f0f2f8;color:#555;cursor:not-allowed;" />
 
-        <label class="form-lbl">Há» vĂ  tĂªn <span style="color:red">*</span></label>
+        <label class="form-lbl">Họ và tên <span style="color:red">*</span></label>
         <input type="text" id="e_hoTen" class="form-inp" />
 
         <label class="form-lbl">Email</label>
         <input type="email" id="e_email" class="form-inp" />
 
-        <label class="form-lbl">Máº­t kháº©u má»›i <span style="color:#888;font-weight:400">(Ä‘á»ƒ trá»‘ng náº¿u khĂ´ng Ä‘á»•i)</span></label>
-        <input type="password" id="e_matKhau" class="form-inp" placeholder="Nháº­p máº­t kháº©u má»›i..." />
+        <label class="form-lbl">Mật khẩu mới <span style="color:#888;font-weight:400">(để trống nếu không đổi)</span></label>
+        <input type="password" id="e_matKhau" class="form-inp" placeholder="Nhập mật khẩu mới..." />
 
-        <label class="form-lbl">Vai trĂ²</label>
+        <label class="form-lbl">Vai trò</label>
         <select id="e_vaiTro" class="form-inp">
-            <option value="">-- ChÆ°a phĂ¢n quyá»n --</option>
+            <option value="">-- Chưa phân quyền --</option>
             @foreach (var vt in vaiTros)
             {
                 <option value="@vt.Value">@vt.Text</option>
             }
         </select>
 
-        <label class="form-lbl">Khoa / PhĂ²ng ban</label>
+        <label class="form-lbl">Khoa / Phòng ban</label>
         <select id="e_khoa" class="form-inp">
-            <option value="">-- KhĂ´ng thuá»™c Ä‘Æ¡n vá»‹ --</option>
+            <option value="">-- Không thuộc đơn vị --</option>
             @foreach (var kp in khoaList)
             {
                 <option value="@kp.Value">@kp.Text</option>
             }
         </select>
 
-        <label class="form-lbl">Tráº¡ng thĂ¡i</label>
+        <label class="form-lbl">Trạng thái</label>
         <select id="e_trangThai" class="form-inp">
-            <option value="true">âœ… Hoáº¡t Ä‘á»™ng</option>
-            <option value="false">đŸ”’ KhĂ³a</option>
+            <option value="true">✅ Hoạt động</option>
+            <option value="false">🔒 Khóa</option>
         </select>
 
         <div class="modal-footer">
-            <button class="btn-cancel" onclick="closeAll()">Há»§y</button>
-            <button class="btn-save" onclick="submitEdit()">đŸ’¾ LÆ°u thay Ä‘á»•i</button>
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-save" onclick="submitEdit()">💾 Lưu thay đổi</button>
         </div>
     </div>
 </div>
 
 <div class="modal-overlay" id="modalDelete">
     <div class="modal-box" style="width:400px;">
-        <div class="modal-title">đŸ—‘ï¸ XĂ¡c Nháº­n XĂ³a</div>
+        <div class="modal-title">🗑️ Xác Nhận Xóa</div>
         <input type="hidden" id="d_id" />
         <p style="font-size:14px;color:#444;margin-bottom:20px;">
-            Báº¡n cĂ³ cháº¯c muá»‘n xĂ³a tĂ i khoáº£n <strong id="d_ten"></strong>?<br>
-            <span style="color:#e53935;font-size:12px;">HĂ nh Ä‘á»™ng nĂ y khĂ´ng thá»ƒ hoĂ n tĂ¡c.</span>
+            Bạn có chắc muốn xóa tài khoản <strong id="d_ten"></strong>?<br>
+            <span style="color:#e53935;font-size:12px;">Hành động này không thể hoàn tác.</span>
         </p>
         <div class="modal-footer">
-            <button class="btn-cancel" onclick="closeAll()">Há»§y</button>
-            <button class="btn-danger" onclick="submitDelete()">đŸ—‘ï¸ XĂ³a</button>
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-danger" onclick="submitDelete()">🗑️ Xóa</button>
         </div>
     </div>
 </div>
@@ -369,9 +369,9 @@
         var hoTen = document.getElementById('c_hoTen').value.trim();
         var matKhau = document.getElementById('c_matKhau').value;
 
-        if (!id) { showAlert('Vui lĂ²ng nháº­p ID ngÆ°á»i dĂ¹ng.', 'error'); return; }
-        if (!hoTen) { showAlert('Vui lĂ²ng nháº­p há» tĂªn.', 'error'); return; }
-        if (!matKhau) { showAlert('Vui lĂ²ng nháº­p máº­t kháº©u.', 'error'); return; }
+        if (!id) { showAlert('Vui lòng nhập ID người dùng.', 'error'); return; }
+        if (!hoTen) { showAlert('Vui lòng nhập họ tên.', 'error'); return; }
+        if (!matKhau) { showAlert('Vui lòng nhập mật khẩu.', 'error'); return; }
 
         $.post('@Url.Action("TaoNguoiDung", "NguoiDung")', {
             id: id,
@@ -404,7 +404,7 @@
 
     function submitEdit() {
         var hoTen = document.getElementById('e_hoTen').value.trim();
-        if (!hoTen) { showAlert('Há» tĂªn khĂ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.', 'error'); return; }
+        if (!hoTen) { showAlert('Họ tên không được để trống.', 'error'); return; }
 
         $.post('@Url.Action("SuaNguoiDung", "NguoiDung")', {
             id: document.getElementById('e_id').value,
@@ -430,10 +430,9 @@
         $.post('@Url.Action("XoaNguoiDung", "NguoiDung")', {
             id: document.getElementById('d_id').value
         }, function (res) {
-            if (res.ok) { showAlert('ÄĂ£ xĂ³a tĂ i khoáº£n.', 'success'); closeAll(); setTimeout(function () { location.reload(); }, 1200); }
+            if (res.ok) { showAlert('Đã xóa tài khoản.', 'success'); closeAll(); setTimeout(function () { location.reload(); }, 1200); }
             else showAlert(res.msg, 'error');
         });
     }
 </script>
 }
-

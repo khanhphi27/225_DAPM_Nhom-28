@@ -252,7 +252,7 @@
 
         // Load AJAX lịch sử sửa chữa
         $('#historyBody').html('<tr><td colspan="3" class="text-center py-3">Đang tải...</td></tr>');
-        $.get('@Url.Action("GetLichSuSuaChua", "KHTC")', { id: id }, function(res) {
+        $.get('@Url.Action("GetLichSuSuaChua", "DeXuat")', { id: id }, function(res) {
             if(res.ok && res.data.length > 0) {
                 let html = "";
                 res.data.forEach(h => {

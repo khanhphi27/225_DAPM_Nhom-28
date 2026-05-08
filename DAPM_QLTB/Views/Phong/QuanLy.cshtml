@@ -1,6 +1,6 @@
 ﻿@model IEnumerable<QLTB.Models.PhongViewModel>
 @{
-    ViewBag.Title = "Quáº£n LĂ½ PhĂ²ng";
+    ViewBag.Title = "Quản Lý Phòng";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var khuVucList = ViewBag.KhuVucList as IEnumerable<System.Web.Mvc.SelectListItem> ?? new List<System.Web.Mvc.SelectListItem>();
 }
@@ -45,8 +45,8 @@
 </style>
 
 <div class="page-header">
-    <h2>đŸª Quáº£n LĂ½ PhĂ²ng</h2>
-    <p>ThĂªm, chá»‰nh sá»­a vĂ  xĂ³a cĂ¡c phĂ²ng trong há»‡ thá»‘ng</p>
+    <h2>🪟 Quản Lý Phòng</h2>
+    <p>Thêm, chỉnh sửa và xóa các phòng trong hệ thống</p>
 </div>
 
 @if (ViewBag.Error != null) { <div class="alert alert-danger">@ViewBag.Error</div> }
@@ -55,41 +55,41 @@
 <!-- Toolbar -->
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
     <span style="font-size:13px; color:#666;">
-        Tá»•ng: <strong id="lblTong">@Model.Count()</strong> phĂ²ng
-        <span id="lblLoc" style="color:#1a237e; display:none;"> â€” lá»c ra: <strong id="lblLocSo">0</strong></span>
+        Tổng: <strong id="lblTong">@Model.Count()</strong> phòng
+        <span id="lblLoc" style="color:#1a237e; display:none;"> – lọc ra: <strong id="lblLocSo">0</strong></span>
     </span>
     <button onclick="openCreate()" style="background:#1a237e;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;">
-        <i class="bi bi-plus-circle-fill"></i> ThĂªm phĂ²ng má»›i
+        <i class="bi bi-plus-circle-fill"></i> Thêm phòng mới
     </button>
 </div>
 
-<!-- Thanh lá»c -->
+<!-- Thanh lọc -->
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
     <select id="filterKhuVuc" onchange="applyFilter()" style="padding:8px 12px;border:1px solid #d0d5e8;border-radius:8px;font-size:13px;background:#fff;min-width:180px;">
-        <option value="">đŸ—ï¸ Táº¥t cáº£ khu vá»±c</option>
+        <option value="">🗺️ Tất cả khu vực</option>
         @foreach (var kv in khuVucList)
         {
             <option value="@kv.Text">@kv.Text</option>
         }
-        <option value="â€”">â€” ChÆ°a cĂ³ khu vá»±c</option>
+        <option value="—">— Chưa có khu vực</option>
     </select>
     <button onclick="resetFilter()" style="padding:8px 14px;border:1px solid #d0d5e8;border-radius:8px;font-size:13px;background:#f5f5f5;color:#555;cursor:pointer;">
-        âœ• Bá» lá»c
+        ✕ Bỏ lọc
     </button>
 </div>
 
-<!-- Báº£ng -->
+<!-- Bảng -->
 <div class="card-table">
     <table>
         <thead>
             <tr>
                 <th>#</th>
-                <th>ID PhĂ²ng</th>
-                <th>TĂªn phĂ²ng</th>
-                <th>Khu vá»±c</th>
-                <th style="text-align:center">Sá»©c chá»©a</th>
-                <th style="text-align:center">Thiáº¿t bá»‹</th>
-                <th style="text-align:center">Thao tĂ¡c</th>
+                <th>ID Phòng</th>
+                <th>Tên phòng</th>
+                <th>Khu vực</th>
+                <th style="text-align:center">Sức chứa</th>
+                <th style="text-align:center">Thiết bị</th>
+                <th style="text-align:center">Thao tác</th>
             </tr>
         </thead>
         <tbody id="tbodyPhong">
@@ -97,19 +97,19 @@
             @foreach (var p in Model)
             {
                 stt++;
-                string tenKvDisplay = string.IsNullOrEmpty(p.TenKhuVuc) ? "â€”" : p.TenKhuVuc;
+                string tenKvDisplay = string.IsNullOrEmpty(p.TenKhuVuc) ? "—" : p.TenKhuVuc;
                 <tr data-khuvuc="@tenKvDisplay">
                     <td style="color:#999">@stt</td>
                     <td><code style="font-size:11px;background:#f0f2f8;padding:2px 7px;border-radius:4px;">@p.ID_Phong</code></td>
                     <td><strong>@p.TenPhong</strong></td>
                     <td><span class="badge-kv">@tenKvDisplay</span></td>
-                    <td style="text-align:center">@(p.SucChua.HasValue ? p.SucChua.ToString() : "â€”")</td>
-                    <td style="text-align:center"><span class="badge-tb">đŸ’» @p.SoThietBi</span></td>
+                    <td style="text-align:center">@(p.SucChua.HasValue ? p.SucChua.ToString() : "—")</td>
+                    <td style="text-align:center"><span class="badge-tb">💻 @p.SoThietBi</span></td>
                     <td style="text-align:center; white-space:nowrap;">
-                        <button class="btn-icon edit" title="Sá»­a" onclick="openEdit('@p.ID_Phong')">
+                        <button class="btn-icon edit" title="Sửa" onclick="openEdit('@p.ID_Phong')">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
-                        <button class="btn-icon del" title="XĂ³a" onclick="openDelete('@p.ID_Phong', '@Html.Raw(p.TenPhong.Replace("'", "\\'"))')">
+                        <button class="btn-icon del" title="Xóa" onclick="openDelete('@p.ID_Phong', '@Html.Raw(p.TenPhong.Replace("'", "\\'"))')">
                             <i class="bi bi-trash3-fill"></i>
                         </button>
                     </td>
@@ -117,86 +117,86 @@
             }
             @if (!Model.Any())
             {
-                <tr><td colspan="7" style="text-align:center;color:#999;padding:30px;">ChÆ°a cĂ³ phĂ²ng nĂ o.</td></tr>
+                <tr><td colspan="7" style="text-align:center;color:#999;padding:30px;">Chưa có phòng nào.</td></tr>
             }
         </tbody>
     </table>
 </div>
 
-<!-- ===== MODAL Táº O ===== -->
+<!-- ===== MODAL TẠO ===== -->
 <div class="modal-overlay" id="modalCreate">
     <div class="modal-box">
-        <div class="modal-title">â• ThĂªm PhĂ²ng Má»›i</div>
+        <div class="modal-title">➕ Thêm Phòng Mới</div>
 
-        <label class="form-lbl">ID PhĂ²ng <span style="color:red">*</span></label>
+        <label class="form-lbl">ID Phòng <span style="color:red">*</span></label>
         <input type="text" id="c_id" class="form-inp" placeholder="VD: P101" style="font-family:monospace;" />
 
-        <label class="form-lbl">TĂªn phĂ²ng <span style="color:red">*</span></label>
-        <input type="text" id="c_ten" class="form-inp" placeholder="VD: PhĂ²ng thá»±c hĂ nh 101" />
+        <label class="form-lbl">Tên phòng <span style="color:red">*</span></label>
+        <input type="text" id="c_ten" class="form-inp" placeholder="VD: Phòng thực hành 101" />
 
-        <label class="form-lbl">Khu vá»±c</label>
+        <label class="form-lbl">Khu vực</label>
         <select id="c_khuVuc" class="form-inp">
-            <option value="">-- ChÆ°a xĂ¡c Ä‘á»‹nh --</option>
+            <option value="">-- Chưa xác định --</option>
             @foreach (var kv in khuVucList)
             {
                 <option value="@kv.Value">@kv.Text</option>
             }
         </select>
 
-        <label class="form-lbl">Sá»©c chá»©a</label>
+        <label class="form-lbl">Sức chứa</label>
         <input type="number" id="c_sucChua" class="form-inp" placeholder="VD: 40" min="0" />
 
         <div class="modal-footer">
-            <button class="btn-cancel" onclick="closeAll()">Há»§y</button>
-            <button class="btn-save" onclick="submitCreate()">đŸ’¾ ThĂªm</button>
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-save" onclick="submitCreate()">💾 Thêm</button>
         </div>
     </div>
 </div>
 
-<!-- ===== MODAL Sá»¬A ===== -->
+<!-- ===== MODAL SỬA ===== -->
 <div class="modal-overlay" id="modalEdit">
     <div class="modal-box">
-        <div class="modal-title">âœï¸ Chá»‰nh Sá»­a PhĂ²ng</div>
+        <div class="modal-title">✏️ Chỉnh Sửa Phòng</div>
         <input type="hidden" id="e_id" />
 
-        <label class="form-lbl">ID PhĂ²ng</label>
+        <label class="form-lbl">ID Phòng</label>
         <input type="text" id="e_id_display" class="form-inp" readonly
                style="font-family:monospace;background:#f0f2f8;color:#555;cursor:not-allowed;" />
 
-        <label class="form-lbl">TĂªn phĂ²ng <span style="color:red">*</span></label>
+        <label class="form-lbl">Tên phòng <span style="color:red">*</span></label>
         <input type="text" id="e_ten" class="form-inp" />
 
-        <label class="form-lbl">Khu vá»±c</label>
+        <label class="form-lbl">Khu vực</label>
         <select id="e_khuVuc" class="form-inp">
-            <option value="">-- ChÆ°a xĂ¡c Ä‘á»‹nh --</option>
+            <option value="">-- Chưa xác định --</option>
             @foreach (var kv in khuVucList)
             {
                 <option value="@kv.Value">@kv.Text</option>
             }
         </select>
 
-        <label class="form-lbl">Sá»©c chá»©a</label>
+        <label class="form-lbl">Sức chứa</label>
         <input type="number" id="e_sucChua" class="form-inp" min="0" />
 
         <div class="modal-footer">
-            <button class="btn-cancel" onclick="closeAll()">Há»§y</button>
-            <button class="btn-save" onclick="submitEdit()">đŸ’¾ LÆ°u thay Ä‘á»•i</button>
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-save" onclick="submitEdit()">💾 Lưu thay đổi</button>
         </div>
     </div>
 </div>
 
-<!-- ===== MODAL XĂ“A ===== -->
+<!-- ===== MODAL XÓA ===== -->
 <div class="modal-overlay" id="modalDelete">
     <div class="modal-box" style="width:400px;">
-        <div class="modal-title">đŸ—‘ï¸ XĂ¡c Nháº­n XĂ³a</div>
+        <div class="modal-title">🗑️ Xác Nhận Xóa</div>
         <input type="hidden" id="d_id" />
         <p style="font-size:14px;color:#444;margin-bottom:20px;">
-            Báº¡n cĂ³ cháº¯c muá»‘n xĂ³a phĂ²ng <strong id="d_ten"></strong>?<br>
-            <span style="color:#e53935;font-size:12px;">Chá»‰ xĂ³a Ä‘Æ°á»£c khi phĂ²ng khĂ´ng cĂ²n thiáº¿t bá»‹ nĂ o.</span>
+            Bạn có chắc muốn xóa phòng <strong id="d_ten"></strong>?<br>
+            <span style="color:#e53935;font-size:12px;">Chỉ xóa được khi phòng không còn thiết bị nào.</span>
         </p>
         <div class="modal-footer">
-            <button class="btn-cancel" onclick="closeAll()">Há»§y</button>
-            <button class="btn-danger" onclick="submitDelete()">đŸ—‘ï¸ XĂ³a</button>
+            <button class="btn-cancel" onclick="closeAll()">Hủy</button>
+            <button class="btn-danger" onclick="submitDelete()">🗑️ Xóa</button>
         </div>
     </div>
 </div>
@@ -217,7 +217,7 @@
         m.addEventListener('click', function (e) { if (e.target === m) closeAll(); });
     });
 
-    // â”€â”€ Lá»c â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Lọc ──────────────────────────────────────────────────
     function applyFilter() {
         var khuVuc = document.getElementById('filterKhuVuc').value;
         var rows = document.querySelectorAll('#tbodyPhong tr');
@@ -236,7 +236,7 @@
         applyFilter();
     }
 
-    // â”€â”€ Táº¡o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Tạo ──────────────────────────────────────────────────
     function openCreate() {
         document.getElementById('c_id').value      = '';
         document.getElementById('c_ten').value     = '';
@@ -248,8 +248,8 @@
     function submitCreate() {
         var id  = document.getElementById('c_id').value.trim();
         var ten = document.getElementById('c_ten').value.trim();
-        if (!id)  { showAlert('Vui lĂ²ng nháº­p ID phĂ²ng.', 'error'); return; }
-        if (!ten) { showAlert('Vui lĂ²ng nháº­p tĂªn phĂ²ng.', 'error'); return; }
+        if (!id)  { showAlert('Vui lòng nhập ID phòng.', 'error'); return; }
+        if (!ten) { showAlert('Vui lòng nhập tên phòng.', 'error'); return; }
 
         $.post('@Url.Action("TaoPhong", "Phong")', {
             id:       id,
@@ -262,7 +262,7 @@
         });
     }
 
-    // â”€â”€ Sá»­a â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Sửa ──────────────────────────────────────────────────
     function openEdit(id) {
         $.get('@Url.Action("GetPhong", "Phong")', { id: id }, function (res) {
             if (!res.ok) { showAlert(res.msg, 'error'); return; }
@@ -278,7 +278,7 @@
     }
     function submitEdit() {
         var ten = document.getElementById('e_ten').value.trim();
-        if (!ten) { showAlert('TĂªn phĂ²ng khĂ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.', 'error'); return; }
+        if (!ten) { showAlert('Tên phòng không được để trống.', 'error'); return; }
 
         $.post('@Url.Action("SuaPhong", "Phong")', {
             id:       document.getElementById('e_id').value,
@@ -291,7 +291,7 @@
         });
     }
 
-    // â”€â”€ XĂ³a â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Xóa ──────────────────────────────────────────────────
     function openDelete(id, ten) {
         document.getElementById('d_id').value = id;
         document.getElementById('d_ten').textContent = ten;
@@ -301,10 +301,9 @@
         $.post('@Url.Action("XoaPhong", "Phong")', {
             id: document.getElementById('d_id').value
         }, function (res) {
-            if (res.ok) { showAlert('ÄĂ£ xĂ³a phĂ²ng.', 'success'); closeAll(); setTimeout(function () { location.reload(); }, 1200); }
+            if (res.ok) { showAlert('Đã xóa phòng.', 'success'); closeAll(); setTimeout(function () { location.reload(); }, 1200); }
             else showAlert(res.msg, 'error');
         });
     }
 </script>
 }
-

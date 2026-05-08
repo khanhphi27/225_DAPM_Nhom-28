@@ -93,7 +93,7 @@ namespace QLTB.Models.Repositories
             {
                 conn.Open();
                 const string sql = @"
-                    SELECT tb.ID_ThietBi, tb.TenTB, tb.DanhMucNo, tb.KhoaPhongBan, tb.NhaCCNo,
+                    SELECT tb.ID_ThietBi, tb.TenTB, tb.DanhMucNo, tb.KhoaPhongBan, tb.NhaCCNo, tb.ThongSoKT,
                            dm.TenDanhMuc, kp.TenPhongBanKhoa, ncc.TenNhaCC,
                            tb.SoSeri, tb.Gia, tb.TrangThaiTB, tb.DeXuatNo,
                            ptb.PhongNo, ISNULL(p.TenPhong,'') AS TenPhong,
@@ -128,7 +128,8 @@ namespace QLTB.Models.Repositories
                                 SoSeri = rd["SoSeri"] == DBNull.Value ? (int?)null : Convert.ToInt32(rd["SoSeri"]),
                                 Gia = rd["Gia"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(rd["Gia"]),
                                 TrangThaiTB = rd["TrangThaiTB"]?.ToString() ?? "",
-                                DeXuatNo = rd["DeXuatNo"] == DBNull.Value ? "" : rd["DeXuatNo"].ToString()
+                                DeXuatNo = rd["DeXuatNo"] == DBNull.Value ? "" : rd["DeXuatNo"].ToString(),
+                                ThongSoKT = rd["ThongSoKT"]?.ToString() ?? ""
                             };
                 }
             }

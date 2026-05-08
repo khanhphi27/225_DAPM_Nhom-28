@@ -1,6 +1,6 @@
 ﻿@model QLTB.Models.ThongKeTaiSanViewModel
 @{
-    ViewBag.Title = "Thá»‘ng KĂª TĂ i Sáº£n";
+    ViewBag.Title = "Thống Kê Tài Sản";
     int tong = Model.TongThietBi > 0 ? Model.TongThietBi : 1;
     int pHD = (int)Math.Round((double)Model.HoatDong / tong * 100);
     int pBT = (int)Math.Round((double)Model.BaoTri / tong * 100);
@@ -33,46 +33,46 @@
 </style>
 
 <div class="page-hdr mb-4">
-    <h2>đŸ“ Thá»‘ng KĂª TĂ i Sáº£n ToĂ n TrÆ°á»ng</h2>
-    <p>Tá»•ng quan tĂ¬nh tráº¡ng thiáº¿t bá»‹, chi phĂ­ báº£o trĂ¬ vĂ  phĂ¢n bá»• theo Ä‘Æ¡n vá»‹</p>
+    <h2>📊 Thống Kê Tài Sản Toàn Trường</h2>
+    <p>Tổng quan tình trạng thiết bị, chi phí bảo trì và phân bổ theo đơn vị</p>
 </div>
 
 @if (ViewBag.Error != null)
 {
-    <div class="alert alert-warning" style="border-radius:8px;font-size:13px;">â ï¸ @ViewBag.Error</div>
+    <div class="alert alert-warning" style="border-radius:8px;font-size:13px;">⚠️ @ViewBag.Error</div>
 }
 
-<!-- Debug: xem giĂ¡ trá»‹ TrangThaiTB thá»±c táº¿ -->
+<!-- Debug: xem giá trị TrangThaiTB thực tế -->
 <div style="background:#f5f5f5;border-radius:8px;padding:10px 16px;font-size:12px;color:#666;margin-bottom:16px;">
-    đŸ” GiĂ¡ trá»‹ TrangThaiTB trong DB:
-    <a href="@Url.Action("DebugTrangThai","BGH")" target="_blank" style="color:#1a237e;font-weight:600;">Xem táº¡i Ä‘Ă¢y</a>
+    🔍 Giá trị TrangThaiTB trong DB:
+    <a href="@Url.Action("DebugTrangThai","BGH")" target="_blank" style="color:#1a237e;font-weight:600;">Xem tại đây</a>
     &nbsp;|&nbsp; HoatDong=@Model.HoatDong &nbsp; BaoTri=@Model.BaoTri &nbsp; Hong=@Model.Hong
 </div>
 
-<!-- Thá»‘ng kĂª tá»•ng quan -->
+<!-- Thống kê tổng quan -->
 <div class="row g-3 mb-4">
     <div class="col-md-3">
         <div class="stat-card">
             <div class="stat-num" style="color:#1a237e;">@Model.TongThietBi</div>
-            <div class="stat-label">đŸ“¦ Tá»•ng thiáº¿t bá»‹</div>
+            <div class="stat-label">📦 Tổng thiết bị</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stat-card">
             <div class="stat-num" style="color:#43a047;">@Model.HoatDong</div>
-            <div class="stat-label">âœ… Äang sá»­ dá»¥ng</div>
+            <div class="stat-label">✅ Đang sử dụng</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stat-card">
             <div class="stat-num" style="color:#fb8c00;">@Model.BaoTri</div>
-            <div class="stat-label">đŸ”§ Cáº§n báº£o trĂ¬</div>
+            <div class="stat-label">🔧 Cần bảo trì</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stat-card">
             <div class="stat-num" style="color:#e53935;">@Model.Hong</div>
-            <div class="stat-label">âŒ BĂ¡o há»ng</div>
+            <div class="stat-label">❌ Báo hỏng</div>
         </div>
     </div>
 </div>
@@ -80,30 +80,30 @@
 <div class="row g-3 mb-4">
     <div class="col-md-4">
         <div class="stat-card">
-            <div class="stat-num" style="color:#1e88e5;font-size:20px;">@Model.TongGiaTri.ToString("N0") Ä‘</div>
-            <div class="stat-label">đŸ’° Tá»•ng giĂ¡ trá»‹ tĂ i sáº£n</div>
+            <div class="stat-num" style="color:#1e88e5;font-size:20px;">@Model.TongGiaTri.ToString("N0") đ</div>
+            <div class="stat-label">💰 Tổng giá trị tài sản</div>
         </div>
     </div>
     <div class="col-md-4">
         <div class="stat-card">
-            <div class="stat-num" style="color:#f57c00;font-size:20px;">@Model.ChiPhiBaoTri.ToString("N0") Ä‘</div>
-            <div class="stat-label">đŸ”§ Chi phĂ­ báº£o trĂ¬</div>
+            <div class="stat-num" style="color:#f57c00;font-size:20px;">@Model.ChiPhiBaoTri.ToString("N0") đ</div>
+            <div class="stat-label">🔧 Chi phí bảo trì</div>
         </div>
     </div>
     <div class="col-md-4">
         <div class="stat-card">
             <div class="stat-num" style="color:#d32f2f;">@Model.TongBaoHong</div>
-            <div class="stat-label">â ï¸ Sá»‘ láº§n bĂ¡o há»ng</div>
+            <div class="stat-label">⚠️ Số lần báo hỏng</div>
         </div>
     </div>
 </div>
 
-<!-- TĂ¬nh tráº¡ng hiá»‡n táº¡i -->
+<!-- Tình trạng hiện tại -->
 <div class="section-card">
-    <div class="section-title">đŸ“ˆ TĂ¬nh Tráº¡ng Thiáº¿t Bá»‹ Hiá»‡n Táº¡i</div>
+    <div class="section-title">📈 Tình Trạng Thiết Bị Hiện Tại</div>
     <div class="mb-3">
         <div class="d-flex justify-content-between mb-1" style="font-size:13px;font-weight:600;">
-            <span>Äang sá»­ dá»¥ng</span>
+            <span>Đang sử dụng</span>
             <span style="color:#43a047;">@Model.HoatDong / @Model.TongThietBi (@pHD%)</span>
         </div>
         <div class="progress-bar-custom">
@@ -112,7 +112,7 @@
     </div>
     <div class="mb-3">
         <div class="d-flex justify-content-between mb-1" style="font-size:13px;font-weight:600;">
-            <span>Cáº§n báº£o trĂ¬</span>
+            <span>Cần bảo trì</span>
             <span style="color:#fb8c00;">@Model.BaoTri / @Model.TongThietBi (@pBT%)</span>
         </div>
         <div class="progress-bar-custom">
@@ -121,7 +121,7 @@
     </div>
     <div>
         <div class="d-flex justify-content-between mb-1" style="font-size:13px;font-weight:600;">
-            <span>BĂ¡o há»ng</span>
+            <span>Báo hỏng</span>
             <span style="color:#e53935;">@Model.Hong / @Model.TongThietBi (@pH%)</span>
         </div>
         <div class="progress-bar-custom">
@@ -130,24 +130,24 @@
     </div>
 </div>
 
-<!-- PhĂ¢n bá»• theo khoa -->
+<!-- Phân bổ theo khoa -->
 <div class="section-card">
-    <div class="section-title">đŸ« PhĂ¢n Bá»• Thiáº¿t Bá»‹ Theo ÄÆ¡n Vá»‹</div>
+    <div class="section-title">🏫 Phân Bổ Thiết Bị Theo Đơn Vị</div>
     @if (!Model.TheoKhoa.Any())
     {
-        <div class="empty-state">ChÆ°a cĂ³ dá»¯ liá»‡u phĂ¢n bá»• theo khoa.</div>
+        <div class="empty-state">Chưa có dữ liệu phân bổ theo khoa.</div>
     }
     else
     {
         <table class="table-custom">
             <thead>
                 <tr>
-                    <th>ÄÆ¡n vá»‹</th>
-                    <th style="text-align:center">Tá»•ng</th>
-                    <th style="text-align:center">Hoáº¡t Ä‘á»™ng</th>
-                    <th style="text-align:center">Báº£o trĂ¬</th>
-                    <th style="text-align:center">Há»ng</th>
-                    <th style="text-align:right">GiĂ¡ trá»‹</th>
+                    <th>Đơn vị</th>
+                    <th style="text-align:center">Tổng</th>
+                    <th style="text-align:center">Hoạt động</th>
+                    <th style="text-align:center">Bảo trì</th>
+                    <th style="text-align:center">Hỏng</th>
+                    <th style="text-align:right">Giá trị</th>
                 </tr>
             </thead>
             <tbody>
@@ -159,7 +159,7 @@
                         <td style="text-align:center;color:#43a047;">@k.HoatDong</td>
                         <td style="text-align:center;color:#fb8c00;">@k.BaoTri</td>
                         <td style="text-align:center;color:#e53935;">@k.Hong</td>
-                        <td style="text-align:right;font-weight:600;">@k.TongGia.ToString("N0") Ä‘</td>
+                        <td style="text-align:right;font-weight:600;">@k.TongGia.ToString("N0") đ</td>
                     </tr>
                 }
             </tbody>
@@ -168,13 +168,13 @@
 </div>
 
 <div class="row g-3 mb-4">
-    <!-- PhĂ¢n loáº¡i theo danh má»¥c -->
+    <!-- Phân loại theo danh mục -->
     <div class="col-md-6">
         <div class="section-card">
-            <div class="section-title">đŸ“‚ PhĂ¢n Loáº¡i Theo Danh Má»¥c</div>
+            <div class="section-title">📂 Phân Loại Theo Danh Mục</div>
             @if (!Model.TheoDanhMuc.Any())
             {
-                <div class="empty-state">ChÆ°a cĂ³ dá»¯ liá»‡u danh má»¥c.</div>
+                <div class="empty-state">Chưa có dữ liệu danh mục.</div>
             }
             else
             {
@@ -196,35 +196,35 @@
         </div>
     </div>
 
-    <!-- Thiáº¿t bá»‹ cáº§n chĂº Ă½ -->
+    <!-- Thiết bị cần chú ý -->
     <div class="col-md-6">
         <div class="section-card">
-            <div class="section-title">â ï¸ Thiáº¿t Bá»‹ Cáº§n ChĂº Ă</div>
+            <div class="section-title">⚠️ Thiết Bị Cần Chú Ý</div>
             @if (!Model.CanChuY.Any())
             {
-                <div class="empty-state">Táº¥t cáº£ thiáº¿t bá»‹ Ä‘ang hoáº¡t Ä‘á»™ng tá»‘t.</div>
+                <div class="empty-state">Tất cả thiết bị đang hoạt động tốt.</div>
             }
             else
             {
                 <table class="table-custom">
                     <thead>
                         <tr>
-                            <th>Thiáº¿t bá»‹</th>
-                            <th style="text-align:center">Tráº¡ng thĂ¡i</th>
-                            <th>ÄÆ¡n vá»‹</th>
+                            <th>Thiết bị</th>
+                            <th style="text-align:center">Trạng thái</th>
+                            <th>Đơn vị</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var tb in Model.CanChuY)
                         {
-                            string badgeCls = tb.TrangThaiTB == "Há»ng" ? "err" : "warn";
+                            string badgeCls = tb.TrangThaiTB == "Hỏng" ? "err" : "warn";
                             <tr>
                                 <td>
                                     <div style="font-weight:600;font-size:13px;">@tb.TenTB</div>
                                     <div style="font-size:11px;color:#888;">@tb.TenDanhMuc</div>
                                     @if (!string.IsNullOrEmpty(tb.MoTaHong))
                                     {
-                                        <div style="font-size:11px;color:#c62828;margin-top:2px;">đŸ’¬ @tb.MoTaHong</div>
+                                        <div style="font-size:11px;color:#c62828;margin-top:2px;">💬 @tb.MoTaHong</div>
                                     }
                                 </td>
                                 <td style="text-align:center;">
@@ -240,24 +240,24 @@
     </div>
 </div>
 
-<!-- Lá»‹ch sá»­ kiá»ƒm kĂª -->
+<!-- Lịch sử kiểm kê -->
 <div class="section-card">
-    <div class="section-title">đŸ“… Lá»‹ch Sá»­ Kiá»ƒm KĂª TĂ i Sáº£n</div>
+    <div class="section-title">📅 Lịch Sử Kiểm Kê Tài Sản</div>
     @if (!Model.LichSuKiemKe.Any())
     {
-        <div class="empty-state">ChÆ°a cĂ³ lá»‹ch sá»­ kiá»ƒm kĂª.</div>
+        <div class="empty-state">Chưa có lịch sử kiểm kê.</div>
     }
     else
     {
         <table class="table-custom">
             <thead>
                 <tr>
-                    <th>MĂ£ kiá»ƒm kĂª</th>
-                    <th>NgĂ y thá»±c hiá»‡n</th>
-                    <th>NgÆ°á»i phá»¥ trĂ¡ch</th>
-                    <th style="text-align:center">Sá»‘ lÆ°á»£ng TB</th>
-                    <th style="text-align:center">Tráº¡ng thĂ¡i</th>
-                    <th>Ghi chĂº</th>
+                    <th>Mã kiểm kê</th>
+                    <th>Ngày thực hiện</th>
+                    <th>Người phụ trách</th>
+                    <th style="text-align:center">Số lượng TB</th>
+                    <th style="text-align:center">Trạng thái</th>
+                    <th>Ghi chú</th>
                 </tr>
             </thead>
             <tbody>
@@ -269,7 +269,7 @@
                         <td>@kk.NguoiThucHien</td>
                         <td style="text-align:center;font-weight:700;">@kk.TongThietBiKK</td>
                         <td style="text-align:center;">
-                            @if (kk.TrangThai == "HoĂ n thĂ nh")
+                            @if (kk.TrangThai == "Hoàn thành")
                             {
                                 <span class="badge-tt ok">@kk.TrangThai</span>
                             }
@@ -285,4 +285,3 @@
         </table>
     }
 </div>
-

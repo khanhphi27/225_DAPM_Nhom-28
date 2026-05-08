@@ -22,6 +22,7 @@ namespace QLTB.Models
         public decimal? Gia { get; set; }
         public string TrangThaiTB { get; set; }
         public string DeXuatNo { get; set; }
+        public string ThongSoKT { get; set; }
     }
 
     // ── Thiết bị (dùng cho dropdown) ─────────────────────────

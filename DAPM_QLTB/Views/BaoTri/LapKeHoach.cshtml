@@ -1,4 +1,4 @@
-﻿@model QLTB.Models.LapKeHoachPageViewModel
+@model QLTB.Models.LapKeHoachPageViewModel
 @{ ViewBag.Title = "Lập Kế Hoạch Bảo Trì - Phòng CSVC"; }
 
 <style>
@@ -756,7 +756,7 @@
         el.classList.add('selected');
         currentKHId = id;
         document.getElementById('detailContent').innerHTML = '<div style="padding:20px;text-align:center;color:#888">Đang tải...</div>';
-        fetch('/CSVC/GetKeHoachDetail?id=' + encodeURIComponent(id))
+        fetch('/BaoTri/GetKeHoachDetail?id=' + encodeURIComponent(id))
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 if (!data.ok) { showToast('Lỗi: ' + data.msg, false); return; }
@@ -805,7 +805,7 @@
                     '</div>' +
                     '<div class="action-row">' +
                     (kh.TrangThai === 'Chờ thực hiện' ? '<button class="btn-danger" onclick="xoaKH(\'' + kh.ID_KeHoach + '\')">🗑 Xóa</button>' : '') +
-                    '<a href="/CSVC/GhiNhanSuaChua" class="btn-primary" style="text-decoration:none;display:inline-block">📝 Ghi nhận kết quả</a>' +
+                    '<a href="/BaoTri/GhiNhan" class="btn-primary" style="text-decoration:none;display:inline-block">📝 Ghi nhận kết quả</a>' +
                     '</div>';
             })
             .catch(function (e) { showToast('Lỗi kết nối: ' + e.message, false); });
@@ -874,7 +874,7 @@
         baoHongIds.forEach(function (v, i) { params.append('baoHongIds[' + i + ']', v); });
         ghiChuCTs.forEach(function (v, i) { params.append('ghiChuChiTiets[' + i + ']', v); });
 
-        postAction('/CSVC/LuuKeHoach', params, function (data) {
+        postAction('/BaoTri/LuuKeHoach', params, function (data) {
             if (data.ok) { showToast(data.msg, true); closeModal('scModal'); setTimeout(function () { location.reload(); }, 1200); }
             else showToast(data.msg, false);
         });
@@ -903,7 +903,7 @@
             params.append('ghiChuChiTiets[' + i + ']', note ? note.value : '');
         });
 
-        postAction('/CSVC/LuuKeHoach', params, function (data) {
+        postAction('/BaoTri/LuuKeHoach', params, function (data) {
             if (data.ok) { showToast(data.msg, true); closeModal('dkModal'); setTimeout(function () { location.reload(); }, 1200); }
             else showToast(data.msg, false);
         });
@@ -913,7 +913,7 @@
     function xoaKH(id) {
         if (!confirm('Xóa kế hoạch ' + id + '? Các báo hỏng liên quan sẽ trở lại Chờ xử lý.')) return;
         var params = new URLSearchParams({ id: id });
-        postAction('/CSVC/XoaKeHoach', params, function (data) {
+        postAction('/BaoTri/XoaKeHoach', params, function (data) {
             if (data.ok) { showToast('Đã xóa kế hoạch', true); setTimeout(function () { location.reload(); }, 1000); }
             else showToast(data.msg, false);
         });
