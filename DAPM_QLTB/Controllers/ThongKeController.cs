@@ -35,8 +35,22 @@ namespace QLTB.Controllers
         public ActionResult TheoDoi()
         {
             var r = RequireRole(4); if (r != null) return r;
-            try { return View(_svc.GetTheoDoi()); }
-            catch (Exception ex) { ViewBag.Error = ex.Message; return View(new System.Collections.Generic.List<TheDoiThietBiViewModel>()); }
+            try
+            {
+                var all = _svc.GetTheoDoi();
+                var canChuY  = all.FindAll(x => x.TrangThaiTB != "Đang sử dụng");
+                var hoatDong = all.FindAll(x => x.TrangThaiTB == "Đang sử dụng");
+                ViewBag.CanChuY  = canChuY;
+                ViewBag.HoatDong = hoatDong;
+                return View();
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error    = ex.Message;
+                ViewBag.CanChuY  = new System.Collections.Generic.List<TheDoiThietBiViewModel>();
+                ViewBag.HoatDong = new System.Collections.Generic.List<TheDoiThietBiViewModel>();
+                return View();
+            }
         }
 
         [HttpGet]

@@ -202,9 +202,13 @@
                     if (res.ok) {
                         var html = '', tong = 0;
                         res.data.forEach(function(item, i) {
-                            var tt = item.SoLuong * item.Gia;
+                            var ten = item.TenThietBiDeXuat || item.Ten || '';
+                            var gia = item.GiaDuKien || item.Gia || 0;
+                            var dvt = item.DonViTinh || item.DVT || '';
+                            var sl  = item.SoLuong || 0;
+                            var tt  = sl * gia;
                             tong += tt;
-                            html += '<tr><td>'+(i+1)+'</td><td><b>'+item.Ten+'</b></td><td>'+item.SoLuong+'</td><td>'+(item.DVT||'')+'</td><td>'+Number(item.Gia).toLocaleString('vi-VN')+' đ</td><td><b>'+Number(tt).toLocaleString('vi-VN')+' đ</b></td></tr>';
+                            html += '<tr><td>'+(i+1)+'</td><td><b>'+ten+'</b></td><td>'+sl+'</td><td>'+dvt+'</td><td>'+Number(gia).toLocaleString('vi-VN')+' đ</td><td><b>'+Number(tt).toLocaleString('vi-VN')+' đ</b></td></tr>';
                         });
                         box.querySelector('.detail-body').innerHTML = html || '<tr><td colspan="6" style="text-align:center;color:#aaa">Không có dữ liệu</td></tr>';
                         box.querySelector('.detail-total').textContent = Number(tong).toLocaleString('vi-VN') + ' đ';
