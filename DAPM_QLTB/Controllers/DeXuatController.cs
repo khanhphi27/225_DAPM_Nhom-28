@@ -76,14 +76,17 @@ namespace QLTB.Controllers
         public ActionResult XetDuyetYeuCau()
         {
             if (Session["UserId"] == null) return RedirectToAction("Login", "Account");
-            if (Session["UserRole"] == null || (int)Session["UserRole"] != 4) return RedirectToAction("Index", "Home");
+            var role = Session["UserRole"];
+            if (role == null || Convert.ToInt32(role) != 4) return RedirectToAction("Index", "Home");
+            ViewBag.ChoDuyet = new System.Collections.Generic.List<DeXuatViewModel>();
+            ViewBag.LichSu   = new System.Collections.Generic.List<DeXuatViewModel>();
             try
             {
                 var (choDuyet, lichSu) = _svc.GetDeXuatForBGH();
                 ViewBag.ChoDuyet = choDuyet;
                 ViewBag.LichSu = lichSu;
             }
-            catch (Exception ex) { ViewBag.Error = ex.Message; }
+            catch (Exception ex) { ViewBag.Error = "Lỗi tải dữ liệu: " + ex.Message; }
             return View();
         }
 

@@ -346,9 +346,16 @@ namespace QLTB.Models.Repositories
             using (var conn = DbHelper.GetConnection())
             {
                 conn.Open();
-                const string sql = @"SELECT dx.ID_DeXuat, dx.NgayDeXuat, dx.TrangThai, dx.MoTa, nd.HoTen AS NguoiDeXuat
-                    FROM DEXUAT_MUASAM dx JOIN NGUOIDUNG nd ON dx.NguoiDeXuatNo=nd.ID_NguoiDung
-                    WHERE dx.TrangThai=N'Chờ KHTC duyệt' ORDER BY dx.NgayDeXuat DESC";
+                const string sql = @"
+                    SELECT dx.ID_DeXuat, dx.NgayDeXuat, dx.TrangThai, dx.MoTa, 
+                           nd.HoTen AS NguoiDeXuat, ISNULL(kp.TenPhongBanKhoa, N'') AS KhoaPhongBan,
+                           ISNULL((SELECT SUM(ct.SoLuong*ISNULL(ct.GiaDuKien,0)) 
+                                   FROM CHITIET_DEXUAT ct WHERE ct.DeXuatNo=dx.ID_DeXuat),0) AS TongGia
+                    FROM DEXUAT_MUASAM dx 
+                    JOIN NGUOIDUNG nd ON dx.NguoiDeXuatNo=nd.ID_NguoiDung
+                    LEFT JOIN KHOA_PHONGBAN kp ON kp.ID_KhoaPhongBan = nd.Khoa_BanNo
+                    WHERE dx.TrangThai=N'Chờ KHTC duyệt' 
+                    ORDER BY dx.NgayDeXuat DESC";
                 using (var cmd = new SqlCommand(sql, conn))
                 using (var r = cmd.ExecuteReader())
                     while (r.Read())
@@ -356,9 +363,11 @@ namespace QLTB.Models.Repositories
                         {
                             ID_DeXuat = r["ID_DeXuat"].ToString(),
                             NguoiDeXuat = r["NguoiDeXuat"].ToString(),
+                            KhoaPhongBan = r["KhoaPhongBan"].ToString(),
                             NgayDeXuat = Convert.ToDateTime(r["NgayDeXuat"]),
                             TrangThai = r["TrangThai"].ToString(),
-                            MoTa = r.IsDBNull(r.GetOrdinal("MoTa")) ? "" : r["MoTa"].ToString()
+                            MoTa = r.IsDBNull(r.GetOrdinal("MoTa")) ? "" : r["MoTa"].ToString(),
+                            TongGiaDuKien = Convert.ToDecimal(r["TongGia"])
                         });
             }
             return list;

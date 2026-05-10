@@ -805,7 +805,7 @@
                     '</div>' +
                     '<div class="action-row">' +
                     (kh.TrangThai === 'Chờ thực hiện' ? '<button class="btn-danger" onclick="xoaKH(\'' + kh.ID_KeHoach + '\')">🗑 Xóa</button>' : '') +
-                    '<a href="/BaoTri/GhiNhan" class="btn-primary" style="text-decoration:none;display:inline-block">📝 Ghi nhận kết quả</a>' +
+                    '<a href="/BaoTri/GhiNhan?idKH=' + encodeURIComponent(kh.ID_KeHoach) + '" class="btn-primary" style="text-decoration:none;display:inline-block">📝 Ghi nhận kết quả</a>' +
                     '</div>';
             })
             .catch(function (e) { showToast('Lỗi kết nối: ' + e.message, false); });
@@ -870,9 +870,9 @@
             chiPhiDuKien: document.getElementById('scChiPhi').value,
             ghiChu: document.getElementById('scGhiChu').value
         });
-        thietBiIds.forEach(function (v, i) { params.append('thietBiIds[' + i + ']', v); });
-        baoHongIds.forEach(function (v, i) { params.append('baoHongIds[' + i + ']', v); });
-        ghiChuCTs.forEach(function (v, i) { params.append('ghiChuChiTiets[' + i + ']', v); });
+        thietBiIds.forEach(function (v, i) { params.append('thietBiNos', v); });
+        baoHongIds.forEach(function (v, i) { params.append('baoHongNos', v); });
+        ghiChuCTs.forEach(function (v, i) { params.append('ghiChuCTs', v); });
 
         postAction('/BaoTri/LuuKeHoach', params, function (data) {
             if (data.ok) { showToast(data.msg, true); closeModal('scModal'); setTimeout(function () { location.reload(); }, 1200); }
@@ -897,10 +897,10 @@
             ghiChu: document.getElementById('dkGhiChu').value
         });
         checked.forEach(function (cb, i) {
-            params.append('thietBiIds[' + i + ']', cb.value);
-            params.append('baoHongIds[' + i + ']', '');
+            params.append('thietBiNos', cb.value);
+            params.append('baoHongNos', '');
             var note = document.getElementById('dknote_' + cb.value);
-            params.append('ghiChuChiTiets[' + i + ']', note ? note.value : '');
+            params.append('ghiChuCTs', note ? note.value : '');
         });
 
         postAction('/BaoTri/LuuKeHoach', params, function (data) {

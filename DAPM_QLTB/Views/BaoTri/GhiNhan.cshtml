@@ -504,7 +504,7 @@
                 // Serialize chi tiết để truyền sang JS
                 var ctJson = Newtonsoft.Json.JsonConvert.SerializeObject(kh.ChiTiet);
 
-<div class="report-item" onclick='selectKH(this,@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(kh.ID_KeHoach)),@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(kh.LoaiKeHoach)),@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(kh.DonViThucHien)),@Html.Raw(ctJson))'>
+<div class="report-item" data-id="@kh.ID_KeHoach" onclick='selectKH(this,@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(kh.ID_KeHoach)),@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(kh.LoaiKeHoach)),@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(kh.DonViThucHien)),@Html.Raw(ctJson))'>
     <div class="ri-head">
         <div class="ri-code">@kh.ID_KeHoach</div>
         <span class="badge-kh @loaiCls">@loaiIcon @kh.LoaiKeHoach</span>
@@ -694,6 +694,17 @@
     var selectedKHId = null;
     var selectedCTKHId = null;
     var currentChiTiet = [];
+
+    window.addEventListener('DOMContentLoaded', function() {
+        var params = new URLSearchParams(window.location.search);
+        var idKH = params.get('idKH');
+        if (idKH) {
+            var el = document.querySelector('.report-item[data-id="' + idKH + '"]');
+            if (el) {
+                el.click();
+            }
+        }
+    });
 
     function showRecordingMode(showForm) {
         document.getElementById('completedPlanView').style.display = 'none';

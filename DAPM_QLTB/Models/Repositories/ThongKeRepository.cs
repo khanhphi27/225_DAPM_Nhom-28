@@ -150,49 +150,99 @@ namespace QLTB.Models.Repositories
             return list;
         }
 
-        public List<object> GetLichSuDuyetTheoThietBi(string tenTB)
+        public List<object> GetLichSuDuyetTheoThietBi(string maTB, string tenTB)
         {
             var list = new List<object>();
             using (var conn = DbHelper.GetConnection())
             {
                 conn.Open();
-                var words = (tenTB ?? "").Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                if (words.Length == 0) return list;
 
-                var likes = new List<string>();
-                for (int i = 0; i < words.Length; i++) likes.Add("ct.TenThietBiDeXuat LIKE @W" + i);
-
-                string sql = @"
-                    SELECT ls.CapDuyet, ls.ThoiGianDuyet, ls.TrangThaiSauDuyet, ls.GhiChu,
-                           nd.HoTen AS NguoiDuyet,
-                           dx.ID_DeXuat, dx.TrangThai AS TrangThaiDeXuat,
-                           dx.NgayDeXuat, dx.MoTa, ct.TenThietBiDeXuat
-                    FROM LICHSUDUYET ls
-                    JOIN NGUOIDUNG nd ON nd.ID_NguoiDung = ls.NguoiDuyetNo
-                    JOIN DEXUAT_MUASAM dx ON dx.ID_DeXuat = ls.DeXuatNo
-                    JOIN CHITIET_DEXUAT ct ON ct.DeXuatNo = dx.ID_DeXuat
-                    WHERE (" + string.Join(" OR ", likes) + @")
-                    ORDER BY dx.NgayDeXuat DESC, ls.ThoiGianDuyet";
-
-                using (var cmd = new SqlCommand(sql, conn))
+                // 1. Tìm theo ID_ThietBi -> DeXuatNo
+                if (!string.IsNullOrEmpty(maTB))
                 {
-                    for (int i = 0; i < words.Length; i++)
-                        cmd.Parameters.AddWithValue("@W" + i, "%" + words[i] + "%");
-                    using (var r = cmd.ExecuteReader())
-                        while (r.Read())
-                            list.Add(new
+                    string sqlByMaTB = @"
+                        SELECT ls.CapDuyet, ls.ThoiGianDuyet, ls.TrangThaiSauDuyet, ls.GhiChu,
+                               nd.HoTen AS NguoiDuyet,
+                               dx.ID_DeXuat, dx.TrangThai AS TrangThaiDeXuat,
+                               dx.NgayDeXuat, dx.MoTa, tb.TenTB AS TenThietBiDeXuat
+                        FROM THIETBI tb
+                        JOIN DEXUAT_MUASAM dx ON dx.ID_DeXuat = tb.DeXuatNo
+                        JOIN LICHSUDUYET ls ON ls.DeXuatNo = dx.ID_DeXuat
+                        JOIN NGUOIDUNG nd ON nd.ID_NguoiDung = ls.NguoiDuyetNo
+                        WHERE tb.ID_ThietBi = @maTB
+                        ORDER BY dx.NgayDeXuat DESC, ls.ThoiGianDuyet";
+
+                    using (var cmd = new SqlCommand(sqlByMaTB, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@maTB", maTB);
+                        using (var r = cmd.ExecuteReader())
+                        {
+                            while (r.Read())
                             {
-                                CapDuyet = r["CapDuyet"].ToString(),
-                                NguoiDuyet = r["NguoiDuyet"].ToString(),
-                                ThoiGian = Convert.ToDateTime(r["ThoiGianDuyet"]).ToString("dd/MM/yyyy HH:mm"),
-                                TrangThaiSauDuyet = r["TrangThaiSauDuyet"].ToString(),
-                                GhiChu = r["GhiChu"] == DBNull.Value ? "" : r["GhiChu"].ToString(),
-                                ID_DeXuat = r["ID_DeXuat"].ToString(),
-                                TrangThaiDeXuat = r["TrangThaiDeXuat"].ToString(),
-                                NgayDeXuat = Convert.ToDateTime(r["NgayDeXuat"]).ToString("dd/MM/yyyy"),
-                                MoTa = r["MoTa"] == DBNull.Value ? "" : r["MoTa"].ToString(),
-                                TenThietBiDeXuat = r["TenThietBiDeXuat"].ToString()
-                            });
+                                list.Add(new
+                                {
+                                    CapDuyet = r["CapDuyet"].ToString(),
+                                    NguoiDuyet = r["NguoiDuyet"].ToString(),
+                                    ThoiGian = Convert.ToDateTime(r["ThoiGianDuyet"]).ToString("dd/MM/yyyy HH:mm"),
+                                    TrangThaiSauDuyet = r["TrangThaiSauDuyet"].ToString(),
+                                    GhiChu = r["GhiChu"] == DBNull.Value ? "" : r["GhiChu"].ToString(),
+                                    ID_DeXuat = r["ID_DeXuat"].ToString(),
+                                    TrangThaiDeXuat = r["TrangThaiDeXuat"].ToString(),
+                                    NgayDeXuat = Convert.ToDateTime(r["NgayDeXuat"]).ToString("dd/MM/yyyy"),
+                                    MoTa = r["MoTa"] == DBNull.Value ? "" : r["MoTa"].ToString(),
+                                    TenThietBiDeXuat = r["TenThietBiDeXuat"].ToString()
+                                });
+                            }
+                        }
+                    }
+                }
+
+                // 2. Nếu không tìm thấy (có thể thiết bị cũ không có DeXuatNo), tìm theo tên
+                if (list.Count == 0 && !string.IsNullOrEmpty(tenTB))
+                {
+                    var words = tenTB.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (words.Length > 0)
+                    {
+                        var likes = new List<string>();
+                        for (int i = 0; i < words.Length; i++) likes.Add("ct.TenThietBiDeXuat LIKE @W" + i);
+
+                        string sqlFallback = @"
+                            SELECT ls.CapDuyet, ls.ThoiGianDuyet, ls.TrangThaiSauDuyet, ls.GhiChu,
+                                   nd.HoTen AS NguoiDuyet,
+                                   dx.ID_DeXuat, dx.TrangThai AS TrangThaiDeXuat,
+                                   dx.NgayDeXuat, dx.MoTa, ct.TenThietBiDeXuat
+                            FROM LICHSUDUYET ls
+                            JOIN NGUOIDUNG nd ON nd.ID_NguoiDung = ls.NguoiDuyetNo
+                            JOIN DEXUAT_MUASAM dx ON dx.ID_DeXuat = ls.DeXuatNo
+                            JOIN CHITIET_DEXUAT ct ON ct.DeXuatNo = dx.ID_DeXuat
+                            WHERE (" + string.Join(" OR ", likes) + @")
+                            ORDER BY dx.NgayDeXuat DESC, ls.ThoiGianDuyet";
+
+                        using (var cmd = new SqlCommand(sqlFallback, conn))
+                        {
+                            for (int i = 0; i < words.Length; i++)
+                                cmd.Parameters.AddWithValue("@W" + i, "%" + words[i] + "%");
+                            using (var r = cmd.ExecuteReader())
+                            {
+                                while (r.Read())
+                                {
+                                    list.Add(new
+                                    {
+                                        CapDuyet = r["CapDuyet"].ToString(),
+                                        NguoiDuyet = r["NguoiDuyet"].ToString(),
+                                        ThoiGian = Convert.ToDateTime(r["ThoiGianDuyet"]).ToString("dd/MM/yyyy HH:mm"),
+                                        TrangThaiSauDuyet = r["TrangThaiSauDuyet"].ToString(),
+                                        GhiChu = r["GhiChu"] == DBNull.Value ? "" : r["GhiChu"].ToString(),
+                                        ID_DeXuat = r["ID_DeXuat"].ToString(),
+                                        TrangThaiDeXuat = r["TrangThaiDeXuat"].ToString(),
+                                        NgayDeXuat = Convert.ToDateTime(r["NgayDeXuat"]).ToString("dd/MM/yyyy"),
+                                        MoTa = r["MoTa"] == DBNull.Value ? "" : r["MoTa"].ToString(),
+                                        TenThietBiDeXuat = r["TenThietBiDeXuat"].ToString()
+                                    });
+                                }
+                            }
+                        }
+                    }
                 }
             }
             return list;
