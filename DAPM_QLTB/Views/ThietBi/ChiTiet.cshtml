@@ -1,13 +1,12 @@
-﻿@model System.Data.DataTable
+@model QLTB.Models.ThietBiViewModel
 @{
     ViewBag.Title = "Chi tiết thiết bị";
-    var row = Model.Rows[0];
 }
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="mb-0"><i class="fa fa-info-circle text-primary"></i> Chi Tiết Thiết Bị</h3>
-        <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("DanhSachThietBi", "TruongKhoa")">← Quay lại danh sách</a>
+        <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("QuanLy", "ThietBi")">← Quay lại danh sách</a>
     </div>
 
     @if (ViewBag.TenKhoaPhongBan != null && !string.IsNullOrWhiteSpace(ViewBag.TenKhoaPhongBan.ToString()))
@@ -29,32 +28,40 @@
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-6">
-                    <div><strong>Mã thiết bị:</strong> @row["ID_ThietBi"]</div>
+                    <div><strong>Mã thiết bị:</strong> @Model.ID_ThietBi</div>
                 </div>
                 <div class="col-md-6">
-                    <div><strong>Tên thiết bị:</strong> @row["TenTB"]</div>
+                    <div><strong>Tên thiết bị:</strong> @Model.TenTB</div>
                 </div>
                 <div class="col-md-6">
-                    <div><strong>Danh mục:</strong> @row["TenDanhMuc"]</div>
+                    <div><strong>Danh mục:</strong> @Model.TenDanhMuc</div>
                 </div>
                 <div class="col-md-6">
-                    <div><strong>Trạng thái:</strong> @row["TrangThaiTB"]</div>
+                    <div><strong>Trạng thái:</strong> @Model.TrangThaiTB</div>
                 </div>
                 <div class="col-md-6">
-                    <div><strong>Giá trị:</strong> @string.Format("{0:N0} đ", row["Gia"])</div>
+                    <div><strong>Giá trị:</strong> @(Model.Gia.HasValue ? string.Format("{0:N0} đ", Model.Gia.Value) : "—")</div>
                 </div>
                 <div class="col-md-6">
-                    <div><strong>Số seri:</strong> @row["SoSeri"]</div>
+                    <div><strong>Số seri:</strong> @(Model.SoSeri.HasValue ? Model.SoSeri.ToString() : "—")</div>
                 </div>
                 <div class="col-md-6">
-                    <div><strong>Nhà cung cấp:</strong> @row["TenNhaCC"]</div>
+                    <div><strong>Nhà cung cấp:</strong> @(string.IsNullOrWhiteSpace(Model.TenNhaCungCap) ? "—" : Model.TenNhaCungCap)</div>
                 </div>
                 <div class="col-md-6">
-                    <div><strong>Khoa/Phòng ban:</strong> @row["TenKhoaPhongBan"]</div>
+                    <div><strong>Khoa/Phòng ban:</strong> @(string.IsNullOrWhiteSpace(Model.TenKhoaPhongBan) ? "—" : Model.TenKhoaPhongBan)</div>
+                </div>
+                <div class="col-12">
+                    <div><strong>Vị trí đặt:</strong></div>
+                    <div class="border rounded p-2 bg-light">
+                        @(string.IsNullOrWhiteSpace(Model.TenPhong) ? "Chưa bố trí phòng" : $"{Model.TenPhong} ({Model.TenKhuVuc} - {Model.TenCoSo})")
+                    </div>
                 </div>
                 <div class="col-12">
                     <div><strong>Thông số kỹ thuật:</strong></div>
-                    <div class="border rounded p-2 bg-light">@row["ThongSoKT"]</div>
+                    <div class="border rounded p-2 bg-light">
+                        @(string.IsNullOrWhiteSpace(Model.ThongSoKT) ? "Không có thông số kỹ thuật" : Model.ThongSoKT)
+                    </div>
                 </div>
             </div>
         </div>
@@ -67,7 +74,7 @@
         <div class="card-body">
             @using (Html.BeginForm("BaoHong", "TruongKhoa", FormMethod.Post))
             {
-                <input type="hidden" name="id" value="@row["ID_ThietBi"]" />
+                <input type="hidden" name="id" value="@Model.ID_ThietBi" />
                 <input type="hidden" name="fromDetail" value="true" />
 
                 <div class="mb-3">

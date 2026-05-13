@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -141,11 +141,18 @@
       <DependentUpon>QLTB.tt</DependentUpon>
     </Compile>
     <Compile Include="Controllers\AccountController.cs" />
-    <Compile Include="Controllers\BGHController.cs" />
-    <Compile Include="Controllers\CSVCController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\KHTCController.cs" />
     <Compile Include="Controllers\TruongKhoaController.cs" />
+    <Compile Include="Controllers\DanhMucController.cs" />
+    <Compile Include="Controllers\NhaCungCapController.cs" />
+    <Compile Include="Controllers\KhoaController.cs" />
+    <Compile Include="Controllers\PhongController.cs" />
+    <Compile Include="Controllers\NguoiDungController.cs" />
+    <Compile Include="Controllers\ThietBiController.cs" />
+    <Compile Include="Controllers\DeXuatController.cs" />
+    <Compile Include="Controllers\BaoTriController.cs" />
+    <Compile Include="Controllers\KiemKeController.cs" />
+    <Compile Include="Controllers\ThongKeController.cs" />
     <Compile Include="COSO.cs">
       <DependentUpon>QLTB.tt</DependentUpon>
     </Compile>
@@ -177,9 +184,40 @@
       <DependentUpon>QLTB.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\DbHelper.cs" />
-    <Compile Include="Models\ThietBiViewModel.cs" />
-    <Compile Include="Models\User.cs" />
-    <Compile Include="Models\ViewModels.cs" />
+    <Compile Include="Models\NotificationHelper.cs" />
+    <Compile Include="Models\Services\TruongKhoaService.cs" />
+    <Compile Include="Models\Services\DanhMucService.cs" />
+    <Compile Include="Models\Services\NhaCungCapService.cs" />
+    <Compile Include="Models\Services\KhoaService.cs" />
+    <Compile Include="Models\Services\PhongService.cs" />
+    <Compile Include="Models\Services\NguoiDungService.cs" />
+    <Compile Include="Models\Services\ThietBiService.cs" />
+    <Compile Include="Models\Services\DeXuatService.cs" />
+    <Compile Include="Models\Services\BaoTriService.cs" />
+    <Compile Include="Models\Services\KiemKeService.cs" />
+    <Compile Include="Models\Services\ThongKeService.cs" />
+    <Compile Include="Models\Repositories\DanhMucRepository.cs" />
+    <Compile Include="Models\Repositories\NhaCungCapRepository.cs" />
+    <Compile Include="Models\Repositories\KhoaRepository.cs" />
+    <Compile Include="Models\Repositories\PhongRepository.cs" />
+    <Compile Include="Models\Repositories\NguoiDungRepository.cs" />
+    <Compile Include="Models\Repositories\ThietBiRepository.cs" />
+    <Compile Include="Models\Repositories\DeXuatRepository.cs" />
+    <Compile Include="Models\Repositories\BaoTriRepository.cs" />
+    <Compile Include="Models\Repositories\KiemKeRepository.cs" />
+    <Compile Include="Models\Repositories\ThongKeRepository.cs" />
+    <Compile Include="Models\Repositories\TruongKhoaRepository.cs" />
+    <Compile Include="Models\ViewModels\ThietBiViewModel.cs" />
+    <Compile Include="Models\ViewModels\DeXuatViewModel.cs" />
+    <Compile Include="Models\ViewModels\NhaCungCapViewModel.cs" />
+    <Compile Include="Models\ViewModels\DanhMucViewModel.cs" />
+    <Compile Include="Models\ViewModels\KhoaViewModel.cs" />
+    <Compile Include="Models\ViewModels\PhongViewModel.cs" />
+    <Compile Include="Models\ViewModels\NguoiDungViewModel.cs" />
+    <Compile Include="Models\ViewModels\BaoTriViewModel.cs" />
+    <Compile Include="Models\ViewModels\KiemKeViewModel.cs" />
+    <Compile Include="Models\ViewModels\ThongKeViewModel.cs" />
+    <Compile Include="Models\ViewModels\AccountViewModel.cs" />
     <Compile Include="NGUOIDUNG.cs">
       <DependentUpon>QLTB.tt</DependentUpon>
     </Compile>
@@ -353,31 +391,32 @@
     <Content Include="Views\Account\Login.cshtml" />
     <Content Include="Views\Account\Notifications.cshtml" />
     <Content Include="Views\Account\Profile.cshtml" />
-    <Content Include="Views\BGH\Index.cshtml" />
-    <Content Include="Views\BGH\TheoDoi.cshtml" />
-    <Content Include="Views\BGH\ThongKeTaiSan.cshtml" />
-    <Content Include="Views\BGH\XetDuyetYeuCau.cshtml" />
-    <Content Include="Views\CSVC\GhiNhanSuaChua.cshtml" />
-    <Content Include="Views\CSVC\KiemKeTaiSan.cshtml" />
-    <Content Include="Views\CSVC\LapKeHoachBaoTri.cshtml" />
-    <Content Include="Views\CSVC\PheDuyetDeXuat.cshtml" />
-    <Content Include="Views\CSVC\QuanLyThietBi.cshtml" />
-    <Content Include="Views\KHTC\BaoCaoTaiSan.cshtml" />
-    <Content Include="Views\KHTC\Index.cshtml" />
-    <Content Include="Views\KHTC\PheDuyetNganSach.cshtml" />
-    <Content Include="Views\KHTC\QuanLyChiPhi.cshtml" />
     <Content Include="Views\TruongKhoa\Index.cshtml" />
     <Content Include="Views\TruongKhoa\DanhSachThietBi.cshtml" />
     <Content Include="Views\TruongKhoa\GuiDeXuat.cshtml" />
     <Content Include="Views\TruongKhoa\XemDeXuat.cshtml" />
-    <Content Include="Views\BGH\QuanLyKhoa.cshtml" />
-    <Content Include="Views\BGH\QuanLyNguoiDung.cshtml" />
-    <Content Include="Views\BGH\QuanLyPhong.cshtml" />
-    <Content Include="Views\CSVC\QuanLyDanhMuc.cshtml" />
-    <Content Include="Views\CSVC\QuanLyNhaCungCap.cshtml" />
-    <Content Include="Views\CSVC\TaoPhieuKiemKe.cshtml" />
     <Content Include="Views\TruongKhoa\ChiTietThietBi.cshtml" />
     <Content Include="Views\TruongKhoa\DeXuatMuaSam.cshtml" />
+    <Content Include="Views\DanhMuc\QuanLy.cshtml" />
+    <Content Include="Views\NhaCungCap\QuanLy.cshtml" />
+    <Content Include="Views\Khoa\QuanLy.cshtml" />
+    <Content Include="Views\Phong\QuanLy.cshtml" />
+    <Content Include="Views\NguoiDung\QuanLy.cshtml" />
+    <Content Include="Views\ThietBi\QuanLy.cshtml" />
+    <Content Include="Views\ThietBi\ChiTiet.cshtml" />
+    <Content Include="Views\DeXuat\PheDuyet.cshtml" />
+    <Content Include="Views\BaoTri\LapKeHoach.cshtml" />
+    <Content Include="Views\BaoTri\GhiNhan.cshtml" />
+    <Content Include="Views\KiemKe\DanhSach.cshtml" />
+    <Content Include="Views\KiemKe\TaoPhieu.cshtml" />
+    <Content Include="Views\ThongKe\Dashboard.cshtml" />
+    <Content Include="Views\ThongKe\ThongKeTaiSan.cshtml" />
+    <Content Include="Views\ThongKe\TheoDoi.cshtml" />
+    <Content Include="Views\ThongKe\DashboardKHTC.cshtml" />
+    <Content Include="Views\ThongKe\BaoCaoTaiSan.cshtml" />
+    <Content Include="Views\DeXuat\XetDuyetYeuCau.cshtml" />
+    <Content Include="Views\DeXuat\PheDuyetNganSach.cshtml" />
+    <Content Include="Views\DeXuat\QuanLyChiPhi.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
