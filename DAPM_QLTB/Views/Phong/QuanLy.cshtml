@@ -65,6 +65,9 @@
 
 <!-- Thanh lọc -->
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
+    <input type="text" id="searchKeyword" oninput="applyFilter()" placeholder="🔍 Tìm theo mã hoặc tên..."
+           style="padding:8px 12px;border:1px solid #d0d5e8;border-radius:8px;font-size:13px;background:#fff;min-width:220px;" />
+
     <select id="filterKhuVuc" onchange="applyFilter()" style="padding:8px 12px;border:1px solid #d0d5e8;border-radius:8px;font-size:13px;background:#fff;min-width:180px;">
         <option value="">🗺️ Tất cả khu vực</option>
         @foreach (var kv in khuVucList)
@@ -98,7 +101,7 @@
             {
                 stt++;
                 string tenKvDisplay = string.IsNullOrEmpty(p.TenKhuVuc) ? "—" : p.TenKhuVuc;
-                <tr data-khuvuc="@tenKvDisplay">
+                <tr data-id="@p.ID_Phong.ToLower()" data-ten="@p.TenPhong.ToLower()" data-khuvuc="@tenKvDisplay">
                     <td style="color:#999">@stt</td>
                     <td><code style="font-size:11px;background:#f0f2f8;padding:2px 7px;border-radius:4px;">@p.ID_Phong</code></td>
                     <td><strong>@p.TenPhong</strong></td>
@@ -219,19 +222,25 @@
 
     // ── Lọc ──────────────────────────────────────────────────
     function applyFilter() {
+        var keyword = (document.getElementById('searchKeyword').value || '').trim().toLowerCase();
         var khuVuc = document.getElementById('filterKhuVuc').value;
         var rows = document.querySelectorAll('#tbodyPhong tr');
         var visible = 0;
         rows.forEach(function (row) {
-            var ok = !khuVuc || (row.getAttribute('data-khuvuc') || '') === khuVuc;
+            var rId     = row.getAttribute('data-id')     || '';
+            var rTen    = row.getAttribute('data-ten')    || '';
+            var rKhuVuc = row.getAttribute('data-khuvuc') || '';
+            var matchKeyword = !keyword || rId.includes(keyword) || rTen.includes(keyword);
+            var ok = matchKeyword && (!khuVuc || rKhuVuc === khuVuc);
             row.style.display = ok ? '' : 'none';
             if (ok) visible++;
         });
-        var isFiltering = !!khuVuc;
+        var isFiltering = keyword || !!khuVuc;
         document.getElementById('lblLoc').style.display = isFiltering ? '' : 'none';
         document.getElementById('lblLocSo').textContent = visible;
     }
     function resetFilter() {
+        document.getElementById('searchKeyword').value = '';
         document.getElementById('filterKhuVuc').value = '';
         applyFilter();
     }
