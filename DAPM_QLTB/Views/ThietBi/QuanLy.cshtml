@@ -580,7 +580,7 @@
             </div>
             <div>
                 <label class="form-lbl">Khoa / phòng ban</label>
-                <select class="form-inp" id="fKhoa">
+                <select class="form-inp" id="fKhoa" onchange="refreshMaThietBi()">
                     <option value="">-- Chọn khoa / phòng ban --</option>
                     @foreach (var item in khoaList)
                     {
@@ -620,7 +620,7 @@
             </div>
             <div class="full">
                 <label class="form-lbl">Nhà cung cấp</label>
-                <select class="form-inp" id="fNcc" onchange="refreshMaThietBi()">
+                <select class="form-inp" id="fNcc">
                     <option value="">-- Chọn nhà cung cấp --</option>
                     @foreach (var item in nhaCungCapList)
                     {
@@ -952,8 +952,8 @@
         $('#importCodeBox').hide();
         $('#fDeXuatReadonly').val('');
 
-        // Mã sẽ tự sinh khi chọn đủ NCC và Danh mục
-        $('#fCode').val('(chọn Nhà cung cấp và Danh mục)');
+        // Mã sẽ tự sinh khi chọn đủ Khoa và Danh mục
+        $('#fCode').val('(chọn Khoa và Danh mục)');
 
         $('#deviceModal').addClass('active');
     }
@@ -1079,15 +1079,15 @@
         applyFilter();
     });
 
-    // ── Tự động cập nhật mã thiết bị khi chọn NCC / Danh mục ──
+    // ── Tự động cập nhật mã thiết bị khi chọn Khoa / Danh mục ──
     function refreshMaThietBi() {
         if (isEdit) return;
-        var ncc     = document.getElementById('fNcc')  ? document.getElementById('fNcc').value  : '';
-        var danhmuc = document.getElementById('fCat')  ? document.getElementById('fCat').value  : '';
         var khoa    = document.getElementById('fKhoa') ? document.getElementById('fKhoa').value : '';
+        var danhmuc = document.getElementById('fCat')  ? document.getElementById('fCat').value  : '';
+        var ncc     = document.getElementById('fNcc')  ? document.getElementById('fNcc').value  : '';
 
-        if (!ncc || !danhmuc) {
-            document.getElementById('fCode').value = '(chọn Nhà cung cấp và Danh mục)';
+        if (!khoa || !danhmuc) {
+            document.getElementById('fCode').value = '(chọn Khoa và Danh mục)';
             return;
         }
         document.getElementById('fCode').value = 'Đang tạo mã...';

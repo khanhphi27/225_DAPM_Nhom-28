@@ -238,11 +238,11 @@ namespace QLTB.Models.Repositories
 
         public string GenerateNewId(SqlConnection conn, string nhaCCNo, string khoaNo, string danhMucNo)
         {
-            // Format 9 ký tự: YY(2) + NCC(2) + DanhMuc(2) + STT(3)
-            string yy      = DateTime.Now.ToString("yy");
-            string nccPart = ExtractNumericSuffix(nhaCCNo,   2);
-            string dmPart  = ExtractNumericSuffix(danhMucNo, 2);
-            string prefix  = yy + nccPart + dmPart; // 6 ký tự
+            // Format 9 ký tự: YY(2) + Khoa(2) + DanhMuc(2) + STT(3)
+            string yy       = DateTime.Now.ToString("yy");
+            string khoaPart = ExtractNumericSuffix(khoaNo,    2);
+            string dmPart   = ExtractNumericSuffix(danhMucNo, 2);
+            string prefix   = yy + khoaPart + dmPart; // 6 ký tự
 
             int count = 0;
             using (var cmd = new SqlCommand(
@@ -255,25 +255,16 @@ namespace QLTB.Models.Repositories
         }
 
         /// <summary>
-        /// Trích phần số ở cuối chuỗi ID, lấy tối đa maxLen ký tự.
-        /// Ví dụ: "NCC004" → maxLen=2 → "04" | "K01" → maxLen=2 → "01" | "DM3" → maxLen=1 → "3"
-        /// Nếu không có số thì lấy maxLen ký tự đầu của chuỗi gốc.
+        /// Lấy 2 ký tự cuối cùng của chuỗi ID (bất kể chữ hay số).
+        /// Ví dụ: "KP02" → "02" | "DM_MT" → "MT" | "K1" → "K1" | "A" → "0A"
         /// </summary>
         private string ExtractNumericSuffix(string id, int maxLen)
         {
             if (string.IsNullOrWhiteSpace(id)) return new string('0', maxLen);
-            // Lấy tất cả chữ số trong chuỗi
-            var digits = new string(id.Where(char.IsDigit).ToArray());
-            if (digits.Length == 0)
-            {
-                // Không có số → lấy maxLen ký tự đầu (chữ hoa)
-                var letters = id.Trim().ToUpper();
-                return letters.Length >= maxLen ? letters.Substring(0, maxLen) : letters.PadRight(maxLen, '0');
-            }
-            // Lấy maxLen chữ số cuối
-            return digits.Length >= maxLen
-                ? digits.Substring(digits.Length - maxLen)
-                : digits.PadLeft(maxLen, '0');
+            var s = id.Trim().ToUpper();
+            return s.Length >= maxLen
+                ? s.Substring(s.Length - maxLen)   // lấy maxLen ký tự cuối
+                : s.PadLeft(maxLen, '0');           // nếu ngắn hơn thì pad trái bằng '0'
         }
 
         #endregion
