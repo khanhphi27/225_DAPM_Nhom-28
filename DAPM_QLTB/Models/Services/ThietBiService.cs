@@ -17,6 +17,13 @@ namespace QLTB.Models.Services
         public object GetById(string id) => _repo.GetById(id);
         public (bool ok, string msg) Save(ThietBiViewModel tb) => _repo.Save(tb);
         public (bool ok, string msg) Delete(string id) => _repo.Delete(id);
-        public string GenerateNewId() => _repo.GenerateNewId();
+        public string GenerateNextId(string nhaCCNo, string khoaNo, string danhMucNo)
+        {
+            using (var conn = DbHelper.GetConnection())
+            {
+                conn.Open();
+                return _repo.GenerateNewId(conn, nhaCCNo, khoaNo, danhMucNo);
+            }
+        }
     }
 }

@@ -1,5 +1,4 @@
-﻿@{ ViewBag.Title = "Quản Lý Thiết Bị - Phòng CSVC"; }
-@model List<QLTB.Models.ThietBiViewModel>
+﻿@model List<QLTB.Models.ThietBiViewModel>
 @{
     ViewBag.Title = "Quản Lý Thiết Bị - Phòng CSVC";
     var importDeXuatNo = (ViewBag.ImportDeXuatNo ?? "").ToString();
@@ -571,7 +570,7 @@
             </div>
             <div>
                 <label class="form-lbl">Danh mục</label>
-                <select class="form-inp" id="fCat">
+                <select class="form-inp" id="fCat" onchange="refreshMaThietBi()">
                     <option value="">-- Chọn danh mục --</option>
                     @foreach (var item in danhMucList)
                     {
@@ -621,7 +620,7 @@
             </div>
             <div class="full">
                 <label class="form-lbl">Nhà cung cấp</label>
-                <select class="form-inp" id="fNcc">
+                <select class="form-inp" id="fNcc" onchange="refreshMaThietBi()">
                     <option value="">-- Chọn nhà cung cấp --</option>
                     @foreach (var item in nhaCungCapList)
                     {
@@ -953,15 +952,8 @@
         $('#importCodeBox').hide();
         $('#fDeXuatReadonly').val('');
 
-        $.get('/ThietBi/GetNextThietBiId', function (res) {
-            if (res.ok && res.id) {
-                $('#fCode').val(res.id);
-            } else {
-                alert('Không tạo được mã thiết bị tự động: ' + (res.msg || 'Lỗi không xác định'));
-            }
-        }).fail(function () {
-            alert('Không tạo được mã thiết bị tự động do lỗi kết nối server.');
-        });
+        // Mã sẽ tự sinh khi chọn đủ NCC và Danh mục
+        $('#fCode').val('(chọn Nhà cung cấp và Danh mục)');
 
         $('#deviceModal').addClass('active');
     }
@@ -1086,5 +1078,28 @@
         filterPagePhongOptions();
         applyFilter();
     });
+
+    // ── Tự động cập nhật mã thiết bị khi chọn NCC / Danh mục ──
+    function refreshMaThietBi() {
+        if (isEdit) return;
+        var ncc     = document.getElementById('fNcc')  ? document.getElementById('fNcc').value  : '';
+        var danhmuc = document.getElementById('fCat')  ? document.getElementById('fCat').value  : '';
+        var khoa    = document.getElementById('fKhoa') ? document.getElementById('fKhoa').value : '';
+
+        if (!ncc || !danhmuc) {
+            document.getElementById('fCode').value = '(chọn Nhà cung cấp và Danh mục)';
+            return;
+        }
+        document.getElementById('fCode').value = 'Đang tạo mã...';
+        $.get('/ThietBi/GetNextThietBiId', {
+            nhaCCNo:   ncc,
+            khoaNo:    khoa,
+            danhMucNo: danhmuc
+        }, function (res) {
+            document.getElementById('fCode').value = res.ok ? res.id : '(lỗi sinh mã)';
+        }).fail(function () {
+            document.getElementById('fCode').value = '(lỗi kết nối)';
+        });
+    }
 </script>
 
