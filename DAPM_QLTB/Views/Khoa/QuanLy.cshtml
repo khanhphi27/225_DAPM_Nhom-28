@@ -88,10 +88,22 @@
 <div id="alertBox" class="alert-box"></div>
 
 <!-- Toolbar -->
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-    <span style="font-size:13px; color:#666;">Tổng: <strong>@Model.Count()</strong> khoa / phòng ban</span>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+    <span style="font-size:13px; color:#666;">
+        Tổng: <strong id="lblTong">@Model.Count()</strong> khoa / phòng ban
+        <span id="lblLoc" style="color:#1a237e; display:none;"> – lọc ra: <strong id="lblLocSo">0</strong></span>
+    </span>
     <button onclick="openCreate()" style="background:#1a237e;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;">
         <i class="bi bi-plus-circle-fill"></i> Thêm khoa mới
+    </button>
+</div>
+
+<!-- Thanh tìm kiếm -->
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
+    <input type="text" id="searchKeyword" oninput="applyFilter()" placeholder="🔍 Tìm theo mã hoặc tên..."
+           style="padding:8px 12px;border:1px solid #d0d5e8;border-radius:8px;font-size:13px;background:#fff;min-width:260px;" />
+    <button onclick="resetFilter()" style="padding:8px 14px;border:1px solid #d0d5e8;border-radius:8px;font-size:13px;background:#f5f5f5;color:#555;cursor:pointer;">
+        ✕ Bỏ lọc
     </button>
 </div>
 
@@ -108,12 +120,12 @@
                 <th style="text-align:center">Thao tác</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="tbodyKhoa">
             @{ int stt = 0; }
             @foreach (var kp in Model)
             {
                 stt++;
-                <tr>
+                <tr data-id="@kp.ID_KhoaPhongBan.ToLower()" data-ten="@kp.TenPhongBanKhoa.ToLower()">
                     <td style="color:#999">@stt</td>
                     <td><code style="font-size:11px;background:#f0f2f8;padding:2px 7px;border-radius:4px;">@kp.ID_KhoaPhongBan</code></td>
                     <td><strong>@kp.TenPhongBanKhoa</strong></td>
@@ -212,6 +224,27 @@
     document.querySelectorAll('.modal-overlay').forEach(function (m) {
         m.addEventListener('click', function (e) { if (e.target === m) closeAll(); });
     });
+
+    // ── Tìm kiếm ─────────────────────────────────────────────
+    function applyFilter() {
+        var keyword = (document.getElementById('searchKeyword').value || '').trim().toLowerCase();
+        var rows = document.querySelectorAll('#tbodyKhoa tr');
+        var visible = 0;
+        rows.forEach(function (row) {
+            var rId  = row.getAttribute('data-id')  || '';
+            var rTen = row.getAttribute('data-ten') || '';
+            var ok = !keyword || rId.includes(keyword) || rTen.includes(keyword);
+            row.style.display = ok ? '' : 'none';
+            if (ok) visible++;
+        });
+        var isFiltering = !!keyword;
+        document.getElementById('lblLoc').style.display = isFiltering ? '' : 'none';
+        document.getElementById('lblLocSo').textContent = visible;
+    }
+    function resetFilter() {
+        document.getElementById('searchKeyword').value = '';
+        applyFilter();
+    }
 
     // ── Tạo ──────────────────────────────────────────────────
     function openCreate() {
