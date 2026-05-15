@@ -58,6 +58,40 @@
 .btn-ok.red { background:#e53935; }
 .btn-cancel { background:#f5f5f5; color:#555; border:none; border-radius:8px; padding:9px 20px; font-size:13px; font-weight:600; cursor:pointer; }
 .empty-state { text-align:center; padding:40px; color:#aaa; font-size:14px; }
+/* Nút in trên giao diện web */
+.btn-print-pdf {
+    background: #f0f4f8; color: #1a237e; border: 1px solid #d0d5e8;
+    border-radius: 7px; padding: 7px 14px; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: 0.2s; margin-left: 8px;
+}
+.btn-print-pdf:hover { background: #e2e8f0; }
+
+/* Định dạng mẫu in chuẩn (Mặc định ẩn trên web) */
+#mauInAn { display: none; font-family: "Times New Roman", serif; color: black; background: white; }
+
+@@media print {
+    /* Ẩn toàn bộ UI web khi in */
+    .no-print, .page-hdr, .tab-bar, #sec-pending, #sec-history, .modal-overlay, .sidebar, .navbar, button, .action-group {
+        display: none !important;
+    }
+    /* Hiện mẫu in chuẩn A4 */
+    #mauInAn {
+        display: block !important;
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        padding: 0;
+        margin: 0;
+        padding: 1.5cm 1cm 1.5cm 1.5cm;
+    }
+    @@page { size: A4; margin: 0; }
+    .print-content { padding: 1.5cm 1cm 1cm 1.5cm; }
+    .table-items { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    .table-items th, .table-items td { border: 1px solid black !important; padding: 8px; font-size: 14px; }
+    .sig-container { width: 100%; border-collapse: collapse; margin-top: 30px; }
+    .sig-container td { padding: 10px; text-align: center; vertical-align: top; height: 120px; font-size: 13px; }
+}
 </style>
 
 <div class="page-hdr mb-3">
@@ -149,13 +183,22 @@
                     <div>
                         <div class="card-id">@dx.ID_DeXuat &nbsp;|&nbsp; @dx.NgayDeXuat.ToString("dd/MM/yyyy")</div>
                         <div class="card-title">Phiếu đề xuất mua sắm thiết bị</div>
+
                         <div class="card-meta">
                             <span>👤 @dx.NguoiDeXuat</span>
                             <span>🏢 @dx.KhoaPhongBan</span>
                             <span>💰 @dx.TongGiaDuKien.ToString("N0") đ</span>
                         </div>
                     </div>
-                    <span class="badge-p @badgeCls">@dx.TrangThai</span>
+                    <div style="display:flex; align-items:center;">
+                        @* CHÈN CODE NÀY VÀO: Chỉ hiện nút In nếu trạng thái là Đã duyệt *@
+                        @if (dx.TrangThai == "Đã duyệt")
+                        {
+                            <button class="btn-print-pdf" onclick="inPhieuDaDuyet('@dx.ID_DeXuat', '@dx.NguoiDeXuat', '@dx.NgayDeXuat.ToString("dd/MM/yyyy")')">🖨️ Xuất PDF</button>
+                        }
+                        <span class="badge-p @badgeCls">@dx.TrangThai</span>
+                    </div>
+                   
                 </div>
                 <div class="timeline">
                     <div class="tl-step @s0"><div class="tl-dot">✔️</div><div class="tl-label">Đã gửi</div></div>
@@ -185,7 +228,93 @@
         </div>
     </div>
 </div>
+<div id="mauInAn">
+    <table width="100%" border="0" style="margin-bottom: 10px;">
+        <tr>
+            <td width="45%" class="text-center" style="vertical-align: top; padding-top: 0;">
+                <div class="text-bold" style="font-size: 13px; line-height: 1.5;">TRƯỜNG ĐH SƯ PHẠM KỸ THUẬT</div>
+                <div class="text-bold" style="font-size: 13px; text-decoration: underline; line-height: 1.5;">ĐẠI HỌC ĐÀ NẴNG</div>
+                <div style="font-size: 12px; margin-top: 5px;">Số: ......../ĐX-2026</div>
+            </td>
+            <td width="55%" class="text-center" style="vertical-align: top; padding-top: 0;">
+                <div class="text-bold" style="font-size: 13px; line-height: 1.5;">CỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                <div class="text-bold" style="font-size: 13px; text-decoration: underline; line-height: 1.5;">Độc lập - Tự do - Hạnh phúc</div>
+                <div style="font-size: 12px; font-style: italic; margin-top: 8px;">
+                    Đà Nẵng, ngày <span id="outNgay">...</span> tháng <span id="outThang">...</span> năm 2026
+                </div>
+            </td>
+        </tr>
+    </table>
 
+    <h2 class="text-center text-bold" style="margin-top: 30px; font-size: 17px; margin-bottom: 10px;">PHIẾU ĐỀ XUẤT MUA SẮM TRANG THIẾT BỊ, VẬT TƯ</h2>
+
+    <div class="text-center" style="font-size: 14px; margin-bottom: 25px;">
+        Kính gửi: &nbsp;&nbsp;&nbsp; <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Trường ĐH Sư Phạm Kỹ Thuật, Đại học Đà Nẵng
+    </div>
+
+    <div style="font-size: 15px; padding: 0 10px;">
+        <p style="margin: 8px 0;"><strong>1. Đơn vị đề xuất:</strong> ............................................................................................................</p>
+        <p style="margin: 8px 0;"><strong>2. Người lập:</strong> <span class="text-bold text-uppercase" id="sigTruongDonVi"></span>&nbsp;&nbsp;&nbsp;&nbsp; <strong>Mã số:</strong> .................................................</p>
+        <p style="margin: 8px 0;"><strong>3. Lý do mua sắm:</strong> <span id="outMoTa">............................................................................................</span></p>
+        <p style="margin: 8px 0;"><strong>4. Danh sách thiết bị:</strong></p>
+
+        <table class="table-items" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <thead>
+                <tr class="text-center text-bold">
+                    <th style="border: 1px solid black;" width="40">STT</th>
+                    <th style="border: 1px solid black;">Tên thiết bị, vật tư</th>
+                    <th style="border: 1px solid black;" width="80">Đơn vị</th>
+                    <th style="border: 1px solid black;" width="60">SL</th>
+                    <th style="border: 1px solid black;" width="140">Đơn Giá</th>
+                </tr>
+            </thead>
+            <tbody id="outBody"></tbody>
+        </table>
+       
+    </div>
+
+    <table width="100%" style="margin-top: 20px; border: none;">
+        <tr>
+            <td width="50%" class="text-center">
+                <div class="text-bold" style="font-size: 14px;">NGƯỜI LẬP</div>
+                <div style="font-style: italic; font-size: 12px;">(Ký và ghi rõ họ tên)</div>
+                <div style="margin-top: 5px; font-weight: bold;">(Đã ký)</div>
+                <div style="margin-top: 25px; font-weight: bold;">Họ tên người ký</div>
+                
+            </td>
+            <td width="50%" class="text-center">
+                <div class="text-bold" style="font-size: 14px;">TRƯỜNG ĐƠN VỊ ĐỀ XUẤT</div>
+                <div style="font-style: italic; font-size: 12px;">(Ký, ghi rõ họ tên và đóng dấu)</div>
+                <div style="margin-top: 5px; font-weight: bold;">(Đã ký)</div>
+                <div style="margin-top: 35px;" class="text-bold text-uppercase" id="sigNguoiLap"></div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="sig-container" style="width: 100%; ; margin-top: 30px;">
+        <tr>
+            <td width="33.3%" style="; padding: 10px; text-align: center; vertical-align: top; height: 130px;">
+                <div class="text-bold" style="font-size: 13px;">1. PHÒNG QUẢN TRỊ CSVC</div>
+                <div style="font-style: italic; font-size: 11px;">(Ký, ghi rõ họ tên)</div>
+                <div style="margin-top: 15px; font-weight: bold;">(Đã ký)</div>
+                <div style="margin-top: 25px; font-weight: bold;">Họ tên người ký</div>
+            </td>
+            <td width="33.3%" style="; padding: 10px; text-align: center; vertical-align: top; height: 130px;">
+                <div class="text-bold" style="font-size: 13px;">2. PHÒNG KẾ HOẠCH - TÀI CHÍNH</div>
+                <div style="font-style: italic; font-size: 11px;">(Ký, ghi rõ họ tên)</div>
+                <div style="margin-top: 15px; font-weight: bold;">(Đã ký)</div>
+                <div style="margin-top: 25px; font-weight: bold;">Họ tên người ký</div>
+            </td>
+            <td width="33.4%" style="; padding: 10px; text-align: center; vertical-align: top; height: 130px;">
+                <div class="text-bold" style="font-size: 13px;">3. BAN GIÁM HIỆU</div>
+                <div style="font-style: italic; font-size: 11px;">(Ký, đóng dấu và ghi rõ họ tên)</div>
+                <div style="margin-top: 15px; font-weight: bold;">(Đã ký)</div>
+                <div style="margin-top: 25px; font-weight: bold; text-transform: uppercase;">@Session["UserName"]</div>
+            </td>
+        </tr>
+    </table>
+</div>
 <script>
     var _id = '', _act = '';
     function setTab(el, tab) {
@@ -241,5 +370,79 @@
             else { alert('⚠️ Lỗi: ' + (res.msg||'Không xác định')); }
         });
     }
-    document.getElementById('actionModal').addEventListener('click', function(e) { if (e.target===this) closeModal(); });
+    document.getElementById('actionModal').addEventListener('click', function (e) { if (e.target === this) closeModal(); });
+
+    function printPhieuMoi() {
+        const d = new Date();
+        document.getElementById('outNgay').innerText = d.getDate().toString().padStart(2, '0');
+        document.getElementById('outThang').innerText = (d.getMonth() + 1).toString().padStart(2, '0');
+
+        // Lấy lý do mua sắm (nhớ id="mota" hoặc name="mota" phải khớp)
+        const moTaInput = document.querySelector('textarea[name="mota"]');
+        document.getElementById('outMoTa').innerText = (moTaInput && moTaInput.value) ? moTaInput.value : "...................................................";
+
+        let html = "";
+        // Duyệt QUA TẤT CẢ các dòng thiết bị trong bảng web
+        const rows = document.querySelectorAll('#tbBody tr');
+        rows.forEach((row, index) => {
+            const ten = row.querySelector('input[name="tenTB[]"]')?.value;
+            const sl = row.querySelector('input[name="soluong[]"]')?.value;
+            const dv = row.querySelector('input[name="donvi[]"]')?.value || "Cái/Bộ";
+            const giaVal = row.querySelector('input[name="gia[]"]')?.value;
+
+            if (ten && ten.trim() !== "") {
+                const giaStr = (Number(giaVal) || 0).toLocaleString('vi-VN');
+                html += `<tr>
+                    <td style="border: 1px solid black; text-align: center; padding: 5px;">${index + 1}</td>
+                    <td style="border: 1px solid black; padding: 5px; font-weight: bold;">${ten}</td>
+                    <td style="border: 1px solid black; text-align: center; padding: 5px;">${dv}</td>
+                    <td style="border: 1px solid black; text-align: center; padding: 5px;">${sl}</td>
+                    <td style="border: 1px solid black; text-align: right; padding: 5px;">${giaStr} đ</td>
+                </tr>`;
+            }
+        });
+
+        document.getElementById('outBody').innerHTML = html || '<tr><td colspan="5" align="center" style="border: 1px solid black;">Chưa có danh sách thiết bị</td></tr>';
+        window.print();
+    }
+   function inPhieuDaDuyet(id, nguoiLap, ngay) {
+    // 1. Điền thông tin ngày tháng
+    const ngayParts = ngay.split('/');
+    document.getElementById('outNgay').innerText = ngayParts[0];
+    document.getElementById('outThang').innerText = ngayParts[1];
+
+    // 2. Điền tên NGƯỜI LẬP (Trưởng khoa) vào đúng ô chữ ký
+    document.getElementById('sigNguoiLap').innerText = nguoiLap;
+    document.getElementById('sigTruongDonVi').innerText = nguoiLap; // Thường Trưởng đơn vị cũng là Trưởng khoa
+
+    // Đã sửa chỗ mục 2 ở phần nội dung đơn
+    const outNguoiLapElement = document.querySelector('#mauInAn p strong + span');
+    // Nếu Minh dùng thẻ <span id="outNguoiLap"> ở mục 2 nội dung đơn thì dùng dòng dưới:
+    // document.getElementById('outNguoiLap').innerText = nguoiLap;
+
+    // 3. Lấy dữ liệu thiết bị
+    $.get('@Url.Action("GetChiTiet", "DeXuat")', { id: id }, function (res) {
+        if (res.ok) {
+            let html = "";
+            res.data.forEach((item, i) => {
+                let ten = item.TenThietBiDeXuat || item.Ten || '';
+                let sl = item.SoLuong || 0;
+                let dvt = item.DonViTinh || item.DVT || 'Cái/Bộ';
+                let gia = item.GiaDuKien || item.Gia || 0;
+                html += `<tr>
+                    <td style="border: 1px solid black; text-align: center; padding: 5px;">${i + 1}</td>
+                    <td style="border: 1px solid black; padding: 5px; font-weight: bold;">${ten}</td>
+                    <td style="border: 1px solid black; text-align: center; padding: 5px;">${dvt}</td>
+                    <td style="border: 1px solid black; text-align: center; padding: 5px;">${sl}</td>
+                    <td style="border: 1px solid black; text-align: right; padding: 5px;">${Number(gia).toLocaleString('vi-VN')} đ</td>
+                </tr>`;
+            });
+            document.getElementById('outBody').innerHTML = html;
+            document.getElementById('outMoTa').innerText = "Căn cứ theo nhu cầu thực tế của khoa/phòng.";
+
+            // 4. Lệnh in
+            window.print();
+        }
+    });
+}
 </script>
