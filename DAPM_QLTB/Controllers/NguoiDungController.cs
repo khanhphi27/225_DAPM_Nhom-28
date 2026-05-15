@@ -44,11 +44,20 @@ namespace QLTB.Controllers
         }
 
         [HttpPost]
-        public JsonResult TaoNguoiDung(string id, string hoTen, string email, string matKhau, string khoaBanNo, string vaiTroNo, bool trangThai)
+        public JsonResult TaoNguoiDung(string id, string hoTen, string email, string matKhau, string khoaBanNo, string vaiTroNo, bool? trangThai)
         {
             if (Session["UserId"] == null) return Json(new { ok = false, msg = "Chưa đăng nhập." });
-            try { var (ok, msg) = _svc.Create(id, hoTen, email, matKhau, khoaBanNo, vaiTroNo, trangThai); return Json(new { ok, msg }); }
-            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
+            try
+            {
+                var (ok, msg) = _svc.Create(id, hoTen, email, matKhau, khoaBanNo, vaiTroNo, trangThai ?? true);
+                return Json(new { ok, msg });
+            }
+            catch (Exception ex)
+            {
+                // Ensure client receives JSON instead of a 500 error page.
+                Response.StatusCode = 200;
+                return Json(new { ok = false, msg = ex.Message });
+            }
         }
 
         [HttpPost]

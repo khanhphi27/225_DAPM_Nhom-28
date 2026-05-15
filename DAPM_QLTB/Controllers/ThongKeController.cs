@@ -54,9 +54,9 @@ namespace QLTB.Controllers
         }
 
         [HttpGet]
-        public JsonResult GetLichSuDuyetTheoThietBi(string maTB, string tenTB)
+        public JsonResult GetLichSuDuyetTheoThietBi(string maTB)
         {
-            try { return Json(new { ok = true, data = _svc.GetLichSuDuyetTheoThietBi(maTB, tenTB) }, JsonRequestBehavior.AllowGet); }
+            try { return Json(new { ok = true, data = _svc.GetLichSuDuyetTheoThietBi(maTB) }, JsonRequestBehavior.AllowGet); }
             catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
         }
 
