@@ -2,7 +2,7 @@
 @{
     ViewBag.Title = "Quản Lý Người Dùng";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var vaiTros = ViewBag.VaiTros as IEnumerable<System.Web.Mvc.SelectListItem> ?? new List<System.Web.Mvc.SelectListItem>();
+    var vaiTros = ViewBag.VaiTroList as IEnumerable<System.Web.Mvc.SelectListItem> ?? new List<System.Web.Mvc.SelectListItem>();
     var khoaList = ViewBag.KhoaList as IEnumerable<System.Web.Mvc.SelectListItem> ?? new List<System.Web.Mvc.SelectListItem>();
     var list = Model ?? Enumerable.Empty<QLTB.Models.NguoiDungViewModel>();
 }
@@ -113,10 +113,14 @@
 </div>
 
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
-    <input type="text" id="searchKeyword" oninput="applyFilter()" placeholder="🔍 Tìm theo mã hoặc tên..."
-           style="padding:8px 12px;border:1px solid #d0d5e8;border-radius:8px;font-size:13px;background:#fff;min-width:220px;" />
+         <input type="text" id="searchKeyword" name="searchKeyword" oninput="applyFilter()"
+             autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+             data-1p-ignore="true" data-lpignore="true" readonly
+             onfocus="this.removeAttribute('readonly')" onmousedown="this.removeAttribute('readonly')"
+             placeholder="🔍 Tìm theo mã hoặc tên..."
+             style="padding:8px 12px;border:1px solid #d0d5e8;border-radius:8px;font-size:13px;background:#fff;min-width:220px;" />
 
-    <select id="filterKhoa" onchange="applyFilter()" style="padding:8px 12px;border:1px solid #d0d5e8;border-radius:8px;font-size:13px;background:#fff;min-width:180px;">
+        <select id="filterKhoa" onchange="applyFilter()" autocomplete="off" style="padding:8px 12px;border:1px solid #d0d5e8;border-radius:8px;font-size:13px;background:#fff;min-width:180px;">
         <option value="">🏢 Tất cả khoa / phòng ban</option>
         @foreach (var kp in khoaList)
         {
@@ -125,7 +129,7 @@
         <option value="—">— Chưa thuộc đơn vị</option>
     </select>
 
-    <select id="filterVaiTro" onchange="applyFilter()" style="padding:8px 12px;border:1px solid #d0d5e8;border-radius:8px;font-size:13px;background:#fff;min-width:160px;">
+    <select id="filterVaiTro" onchange="applyFilter()" autocomplete="off" style="padding:8px 12px;border:1px solid #d0d5e8;border-radius:8px;font-size:13px;background:#fff;min-width:160px;">
         <option value="">🔑 Tất cả vai trò</option>
         @foreach (var vt in vaiTros)
         {
@@ -134,7 +138,7 @@
         <option value="Chưa phân quyền">Chưa phân quyền</option>
     </select>
 
-    <select id="filterTrangThai" onchange="applyFilter()" style="padding:8px 12px;border:1px solid #d0d5e8;border-radius:8px;font-size:13px;background:#fff;min-width:150px;">
+    <select id="filterTrangThai" onchange="applyFilter()" autocomplete="off" style="padding:8px 12px;border:1px solid #d0d5e8;border-radius:8px;font-size:13px;background:#fff;min-width:150px;">
         <option value="">🔵 Tất cả trạng thái</option>
         <option value="active">✅ Hoạt động</option>
         <option value="inactive">🔒 Khóa</option>
@@ -208,7 +212,10 @@
         <div class="modal-title">➕ Tạo Tài Khoản Mới</div>
 
         <label class="form-lbl">ID Người dùng <span style="color:red">*</span></label>
-        <input type="text" id="c_id" class="form-inp" placeholder="VD: ND001" style="font-family:monospace;" />
+         <input type="text" id="c_id" class="form-inp" placeholder="VD: ND001" maxlength="10"
+             autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false"
+             data-1p-ignore="true" data-lpignore="true"
+             style="font-family:monospace;" />
 
         <label class="form-lbl">Họ và tên <span style="color:red">*</span></label>
         <input type="text" id="c_hoTen" class="form-inp" placeholder="Nguyễn Văn A" />
@@ -219,21 +226,21 @@
         <label class="form-lbl">Mật khẩu <span style="color:red">*</span></label>
         <input type="password" id="c_matKhau" class="form-inp" placeholder="Nhập mật khẩu" />
 
-        <label class="form-lbl">Vai trò</label>
-        <select id="c_vaiTro" class="form-inp">
-            <option value="">-- Chưa phân quyền --</option>
-            @foreach (var vt in vaiTros)
-            {
-                <option value="@vt.Value">@vt.Text</option>
-            }
-        </select>
-
         <label class="form-lbl">Khoa / Phòng ban</label>
         <select id="c_khoa" class="form-inp">
             <option value="">-- Không thuộc đơn vị --</option>
             @foreach (var kp in khoaList)
             {
                 <option value="@kp.Value">@kp.Text</option>
+            }
+        </select>
+
+        <label class="form-lbl">Vai trò</label>
+        <select id="c_vaiTro" class="form-inp">
+            <option value="">-- Chưa phân quyền --</option>
+            @foreach (var vt in vaiTros)
+            {
+                <option value="@vt.Value">@vt.Text</option>
             }
         </select>
 
@@ -378,19 +385,23 @@
     function submitCreate() {
         var id = document.getElementById('c_id').value.trim();
         var hoTen = document.getElementById('c_hoTen').value.trim();
+        var email = document.getElementById('c_email').value.trim();
         var matKhau = document.getElementById('c_matKhau').value;
 
         if (!id) { showAlert('Vui lòng nhập ID người dùng.', 'error'); return; }
+        if (id.length > 10) { showAlert('ID người dùng tối đa 10 ký tự.', 'error'); return; }
         if (!hoTen) { showAlert('Vui lòng nhập họ tên.', 'error'); return; }
+        if (!email) { showAlert('Vui lòng nhập email.', 'error'); return; }
         if (!matKhau) { showAlert('Vui lòng nhập mật khẩu.', 'error'); return; }
 
         $.post('@Url.Action("TaoNguoiDung", "NguoiDung")', {
             id: id,
             hoTen: hoTen,
-            email: document.getElementById('c_email').value,
+            email: email,
             matKhau: matKhau,
             vaiTroNo: document.getElementById('c_vaiTro').value,
-            khoaBanNo: document.getElementById('c_khoa').value
+            khoaBanNo: document.getElementById('c_khoa').value,
+            trangThai: true
         }, function (res) {
             if (res.ok) { showAlert(res.msg, 'success'); closeAll(); setTimeout(function () { location.reload(); }, 1200); }
             else showAlert(res.msg, 'error');
@@ -445,5 +456,9 @@
             else showAlert(res.msg, 'error');
         });
     }
+
+    window.addEventListener('load', function () {
+        resetFilter();
+    });
 </script>
 }

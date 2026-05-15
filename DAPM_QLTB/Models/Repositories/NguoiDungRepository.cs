@@ -73,7 +73,9 @@ namespace QLTB.Models.Repositories
         public (bool ok, string msg) Create(string id, string hoTen, string email, string matKhau, string khoaBanNo, string vaiTroNo, bool trangThai)
         {
             if (string.IsNullOrWhiteSpace(id)) return (false, "Vui lòng nhập ID.");
+            if (id.Trim().Length > 10) return (false, "ID người dùng tối đa 10 ký tự.");
             if (string.IsNullOrWhiteSpace(hoTen)) return (false, "Họ tên không được để trống.");
+            if (string.IsNullOrWhiteSpace(email)) return (false, "Email không được để trống.");
             if (string.IsNullOrWhiteSpace(matKhau)) return (false, "Mật khẩu không được để trống.");
 
             using (var conn = DbHelper.GetConnection())
@@ -84,20 +86,37 @@ namespace QLTB.Models.Repositories
 
                 using (var tran = conn.BeginTransaction())
                 {
-                    using (var cmd = new SqlCommand(@"INSERT INTO NGUOIDUNG (ID_NguoiDung,HoTen,Email,MatKhau,Khoa_BanNo,TrangThaiTK) VALUES (@id,@hoTen,@email,@mk,@khoa,@tt)", conn, tran))
+                    try
                     {
-                        cmd.Parameters.AddWithValue("@id", id.Trim());
-                        cmd.Parameters.AddWithValue("@hoTen", hoTen.Trim());
-                        cmd.Parameters.AddWithValue("@email", (object)email ?? DBNull.Value);
-                        cmd.Parameters.AddWithValue("@mk", matKhau);
-                        cmd.Parameters.AddWithValue("@khoa", string.IsNullOrWhiteSpace(khoaBanNo) ? (object)DBNull.Value : khoaBanNo);
-                        cmd.Parameters.AddWithValue("@tt", trangThai);
-                        cmd.ExecuteNonQuery();
+                        using (var cmd = new SqlCommand(@"INSERT INTO NGUOIDUNG (ID_NguoiDung,HoTen,Email,MatKhau,Khoa_BanNo,TrangThaiTK) VALUES (@id,@hoTen,@email,@mk,@khoa,@tt)", conn, tran))
+                        {
+                            cmd.Parameters.AddWithValue("@id", id.Trim());
+                            cmd.Parameters.AddWithValue("@hoTen", hoTen.Trim());
+                            cmd.Parameters.AddWithValue("@email", (object)email ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@mk", matKhau);
+                            cmd.Parameters.AddWithValue("@khoa", string.IsNullOrWhiteSpace(khoaBanNo) ? (object)DBNull.Value : khoaBanNo);
+                            cmd.Parameters.AddWithValue("@tt", trangThai);
+                            cmd.ExecuteNonQuery();
+                        }
+                        if (!string.IsNullOrWhiteSpace(vaiTroNo))
+                            using (var cmd = new SqlCommand("INSERT INTO VAITRO_NGUOIDUNG (NguoiDungNo,VaiTroNo,NgayHieuLuc) VALUES (@nd,@vt,GETDATE())", conn, tran))
+                            {
+                                cmd.Parameters.AddWithValue("@nd", id.Trim());
+                                cmd.Parameters.AddWithValue("@vt", vaiTroNo);
+                                cmd.ExecuteNonQuery();
+                            }
+                        tran.Commit();
                     }
-                    if (!string.IsNullOrWhiteSpace(vaiTroNo))
-                        using (var cmd = new SqlCommand("INSERT INTO VAITRO_NGUOIDUNG (NguoiDungNo,VaiTroNo,NgayHieuLuc) VALUES (@nd,@vt,GETDATE())", conn, tran))
-                        { cmd.Parameters.AddWithValue("@nd", id.Trim()); cmd.Parameters.AddWithValue("@vt", vaiTroNo); cmd.ExecuteNonQuery(); }
-                    tran.Commit();
+                    catch (SqlException ex)
+                    {
+                        try { tran.Rollback(); } catch { /* ignore */ }
+                        return (false, "Lỗi SQL (" + ex.Number + "): " + ex.Message);
+                    }
+                    catch (Exception ex)
+                    {
+                        try { tran.Rollback(); } catch { /* ignore */ }
+                        return (false, "Lỗi khi tạo người dùng: " + ex.Message);
+                    }
                 }
             }
             return (true, "Tạo người dùng thành công!");
@@ -105,7 +124,9 @@ namespace QLTB.Models.Repositories
 
         public (bool ok, string msg) Update(string id, string hoTen, string email, string matKhauMoi, string khoaBanNo, string vaiTroNo, bool trangThai)
         {
+            if (!string.IsNullOrWhiteSpace(id) && id.Trim().Length > 10) return (false, "ID người dùng tối đa 10 ký tự.");
             if (string.IsNullOrWhiteSpace(hoTen)) return (false, "Họ tên không được để trống.");
+            if (string.IsNullOrWhiteSpace(email)) return (false, "Email không được để trống.");
             using (var conn = DbHelper.GetConnection())
             {
                 conn.Open();
