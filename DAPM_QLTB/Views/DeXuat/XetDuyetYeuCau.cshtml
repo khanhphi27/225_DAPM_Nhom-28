@@ -207,10 +207,34 @@
                     <div class="tl-step @s3"><div class="tl-dot">@(s3=="done"?"✔️":s3=="reject"?"❌":"3")</div><div class="tl-label">BGH</div></div>
                     <div class="tl-step @s4"><div class="tl-dot">@(s4=="done"?"✔️":"⏳")</div><div class="tl-label">Hoàn tất</div></div>
                 </div>
-                @if (!string.IsNullOrEmpty(dx.LyDoTuChoi))
-                {
-                    <div class="card-foot"><div class="foot-note" style="color:#c62828;">❌ Lý do từ chối: @dx.LyDoTuChoi</div></div>
-                }
+                <div class="card-body">
+                    <div id="detail-@dx.ID_DeXuat" style="display:none;">
+                        <table class="items-table">
+                            <thead><tr><th>STT</th><th>Tên thiết bị</th><th>SL</th><th>ĐVT</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+                            <tbody class="detail-body"></tbody>
+                            <tfoot><tr><td colspan="5" style="text-align:right">Tổng cộng:</td><td class="detail-total"></td></tr></tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-foot">
+                    <div class="foot-note">
+                        @if (!string.IsNullOrEmpty(dx.MoTa))
+                        {
+                            <div style="margin-bottom:4px;color:#1a237e;">📝 @dx.MoTa</div>
+                        }
+                        @if (!string.IsNullOrEmpty(dx.LyDoTuChoi))
+                        {
+                            <span style="color:#c62828;">❌ Lý do từ chối: @dx.LyDoTuChoi</span>
+                        }
+                        else
+                        {
+                            <span>—</span>
+                        }
+                    </div>
+                    <div class="action-group">
+                        <button class="btn-detail" onclick="toggleDetail('@dx.ID_DeXuat', this)">📖 Xem chi tiết</button>
+                    </div>
+                </div>
             </div>
         }
     }

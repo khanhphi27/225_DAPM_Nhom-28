@@ -198,7 +198,7 @@
         document.getElementById('lsBody').innerHTML = '<div style="text-align:center;padding:20px;color:#aaa;">Đang tải...</div>';
         document.getElementById('lsModal').classList.add('active');
 
-        $.get('@Url.Action("GetLichSuDuyetTheoThietBi","ThongKe")', { maTB: maTB, tenTB: tenTB }, function(res) {
+        $.get('@Url.Action("GetLichSuDuyetTheoThietBi","ThongKe")', { maTB: maTB }, function(res) {
             if (!res.ok) {
                 document.getElementById('lsBody').innerHTML = '<div style="color:#e53935;padding:16px;">Lỗi: ' + res.msg + '</div>';
                 return;
@@ -206,12 +206,12 @@
             if (!res.data || res.data.length === 0) {
                 document.getElementById('lsBody').innerHTML =
                     '<div style="text-align:center;color:#aaa;padding:24px;">'
-                    + '🔭 Chưa có lịch sử duyệt đề xuất mua sắm cho thiết bị này.'
+                    + '🔭 Thiết bị này chưa có lịch sử duyệt gắn với DeXuatNo.'
                     + '</div>';
                 return;
             }
 
-            // Nhóm theo ID_DeXuat, loại trùng bước duyệt
+            // Nhóm theo DeXuatNo/ID_DeXuat, loại trùng bước duyệt
             var groups = {}, order = [];
             res.data.forEach(function(item) {
                 if (!groups[item.ID_DeXuat]) {
