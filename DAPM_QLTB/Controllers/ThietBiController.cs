@@ -62,11 +62,15 @@ namespace QLTB.Controllers
         }
 
         [HttpGet]
-        public JsonResult GetNextThietBiId()
+        public JsonResult GetNextThietBiId(string nhaCCNo, string khoaNo, string danhMucNo)
         {
             var r = CheckAuth();
             if (r != null) return Json(new { ok = false, msg = "Chưa đăng nhập." }, JsonRequestBehavior.AllowGet);
-            try { return Json(new { ok = true, id = _svc.GenerateNewId() }, JsonRequestBehavior.AllowGet); }
+            try
+            {
+                var id = _svc.GenerateNextId(nhaCCNo, khoaNo, danhMucNo);
+                return Json(new { ok = true, id }, JsonRequestBehavior.AllowGet);
+            }
             catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
         }
 

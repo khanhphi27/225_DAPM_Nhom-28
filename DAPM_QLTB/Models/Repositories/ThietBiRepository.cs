@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Web.Mvc;
 
 namespace QLTB.Models.Repositories
@@ -60,11 +61,11 @@ namespace QLTB.Models.Repositories
             using (var conn = DbHelper.GetConnection())
             {
                 conn.Open();
-                danhMuc = LoadDropdown(conn, "SELECT ID_DanhMuc AS Value, TenDanhMuc AS Text FROM DANHMUC ORDER BY TenDanhMuc");
-                khoa = LoadDropdown(conn, "SELECT ID_KhoaPhongBan AS Value, TenPhongBanKhoa AS Text FROM KHOA_PHONGBAN ORDER BY TenPhongBanKhoa");
-                coSo = LoadDropdown(conn, "SELECT ID_CoSo AS Value, TenCoSo AS Text FROM COSO ORDER BY TenCoSo");
+                danhMuc = LoadDropdown(conn, "SELECT DISTINCT ID_DanhMuc AS Value, TenDanhMuc AS Text FROM DANHMUC ORDER BY TenDanhMuc");
+                khoa = LoadDropdown(conn, "SELECT DISTINCT ID_KhoaPhongBan AS Value, TenPhongBanKhoa AS Text FROM KHOA_PHONGBAN ORDER BY TenPhongBanKhoa");
+                coSo = LoadDropdown(conn, "SELECT DISTINCT ID_CoSo AS Value, TenCoSo AS Text FROM COSO ORDER BY TenCoSo");
                 khu = GetKhuVucList(conn);
-                ncc = LoadDropdown(conn, "SELECT ID_NhaCC AS Value, TenNhaCC AS Text FROM NHACUNGCAP ORDER BY TenNhaCC");
+                ncc = LoadDropdown(conn, "SELECT DISTINCT ID_NhaCC AS Value, TenNhaCC AS Text FROM NHACUNGCAP ORDER BY TenNhaCC");
                 phong = GetPhongList(conn);
 
                 const string sql = @"
@@ -183,7 +184,7 @@ namespace QLTB.Models.Repositories
             {
                 conn.Open();
                 bool isUpdate = !string.IsNullOrWhiteSpace(tb.ID_ThietBi);
-                if (!isUpdate) tb.ID_ThietBi = GenerateNewId();
+                if (!isUpdate) tb.ID_ThietBi = GenerateNewId(conn, tb.NhaCungCap, tb.KhoaPhongBan, tb.DanhMuc);
                 else if (!IdExists(conn, tb.ID_ThietBi)) return (false, "Không tìm thấy thiết bị để sửa");
 
                 var deXuatNo = string.IsNullOrWhiteSpace(tb.DeXuatNo) ? null : tb.DeXuatNo.Trim();
@@ -235,9 +236,35 @@ namespace QLTB.Models.Repositories
             return (true, "Xóa thiết bị thành công!");
         }
 
-        public string GenerateNewId()
+        public string GenerateNewId(SqlConnection conn, string nhaCCNo, string khoaNo, string danhMucNo)
         {
-            return "TB" + DateTime.Now.Ticks.ToString().Substring(10);
+            // Format 9 ký tự: YY(2) + Khoa(2) + DanhMuc(2) + STT(3)
+            string yy       = DateTime.Now.ToString("yy");
+            string khoaPart = ExtractNumericSuffix(khoaNo,    2);
+            string dmPart   = ExtractNumericSuffix(danhMucNo, 2);
+            string prefix   = yy + khoaPart + dmPart; // 6 ký tự
+
+            int count = 0;
+            using (var cmd = new SqlCommand(
+                "SELECT COUNT(*) FROM THIETBI WHERE ID_ThietBi LIKE @p + '%'", conn))
+            {
+                cmd.Parameters.AddWithValue("@p", prefix);
+                count = Convert.ToInt32(cmd.ExecuteScalar());
+            }
+            return prefix + (count + 1).ToString("D3"); // tổng = 9 ký tự
+        }
+
+        /// <summary>
+        /// Lấy 2 ký tự cuối cùng của chuỗi ID (bất kể chữ hay số).
+        /// Ví dụ: "KP02" → "02" | "DM_MT" → "MT" | "K1" → "K1" | "A" → "0A"
+        /// </summary>
+        private string ExtractNumericSuffix(string id, int maxLen)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return new string('0', maxLen);
+            var s = id.Trim().ToUpper();
+            return s.Length >= maxLen
+                ? s.Substring(s.Length - maxLen)   // lấy maxLen ký tự cuối
+                : s.PadLeft(maxLen, '0');           // nếu ngắn hơn thì pad trái bằng '0'
         }
 
         #endregion
