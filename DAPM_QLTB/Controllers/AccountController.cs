@@ -86,8 +86,10 @@ namespace QLTB.Controllers
         {
             switch (roleId)
             {
-                case 1: return RedirectToAction("Index", "TruongKhoa"); // Về Trưởng Khoa
-                case 4: return RedirectToAction("Index", "BGH");        // Về Ban Giám Hiệu (nếu có)
+                case 1: return RedirectToAction("Index", "TruongKhoa");
+                case 2: return RedirectToAction("QuanLy", "ThietBi");
+                case 3: return RedirectToAction("DashboardKHTC", "ThongKe");
+                case 4: return RedirectToAction("Dashboard", "ThongKe");
                 default: return RedirectToAction("Index", "Home");
             }
         }

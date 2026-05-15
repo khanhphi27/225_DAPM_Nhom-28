@@ -201,42 +201,42 @@
                         @if (role == 2)
                         {
                             <div class="nav-category">Cơ sở vật chất</div>
-                            <a class="nav-link" href="@Url.Action("QuanLyThietBi", "CSVC")"><i class="bi bi-pc-display"></i> Thiết bị</a>
-                            <a class="nav-link" href="@Url.Action("QuanLyNhaCungCap", "CSVC")"><i class="bi bi-truck"></i> Nhà cung cấp</a>
-                            <a class="nav-link" href="@Url.Action("QuanLyDanhMuc", "CSVC")"><i class="bi bi-folder2-open"></i> Danh mục</a>
-                            <a class="nav-link" href="@Url.Action("PheDuyetDeXuat", "CSVC")"><i class="bi bi-clipboard-check"></i> Phê duyệt</a>
-                            <a class="nav-link" href="@Url.Action("LapKeHoachBaoTri", "CSVC")"><i class="bi bi-wrench-adjustable"></i> Bảo trì</a>
-                            <a class="nav-link" href="@Url.Action("GhiNhanSuaChua", "CSVC")"><i class="bi bi-clipboard2-pulse"></i> Ghi nhận</a>
-                            <a class="nav-link" href="@Url.Action("KiemKeTaiSan", "CSVC")"><i class="bi bi-journal-check"></i> Kiểm kê</a>
+                            <a class="nav-link" href="@Url.Action("QuanLy", "ThietBi")"><i class="bi bi-pc-display"></i> Thiết bị</a>
+                            <a class="nav-link" href="@Url.Action("QuanLy", "NhaCungCap")"><i class="bi bi-truck"></i> Nhà cung cấp</a>
+                            <a class="nav-link" href="@Url.Action("QuanLy", "DanhMuc")"><i class="bi bi-folder2-open"></i> Danh mục</a>
+                            <a class="nav-link" href="@Url.Action("PheDuyet", "DeXuat")"><i class="bi bi-clipboard-check"></i> Phê duyệt</a>
+                            <a class="nav-link" href="@Url.Action("LapKeHoach", "BaoTri")"><i class="bi bi-wrench-adjustable"></i> Bảo trì</a>
+                            <a class="nav-link" href="@Url.Action("GhiNhan", "BaoTri")"><i class="bi bi-clipboard2-pulse"></i> Ghi nhận</a>
+                            <a class="nav-link" href="@Url.Action("DanhSach", "KiemKe")"><i class="bi bi-journal-check"></i> Kiểm kê</a>
                         }
 
                         @if (role == 3)
                         {
                             <div class="nav-category">Tài chính</div>
-                            <a class="nav-link" href="@Url.Action("Index", "KHTC")"><i class="bi bi-speedometer2"></i> Dashboard</a>
-                            <a class="nav-link" href="@Url.Action("PheDuyetNganSach", "KHTC")"><i class="bi bi-cash-stack"></i> Phê duyệt NS</a>
-                            <a class="nav-link" href="@Url.Action("BaoCaoTaiSan", "KHTC")"><i class="bi bi-graph-up"></i> Báo cáo tài sản</a>
+                            <a class="nav-link" href="@Url.Action("DashboardKHTC", "ThongKe")"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                            <a class="nav-link" href="@Url.Action("PheDuyetNganSach", "DeXuat")"><i class="bi bi-cash-stack"></i> Phê duyệt NS</a>
+                            <a class="nav-link" href="@Url.Action("BaoCaoTaiSan", "ThongKe")"><i class="bi bi-graph-up"></i> Báo cáo tài sản</a>
+                            <a class="nav-link" href="@Url.Action("QuanLyChiPhi", "DeXuat")"><i class="bi bi-cash-coin"></i> Quản lý chi phí</a>
                         }
 
                         @if (role == 4)
                         {
                             <div class="nav-category">Ban giám hiệu</div>
-                            <a class="nav-link" href="@Url.Action("Index", "BGH")"><i class="bi bi-bar-chart-line"></i> Dashboard</a>
-                            <a class="nav-link" href="@Url.Action("XetDuyetYeuCau", "BGH")"><i class="bi bi-shield-fill-check"></i> Xét duyệt</a>
-                            <a class="nav-link" href="@Url.Action("ThongKeTaiSan", "BGH")"><i class="bi bi-graph-up-arrow"></i> Thống kê</a>
-                            <a class="nav-link" href="@Url.Action("TheoDoi", "BGH")"><i class="bi bi-eye"></i> Theo dõi TB</a>
-                            <a class="nav-link" href="@Url.Action("QuanLyNguoiDung", "BGH")"><i class="bi bi-people-fill"></i> Người dùng</a>
-                            <a class="nav-link" href="@Url.Action("QuanLyKhoa", "BGH")"><i class="bi bi-building"></i> Khoa / Phòng ban</a>
-                            <a class="nav-link" href="@Url.Action("QuanLyPhong", "BGH")"><i class="bi bi-door-open"></i> Phòng</a>
+                            <a class="nav-link" href="@Url.Action("Dashboard", "ThongKe")"><i class="bi bi-bar-chart-line"></i> Dashboard</a>
+                            <a class="nav-link" href="@Url.Action("XetDuyetYeuCau", "DeXuat")"><i class="bi bi-shield-fill-check"></i> Xét duyệt</a>
+                            <a class="nav-link" href="@Url.Action("ThongKeTaiSan", "ThongKe")"><i class="bi bi-graph-up-arrow"></i> Thống kê</a>
+                            <a class="nav-link" href="@Url.Action("TheoDoi", "ThongKe")"><i class="bi bi-eye"></i> Theo dõi TB</a>
+                            <a class="nav-link" href="@Url.Action("QuanLy", "NguoiDung")"><i class="bi bi-people-fill"></i> Người dùng</a>
+                            <a class="nav-link" href="@Url.Action("QuanLy", "Khoa")"><i class="bi bi-building"></i> Khoa / Phòng ban</a>
+                            <a class="nav-link" href="@Url.Action("QuanLy", "Phong")"><i class="bi bi-door-open"></i> Phòng</a>
                         }
                     </nav>
                 </aside>
-                <main class="col-md-10 main-content">@RenderBody()</main>
             }
-            else
-            {
-                <main class="col-12 main-content">@RenderBody()</main>
-            }
+            @{ string mainClass = Session["UserName"] != null ? "col-md-10 main-content" : "col-12 main-content"; }
+            <main class="@mainClass">
+                @RenderBody()
+            </main>
         </div>
     </div>
 
