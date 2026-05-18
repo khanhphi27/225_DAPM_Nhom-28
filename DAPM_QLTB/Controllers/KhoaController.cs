@@ -37,6 +37,17 @@ namespace QLTB.Controllers
             catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
         }
 
+        [HttpGet]
+        public JsonResult GetChiTiet(string id)
+        {
+            try
+            {
+                var data = _svc.GetChiTiet(id);
+                return Json(new { ok = true, data }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }, JsonRequestBehavior.AllowGet); }
+        }
+
         [HttpPost]
         public JsonResult TaoKhoa(string id, string ten)
         {
