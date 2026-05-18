@@ -44,7 +44,8 @@ namespace QLTB.Controllers
                         SELECT u.ID_NguoiDung, u.HoTen, u.Email, vn.VaiTroNo
                         FROM NGUOIDUNG u
                         LEFT JOIN VAITRO_NGUOIDUNG vn ON vn.NguoiDungNo = u.ID_NguoiDung
-                        WHERE u.ID_NguoiDung = @Username AND u.MatKhau = @Password AND u.TrangThaiTK = 1";
+                        WHERE (u.ID_NguoiDung = @Username OR u.Email = @Username)
+                          AND u.MatKhau = @Password AND u.TrangThaiTK = 1";
 
                     using (var cmd = new SqlCommand(sql, conn))
                     {
