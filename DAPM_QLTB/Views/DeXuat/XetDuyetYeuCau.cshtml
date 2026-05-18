@@ -2,96 +2,456 @@
 @{
     ViewBag.Title = "Xét Duyệt Yêu Cầu - BGH";
     var choDuyet = ViewBag.ChoDuyet as List<DeXuatViewModel> ?? new List<DeXuatViewModel>();
-    var lichSu   = ViewBag.LichSu   as List<DeXuatViewModel> ?? new List<DeXuatViewModel>();
+    var lichSu = ViewBag.LichSu as List<DeXuatViewModel> ?? new List<DeXuatViewModel>();
 }
 
 <style>
-.page-hdr h2 { color:#1a237e; font-weight:700; font-size:22px; margin:0; }
-.page-hdr p  { color:#666; font-size:13px; margin:3px 0 0; }
-.tab-bar { display:flex; gap:4px; margin-bottom:18px; background:#fff; border-radius:10px; padding:6px; box-shadow:0 2px 8px rgba(0,0,0,.06); width:fit-content; }
-.tab-btn { padding:7px 20px; border-radius:7px; border:none; cursor:pointer; font-size:13px; font-weight:600; background:transparent; color:#666; transition:all .2s; }
-.tab-btn.active { background:#1a237e; color:#fff; }
-.tab-btn:hover:not(.active) { background:#e8eaf6; color:#1a237e; }
-.proposal-card { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); overflow:hidden; border-left:4px solid #6a1b9a; margin-bottom:14px; }
-.proposal-card.approved { border-color:#43a047; }
-.proposal-card.rejected { border-color:#e53935; }
-.card-head { padding:14px 20px; display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid #f0f2f8; }
-.card-id { font-size:12px; color:#888; font-weight:600; }
-.card-title { font-size:15px; font-weight:700; color:#1a237e; margin:2px 0 4px; }
-.card-meta { font-size:12px; color:#666; }
-.card-meta span { margin-right:14px; }
-.badge-p { display:inline-block; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap; }
-.badge-p.pending  { background:#f3e5f5; color:#6a1b9a; }
-.badge-p.approved { background:#e8f5e9; color:#2e7d32; }
-.badge-p.rejected { background:#fce4ec; color:#c62828; }
-.items-table { width:100%; border-collapse:collapse; margin:12px 0; }
-.items-table th { background:#e8eaf6; color:#1a237e; font-size:11px; font-weight:700; text-transform:uppercase; padding:8px 12px; text-align:left; }
-.items-table td { padding:8px 12px; font-size:12px; border-bottom:1px solid #f0f2f8; }
-.items-table tfoot td { font-weight:700; color:#1a237e; background:#f5f6ff; }
-.card-body { padding:14px 20px; }
-.card-foot { padding:12px 20px; background:#fafbff; border-top:1px solid #f0f2f8; display:flex; justify-content:space-between; align-items:center; }
-.foot-note { font-size:12px; color:#888; max-width:60%; }
-.action-group { display:flex; gap:8px; }
-.btn-approve { background:#43a047; color:#fff; border:none; border-radius:7px; padding:7px 16px; font-size:12px; font-weight:600; cursor:pointer; }
-.btn-approve:hover { background:#2e7d32; }
-.btn-reject  { background:#fce4ec; color:#c62828; border:none; border-radius:7px; padding:7px 16px; font-size:12px; font-weight:600; cursor:pointer; }
-.btn-detail  { background:#e8eaf6; color:#1a237e; border:none; border-radius:7px; padding:7px 14px; font-size:12px; font-weight:600; cursor:pointer; }
-.timeline { display:flex; align-items:center; padding:14px 24px 8px; }
-.tl-step { display:flex; flex-direction:column; align-items:center; flex:1; position:relative; }
-.tl-step:not(:last-child)::after { content:''; position:absolute; top:12px; left:calc(50% + 12px); width:calc(100% - 24px); height:2px; background:#e0e0e0; z-index:0; }
-.tl-step.done:not(:last-child)::after { background:#43a047; }
-.tl-dot { width:24px; height:24px; border-radius:50%; border:2px solid #e0e0e0; background:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; z-index:1; position:relative; }
-.tl-step.done .tl-dot   { background:#43a047; border-color:#43a047; color:#fff; }
-.tl-step.active .tl-dot { background:#6a1b9a; border-color:#6a1b9a; color:#fff; }
-.tl-step.reject .tl-dot { background:#e53935; border-color:#e53935; color:#fff; }
-.tl-label { font-size:10px; color:#999; margin-top:4px; text-align:center; font-weight:600; }
-.tl-step.done .tl-label   { color:#43a047; }
-.tl-step.active .tl-label { color:#6a1b9a; }
-.tl-step.reject .tl-label { color:#e53935; }
-.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; align-items:center; justify-content:center; }
-.modal-overlay.active { display:flex; }
-.modal-box { background:#fff; border-radius:14px; padding:28px 30px; width:460px; max-width:95vw; box-shadow:0 20px 60px rgba(0,0,0,.25); }
-.modal-title { font-size:18px; font-weight:700; color:#1a237e; margin-bottom:12px; }
-.form-lbl { font-size:12px; font-weight:600; color:#555; margin-bottom:4px; display:block; }
-.form-inp { width:100%; padding:9px 12px; border:1px solid #d0d5e8; border-radius:8px; font-size:13px; background:#f8f9fe; box-sizing:border-box; margin-bottom:14px; }
-.btn-ok { background:#43a047; color:#fff; border:none; border-radius:8px; padding:9px 24px; font-size:13px; font-weight:600; cursor:pointer; }
-.btn-ok.red { background:#e53935; }
-.btn-cancel { background:#f5f5f5; color:#555; border:none; border-radius:8px; padding:9px 20px; font-size:13px; font-weight:600; cursor:pointer; }
-.empty-state { text-align:center; padding:40px; color:#aaa; font-size:14px; }
-/* Nút in trên giao diện web */
-.btn-print-pdf {
-    background: #f0f4f8; color: #1a237e; border: 1px solid #d0d5e8;
-    border-radius: 7px; padding: 7px 14px; font-size: 12px; font-weight: 600;
-    cursor: pointer; transition: 0.2s; margin-left: 8px;
-}
-.btn-print-pdf:hover { background: #e2e8f0; }
-
-/* Định dạng mẫu in chuẩn (Mặc định ẩn trên web) */
-#mauInAn { display: none; font-family: "Times New Roman", serif; color: black; background: white; }
-
-@@media print {
-    /* Ẩn toàn bộ UI web khi in */
-    .no-print, .page-hdr, .tab-bar, #sec-pending, #sec-history, .modal-overlay, .sidebar, .navbar, button, .action-group {
-        display: none !important;
-    }
-    /* Hiện mẫu in chuẩn A4 */
-    #mauInAn {
-        display: block !important;
-        width: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;
-        padding: 0;
+    .page-hdr h2 {
+        color: #1a237e;
+        font-weight: 700;
+        font-size: 22px;
         margin: 0;
-        padding: 1.5cm 1cm 1.5cm 1.5cm;
     }
-    @@page { size: A4; margin: 0; }
-    .print-content { padding: 1.5cm 1cm 1cm 1.5cm; }
-    .table-items { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    .table-items th, .table-items td { border: 1px solid black !important; padding: 8px; font-size: 14px; }
-    .sig-container { width: 100%; border-collapse: collapse; margin-top: 30px; }
-    .sig-container td { padding: 10px; text-align: center; vertical-align: top; height: 120px; font-size: 13px; }
-}
+
+    .page-hdr p {
+        color: #666;
+        font-size: 13px;
+        margin: 3px 0 0;
+    }
+
+    .tab-bar {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 18px;
+        background: #fff;
+        border-radius: 10px;
+        padding: 6px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        width: fit-content;
+    }
+
+    .tab-btn {
+        padding: 7px 20px;
+        border-radius: 7px;
+        border: none;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        background: transparent;
+        color: #666;
+        transition: all .2s;
+    }
+
+        .tab-btn.active {
+            background: #1a237e;
+            color: #fff;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: #e8eaf6;
+            color: #1a237e;
+        }
+
+    .proposal-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,.07);
+        overflow: hidden;
+        border-left: 4px solid #6a1b9a;
+        margin-bottom: 14px;
+    }
+
+        .proposal-card.approved {
+            border-color: #43a047;
+        }
+
+        .proposal-card.rejected {
+            border-color: #e53935;
+        }
+
+    .card-head {
+        padding: 14px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 1px solid #f0f2f8;
+    }
+
+    .card-id {
+        font-size: 12px;
+        color: #888;
+        font-weight: 600;
+    }
+
+    .card-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1a237e;
+        margin: 2px 0 4px;
+    }
+
+    .card-meta {
+        font-size: 12px;
+        color: #666;
+    }
+
+        .card-meta span {
+            margin-right: 14px;
+        }
+
+    .badge-p {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+        .badge-p.pending {
+            background: #f3e5f5;
+            color: #6a1b9a;
+        }
+
+        .badge-p.approved {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-p.rejected {
+            background: #fce4ec;
+            color: #c62828;
+        }
+
+    .items-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 12px 0;
+    }
+
+        .items-table th {
+            background: #e8eaf6;
+            color: #1a237e;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .items-table td {
+            padding: 8px 12px;
+            font-size: 12px;
+            border-bottom: 1px solid #f0f2f8;
+        }
+
+        .items-table tfoot td {
+            font-weight: 700;
+            color: #1a237e;
+            background: #f5f6ff;
+        }
+
+    .card-body {
+        padding: 14px 20px;
+    }
+
+    .card-foot {
+        padding: 12px 20px;
+        background: #fafbff;
+        border-top: 1px solid #f0f2f8;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .foot-note {
+        font-size: 12px;
+        color: #888;
+        max-width: 60%;
+    }
+
+    .action-group {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-approve {
+        background: #43a047;
+        color: #fff;
+        border: none;
+        border-radius: 7px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-approve:hover {
+            background: #2e7d32;
+        }
+
+    .btn-reject {
+        background: #fce4ec;
+        color: #c62828;
+        border: none;
+        border-radius: 7px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-detail {
+        background: #e8eaf6;
+        color: #1a237e;
+        border: none;
+        border-radius: 7px;
+        padding: 7px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .timeline {
+        display: flex;
+        align-items: center;
+        padding: 14px 24px 8px;
+    }
+
+    .tl-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        position: relative;
+    }
+
+        .tl-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: calc(50% + 12px);
+            width: calc(100% - 24px);
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+
+        .tl-step.done:not(:last-child)::after {
+            background: #43a047;
+        }
+
+    .tl-dot {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 2px solid #e0e0e0;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        z-index: 1;
+        position: relative;
+    }
+
+    .tl-step.done .tl-dot {
+        background: #43a047;
+        border-color: #43a047;
+        color: #fff;
+    }
+
+    .tl-step.active .tl-dot {
+        background: #6a1b9a;
+        border-color: #6a1b9a;
+        color: #fff;
+    }
+
+    .tl-step.reject .tl-dot {
+        background: #e53935;
+        border-color: #e53935;
+        color: #fff;
+    }
+
+    .tl-label {
+        font-size: 10px;
+        color: #999;
+        margin-top: 4px;
+        text-align: center;
+        font-weight: 600;
+    }
+
+    .tl-step.done .tl-label {
+        color: #43a047;
+    }
+
+    .tl-step.active .tl-label {
+        color: #6a1b9a;
+    }
+
+    .tl-step.reject .tl-label {
+        color: #e53935;
+    }
+
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.45);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+    .modal-box {
+        background: #fff;
+        border-radius: 14px;
+        padding: 28px 30px;
+        width: 460px;
+        max-width: 95vw;
+        box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    }
+
+    .modal-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1a237e;
+        margin-bottom: 12px;
+    }
+
+    .form-lbl {
+        font-size: 12px;
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .form-inp {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1px solid #d0d5e8;
+        border-radius: 8px;
+        font-size: 13px;
+        background: #f8f9fe;
+        box-sizing: border-box;
+        margin-bottom: 14px;
+    }
+
+    .btn-ok {
+        background: #43a047;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 24px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-ok.red {
+            background: #e53935;
+        }
+
+    .btn-cancel {
+        background: #f5f5f5;
+        color: #555;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #aaa;
+        font-size: 14px;
+    }
+    /* Nút in trên giao diện web */
+    .btn-print-pdf {
+        background: #f0f4f8;
+        color: #1a237e;
+        border: 1px solid #d0d5e8;
+        border-radius: 7px;
+        padding: 7px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+        margin-left: 8px;
+    }
+
+        .btn-print-pdf:hover {
+            background: #e2e8f0;
+        }
+
+    /* Định dạng mẫu in chuẩn (Mặc định ẩn trên web) */
+    #mauInAn {
+        display: none;
+        font-family: "Times New Roman", serif;
+        color: black;
+        background: white;
+    }
+
+    @@media print {
+        /* Ẩn toàn bộ UI web khi in */
+        .no-print, .page-hdr, .tab-bar, #sec-pending, #sec-history, .modal-overlay, .sidebar, .navbar, button, .action-group {
+            display: none !important;
+        }
+        /* Hiện mẫu in chuẩn A4 */
+        #mauInAn {
+            display: block !important;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 0;
+            margin: 0;
+            padding: 1.5cm 1cm 1.5cm 1.5cm;
+        }
+
+        @@page {
+            size: A4;
+            margin: 0;
+        }
+
+        .print-content {
+            padding: 1.5cm 1cm 1cm 1.5cm;
+        }
+
+        .table-items {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+            .table-items th, .table-items td {
+                border: 1px solid black !important;
+                padding: 8px;
+                font-size: 14px;
+            }
+
+        .sig-container {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+
+            .sig-container td {
+                padding: 10px;
+                text-align: center;
+                vertical-align: top;
+                height: 120px;
+                font-size: 13px;
+            }
+    }
 </style>
 
 <div class="page-hdr mb-3">
@@ -149,10 +509,11 @@
                     </div>
                 </div>
                 <div class="card-foot">
-                    <div class="foot-note">@if (!string.IsNullOrEmpty(dx.MoTa)) { <span>📝 @dx.MoTa</span> }</div>
+                    <div class="foot-note">@if (!string.IsNullOrEmpty(dx.MoTa))
+                    {<span>📝 @dx.MoTa</span>}</div>
                     <div class="action-group">
                         <button class="btn-detail" onclick="toggleDetail('@dx.ID_DeXuat', this)">📖 Xem chi tiết</button>
-                        <button class="btn-reject"  onclick="openModal('@dx.ID_DeXuat', 'tuchoi')">❌ Từ chối</button>
+                        <button class="btn-reject" onclick="openModal('@dx.ID_DeXuat', 'tuchoi')">❌ Từ chối</button>
                         <button class="btn-approve" onclick="openModal('@dx.ID_DeXuat', 'duyet')">✅ Phê duyệt cuối</button>
                     </div>
                 </div>
@@ -172,11 +533,11 @@
         {
             string cardCls = dx.TrangThai.Contains("Từ chối") ? "rejected" : "approved";
             string badgeCls = dx.TrangThai.Contains("Từ chối") ? "rejected" : "approved";
-            string s0="done", s1="", s2="", s3="", s4="";
-            if (dx.TrangThai == "Đã duyệt")            { s1="done"; s2="done"; s3="done"; s4="done"; }
-            else if (dx.TrangThai == "CSVC Từ chối")   { s1="reject"; }
-            else if (dx.TrangThai == "KHTC Từ chối")   { s1="done"; s2="reject"; }
-            else if (dx.TrangThai == "BGH Từ chối")    { s1="done"; s2="done"; s3="reject"; }
+            string s0 = "done", s1 = "", s2 = "", s3 = "", s4 = "";
+            if (dx.TrangThai == "Đã duyệt") { s1 = "done"; s2 = "done"; s3 = "done"; s4 = "done"; }
+            else if (dx.TrangThai == "CSVC Từ chối") { s1 = "reject"; }
+            else if (dx.TrangThai == "KHTC Từ chối") { s1 = "done"; s2 = "reject"; }
+            else if (dx.TrangThai == "BGH Từ chối") { s1 = "done"; s2 = "done"; s3 = "reject"; }
 
             <div class="proposal-card @cardCls">
                 <div class="card-head">
@@ -194,11 +555,11 @@
                         @* CHÈN CODE NÀY VÀO: Chỉ hiện nút In nếu trạng thái là Đã duyệt *@
                         @if (dx.TrangThai == "Đã duyệt")
                         {
-                            <button class="btn-print-pdf" onclick="inPhieuDaDuyet('@dx.ID_DeXuat', '@dx.NguoiDeXuat', '@dx.NgayDeXuat.ToString("dd/MM/yyyy")')">🖨️ Xuất PDF</button>
+                            <button class="btn-print-pdf" onclick="inPhieuDaDuyet('@dx.ID_DeXuat', '@dx.NguoiDeXuat', '@dx.NgayDeXuat.ToString("dd/MM/yyyy")', '@dx.KhoaPhongBan', '@(dx.MoTa?.Replace("'", "\\'") ?? "")')">🖨️ Xuất PDF</button>
                         }
                         <span class="badge-p @badgeCls">@dx.TrangThai</span>
                     </div>
-                   
+
                 </div>
                 <div class="timeline">
                     <div class="tl-step @s0"><div class="tl-dot">✔️</div><div class="tl-label">Đã gửi</div></div>
@@ -258,13 +619,13 @@
             <td width="45%" class="text-center" style="vertical-align: top; padding-top: 0;">
                 <div class="text-bold" style="font-size: 13px; line-height: 1.5;">TRƯỜNG ĐH SƯ PHẠM KỸ THUẬT</div>
                 <div class="text-bold" style="font-size: 13px; text-decoration: underline; line-height: 1.5;">ĐẠI HỌC ĐÀ NẴNG</div>
-                <div style="font-size: 12px; margin-top: 5px;">Số: ......../ĐX-2026</div>
+                <div style="font-size: 12px; margin-top: 5px;" id="outMaPhieu">Số: ......../ĐX-2026</div>
             </td>
             <td width="55%" class="text-center" style="vertical-align: top; padding-top: 0;">
                 <div class="text-bold" style="font-size: 13px; line-height: 1.5;">CỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
                 <div class="text-bold" style="font-size: 13px; text-decoration: underline; line-height: 1.5;">Độc lập - Tự do - Hạnh phúc</div>
-                <div style="font-size: 12px; font-style: italic; margin-top: 8px;">
-                    Đà Nẵng, ngày <span id="outNgay">...</span> tháng <span id="outThang">...</span> năm 2026
+                <div style="font-size: 12px; font-style: italic; margin-top: 8px;" id="outNgayThang">
+                    Đà Nẵng, ngày ... tháng ... năm 2026
                 </div>
             </td>
         </tr>
@@ -272,18 +633,18 @@
 
     <h2 class="text-center text-bold" style="margin-top: 30px; font-size: 17px; margin-bottom: 10px;">PHIẾU ĐỀ XUẤT MUA SẮM TRANG THIẾT BỊ, VẬT TƯ</h2>
 
+
     <div class="text-center" style="font-size: 14px; margin-bottom: 25px;">
-        Kính gửi: &nbsp;&nbsp;&nbsp; <br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Trường ĐH Sư Phạm Kỹ Thuật, Đại học Đà Nẵng
+        Kính gửi: Hội đồng mua sắm cơ sở vật chất Trường Đại học Sư phạm Kỹ thuật,Đại Học Đà Nẵng
     </div>
 
     <div style="font-size: 15px; padding: 0 10px;">
-        <p style="margin: 8px 0;"><strong>1. Đơn vị đề xuất:</strong> ............................................................................................................</p>
-        <p style="margin: 8px 0;"><strong>2. Người lập:</strong> <span class="text-bold text-uppercase" id="sigTruongDonVi"></span>&nbsp;&nbsp;&nbsp;&nbsp; <strong>Mã số:</strong> .................................................</p>
+        <p style="margin: 8px 0;"><strong>1. Đơn vị đề xuất:</strong> <span id="outDonVi" class="text-bold">............................................................................................</span></p>
+        <p style="margin: 8px 0;"><strong>2. Người lập:</strong> <span id="outNguoiLap" class="text-bold" style="text-transform: uppercase;">@Session["UserName"]</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Mã số đề xuất:</strong> <span id="outMaSo" class="text-bold">.........................</span></p>
         <p style="margin: 8px 0;"><strong>3. Lý do mua sắm:</strong> <span id="outMoTa">............................................................................................</span></p>
         <p style="margin: 8px 0;"><strong>4. Danh sách thiết bị:</strong></p>
 
-        <table class="table-items" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+        <table class="table-print">
             <thead>
                 <tr class="text-center text-bold">
                     <th style="border: 1px solid black;" width="40">STT</th>
@@ -291,50 +652,51 @@
                     <th style="border: 1px solid black;" width="80">Đơn vị</th>
                     <th style="border: 1px solid black;" width="60">SL</th>
                     <th style="border: 1px solid black;" width="140">Đơn Giá</th>
+                    <th style="border: 1px solid black;" width="150">Thành tiền</th>
                 </tr>
             </thead>
             <tbody id="outBody"></tbody>
         </table>
-       
     </div>
 
-    <table width="100%" style="margin-top: 20px; border: none;">
+    <table width="100%" style="margin-top: 25px; border: none;">
         <tr>
-            <td width="50%" class="text-center">
+            <td width="50%" class="text-center" style="border:none;">
                 <div class="text-bold" style="font-size: 14px;">NGƯỜI LẬP</div>
                 <div style="font-style: italic; font-size: 12px;">(Ký và ghi rõ họ tên)</div>
-                <div style="margin-top: 5px; font-weight: bold;">(Đã ký)</div>
-                <div style="margin-top: 25px; font-weight: bold;">Họ tên người ký</div>
-                
+                <div style="color: #2e7d32; font-weight: bold; font-style: italic; margin-top: 5px;">(Đã ký)</div>
+                <br>
+                <div id="outTenKyNguoiLap" class="text-bold" style="text-transform: uppercase;">@Session["UserName"]</div>
             </td>
-            <td width="50%" class="text-center">
+            <td width="50%" class="text-center" style="border:none;">
                 <div class="text-bold" style="font-size: 14px;">TRƯỜNG ĐƠN VỊ ĐỀ XUẤT</div>
                 <div style="font-style: italic; font-size: 12px;">(Ký, ghi rõ họ tên và đóng dấu)</div>
-                <div style="margin-top: 5px; font-weight: bold;">(Đã ký)</div>
-                <div style="margin-top: 35px;" class="text-bold text-uppercase" id="sigNguoiLap"></div>
+                <div style="color: #2e7d32; font-weight: bold; font-style: italic; margin-top: 5px;">(Đã ký)</div>
+                <br>
+                <div style="text-transform: uppercase;" class="text-bold" id="sigTruongDonVi"></div>
             </td>
         </tr>
     </table>
 
-    <table class="sig-container" style="width: 100%; ; margin-top: 30px;">
+    <table class="sig-container" style="width: 100%; border-collapse: collapse; margin-top: 30px;">
         <tr>
-            <td width="33.3%" style="; padding: 10px; text-align: center; vertical-align: top; height: 130px;">
+            <td width="33.3%" style="padding: 10px; text-align: center; vertical-align: top; height: 120px;">
                 <div class="text-bold" style="font-size: 13px;">1. PHÒNG QUẢN TRỊ CSVC</div>
                 <div style="font-style: italic; font-size: 11px;">(Ký, ghi rõ họ tên)</div>
-                <div style="margin-top: 15px; font-weight: bold;">(Đã ký)</div>
-                <div style="margin-top: 25px; font-weight: bold;">Họ tên người ký</div>
+                <div style="color: #2e7d32; font-weight: bold; font-style: italic; margin-top: 5px;">(Đã ký)</div>
+                <div style="margin-top: 15px; font-weight: bold;" id="outNguoiDuyetCSVC">Cán bộ CSVC</div>
             </td>
-            <td width="33.3%" style="; padding: 10px; text-align: center; vertical-align: top; height: 130px;">
+            <td width="33.3%" style="padding: 10px; text-align: center; vertical-align: top; height: 120px;">
                 <div class="text-bold" style="font-size: 13px;">2. PHÒNG KẾ HOẠCH - TÀI CHÍNH</div>
                 <div style="font-style: italic; font-size: 11px;">(Ký, ghi rõ họ tên)</div>
-                <div style="margin-top: 15px; font-weight: bold;">(Đã ký)</div>
-                <div style="margin-top: 25px; font-weight: bold;">Họ tên người ký</div>
+                <div style="color: #2e7d32; font-weight: bold; font-style: italic; margin-top: 5px;">(Đã ký)</div>
+                <div style="margin-top: 15px; font-weight: bold;" id="outNguoiDuyetKHTC">Cán bộ KHTC</div>
             </td>
-            <td width="33.4%" style="; padding: 10px; text-align: center; vertical-align: top; height: 130px;">
+            <td width="33.4%" style="padding: 10px; text-align: center; vertical-align: top; height: 120px;">
                 <div class="text-bold" style="font-size: 13px;">3. BAN GIÁM HIỆU</div>
                 <div style="font-style: italic; font-size: 11px;">(Ký, đóng dấu và ghi rõ họ tên)</div>
-                <div style="margin-top: 15px; font-weight: bold;">(Đã ký)</div>
-                <div style="margin-top: 25px; font-weight: bold; text-transform: uppercase;">@Session["UserName"]</div>
+                <div style="color: #2e7d32; font-weight: bold; font-style: italic; margin-top: 5px;">(Đã ký)</div>
+                <div style="margin-top: 15px; font-weight: bold; text-transform: uppercase;" id="outNguoiDuyetBGH">@Session["UserName"]</div>
             </td>
         </tr>
     </table>
@@ -347,6 +709,7 @@
         document.getElementById('sec-pending').style.display = (tab==='all'||tab==='pending') ? '' : 'none';
         document.getElementById('sec-history').style.display = (tab==='all'||tab==='history') ? '' : 'none';
     }
+
     function toggleDetail(id, btn) {
         var box = document.getElementById('detail-' + id);
         if (box.style.display === 'none') {
@@ -357,11 +720,11 @@
                         res.data.forEach(function(item, i) {
                             var ten = item.TenThietBiDeXuat || item.Ten || '';
                             var gia = item.GiaDuKien || item.Gia || 0;
-                            var dvt = item.DonViTinh || item.DVT || '';
+                            var dvt = item.DonViTinh || item.DVT || 'Cái';
                             var sl  = item.SoLuong || 0;
                             var tt  = sl * gia;
                             tong += tt;
-                            html += '<tr><td>'+(i+1)+'</td><td><b>'+ten+'</b></td><td>'+sl+'</td><td>'+dvt+'</td><td>'+Number(gia).toLocaleString('vi-VN')+' đ</td><td><b>'+Number(tt).toLocaleString('vi-VN')+' đ</b></td></tr>';
+                            html += '<tr><td style="border:1px solid black;text-align:center;">'+(i+1)+'</td><td style="border:1px solid black;"><b>'+ten+'</b></td><td style="border:1px solid black;text-align:center;">'+dvt+'</td><td style="border:1px solid black;text-align:center;">'+sl+'</td><td style="border:1px solid black;text-align:right;">'+Number(gia).toLocaleString('vi-VN')+' đ</td><td style="border:1px solid black;text-align:right;"><b>'+Number(tt).toLocaleString('vi-VN')+' đ</b></td></tr>';
                         });
                         box.querySelector('.detail-body').innerHTML = html || '<tr><td colspan="6" style="text-align:center;color:#aaa">Không có dữ liệu</td></tr>';
                         box.querySelector('.detail-total').textContent = Number(tong).toLocaleString('vi-VN') + ' đ';
@@ -372,6 +735,7 @@
             box.style.display = ''; btn.textContent = '📖 Ẩn chi tiết';
         } else { box.style.display = 'none'; btn.textContent = '📖 Xem chi tiết'; }
     }
+
     function openModal(id, action) {
         _id = id; _act = action;
         var ok = action === 'duyet';
@@ -384,7 +748,9 @@
         btn.className = ok ? 'btn-ok' : 'btn-ok red';
         document.getElementById('actionModal').classList.add('active');
     }
+
     function closeModal() { document.getElementById('actionModal').classList.remove('active'); }
+
     function submitAction() {
         var note = document.getElementById('modalNote').value.trim();
         if (_act === 'tuchoi' && !note) { alert('Vui lòng nhập lý do từ chối.'); return; }
@@ -396,77 +762,71 @@
     }
     document.getElementById('actionModal').addEventListener('click', function (e) { if (e.target === this) closeModal(); });
 
-    function printPhieuMoi() {
-        const d = new Date();
-        document.getElementById('outNgay').innerText = d.getDate().toString().padStart(2, '0');
-        document.getElementById('outThang').innerText = (d.getMonth() + 1).toString().padStart(2, '0');
+    // --- HÀM IN BẢN ĐÃ PHÊ DUYỆT HOÀN CHỈNH ---
+    function inPhieuDaDuyet(id, nguoiLap, ngay, khoaPhong, mota) {
+        // 1. Gán ngày tháng năm
+        if (ngay) {
+            const parts = ngay.split('/');
+            if (parts.length >= 3) {
+                document.getElementById('outNgayThang').innerHTML = `Đà Nẵng, ngày ${parts[0]} tháng ${parts[1]} năm ${parts[2]}`;
+            }
+        }
 
-        // Lấy lý do mua sắm (nhớ id="mota" hoặc name="mota" phải khớp)
-        const moTaInput = document.querySelector('textarea[name="mota"]');
-        document.getElementById('outMoTa').innerText = (moTaInput && moTaInput.value) ? moTaInput.value : "...................................................";
+        // 2. Đổ dữ liệu text hành chính
+        document.getElementById('outMaPhieu').innerText = "Số: " + id + "/ĐX-2026";
+        document.getElementById('outMaSo').innerText = id; // Lấy ID đề xuất làm mã số đơn
+        document.getElementById('outDonVi').innerText = khoaPhong || "Khoa Công nghệ số";
+        document.getElementById('outMoTa').innerText = mota || "Căn cứ theo nhu cầu thực tế phục vụ công tác dạy và học.";
 
-        let html = "";
-        // Duyệt QUA TẤT CẢ các dòng thiết bị trong bảng web
-        const rows = document.querySelectorAll('#tbBody tr');
-        rows.forEach((row, index) => {
-            const ten = row.querySelector('input[name="tenTB[]"]')?.value;
-            const sl = row.querySelector('input[name="soluong[]"]')?.value;
-            const dv = row.querySelector('input[name="donvi[]"]')?.value || "Cái/Bộ";
-            const giaVal = row.querySelector('input[name="gia[]"]')?.value;
+        // 3. Đổ dữ liệu họ tên cho khu vực chữ ký lập đơn
+        document.getElementById('outNguoiLap').innerText = nguoiLap;
+        document.getElementById('outTenKyNguoiLap').innerText = nguoiLap;
+        document.getElementById('sigTruongDonVi').innerText = nguoiLap;
 
-            if (ten && ten.trim() !== "") {
-                const giaStr = (Number(giaVal) || 0).toLocaleString('vi-VN');
-                html += `<tr>
-                    <td style="border: 1px solid black; text-align: center; padding: 5px;">${index + 1}</td>
-                    <td style="border: 1px solid black; padding: 5px; font-weight: bold;">${ten}</td>
-                    <td style="border: 1px solid black; text-align: center; padding: 5px;">${dv}</td>
-                    <td style="border: 1px solid black; text-align: center; padding: 5px;">${sl}</td>
-                    <td style="border: 1px solid black; text-align: right; padding: 5px;">${giaStr} đ</td>
+        // 4. Ajax kết xuất vật tư ra bảng in
+        $.get('@Url.Action("GetChiTiet", "DeXuat")', { id: id }, function (res) {
+            if (res.ok) {
+                let html = "";
+                let tongTien = 0;
+
+                res.data.forEach((item, i) => {
+                    let ten = item.TenThietBiDeXuat || item.Ten || '';
+                    let sl = Number(item.SoLuong) || 0;
+                    let dvt = item.DonViTinh || item.DVT || 'Cái';
+                    let gia = Number(item.GiaDuKien || item.Gia) || 0;
+                    let thanhTien = sl * gia;
+                    tongTien += thanhTien;
+
+                    html += `<tr>
+                        <td style="border: 1px solid black; text-align: center; padding: 5px;">${i + 1}</td>
+                        <td style="border: 1px solid black; padding: 5px; font-weight: bold;">${ten}</td>
+                        <td style="border: 1px solid black; text-align: center; padding: 5px;">${dvt}</td>
+                        <td style="border: 1px solid black; text-align: center; padding: 5px;">${sl}</td>
+                        <td style="border: 1px solid black; text-align: right; padding: 5px;">${gia.toLocaleString('vi-VN')} đ</td>
+                        <td style="border: 1px solid black; text-align: right; font-weight: bold; padding: 5px;">${thanhTien.toLocaleString('vi-VN')} đ</td>
+                    </tr>`;
+                });
+
+                // Thêm dòng tổng tiền
+                html += `<tr style="font-weight:bold; background-color:#f2f2f2;">
+                    <td colspan="5" style="border: 1px solid black; text-align:right; padding: 5px;">Tổng cộng thành tiền (VNĐ):</td>
+                    <td style="border: 1px solid black; text-align:right; color:#b71c1c; padding: 5px;">${tongTien.toLocaleString('vi-VN')} đ</td>
                 </tr>`;
+
+                document.getElementById('outBody').innerHTML = html;
+
+                // 5. Đồng bộ tên người phê duyệt thực tế từ Database log nếu có trả về
+                if (res.nguoiDuyetCSVC) document.getElementById('outNguoiDuyetCSVC').innerText = res.nguoiDuyetCSVC;
+                if (res.nguoiDuyetKHTC) document.getElementById('outNguoiDuyetKHTC').innerText = res.nguoiDuyetKHTC;
+                if (res.nguoiDuyetBGH) document.getElementById('outNguoiDuyetBGH').innerText = res.nguoiDuyetBGH;
+
+                // 6. Thực thi lệnh in ấn hệ thống
+                setTimeout(function () {
+                    window.print();
+                }, 250);
+            } else {
+                alert('⚠️ Không thể trích xuất dữ liệu danh sách thiết bị.');
             }
         });
-
-        document.getElementById('outBody').innerHTML = html || '<tr><td colspan="5" align="center" style="border: 1px solid black;">Chưa có danh sách thiết bị</td></tr>';
-        window.print();
     }
-   function inPhieuDaDuyet(id, nguoiLap, ngay) {
-    // 1. Điền thông tin ngày tháng
-    const ngayParts = ngay.split('/');
-    document.getElementById('outNgay').innerText = ngayParts[0];
-    document.getElementById('outThang').innerText = ngayParts[1];
-
-    // 2. Điền tên NGƯỜI LẬP (Trưởng khoa) vào đúng ô chữ ký
-    document.getElementById('sigNguoiLap').innerText = nguoiLap;
-    document.getElementById('sigTruongDonVi').innerText = nguoiLap; // Thường Trưởng đơn vị cũng là Trưởng khoa
-
-    // Đã sửa chỗ mục 2 ở phần nội dung đơn
-    const outNguoiLapElement = document.querySelector('#mauInAn p strong + span');
-    // Nếu Minh dùng thẻ <span id="outNguoiLap"> ở mục 2 nội dung đơn thì dùng dòng dưới:
-    // document.getElementById('outNguoiLap').innerText = nguoiLap;
-
-    // 3. Lấy dữ liệu thiết bị
-    $.get('@Url.Action("GetChiTiet", "DeXuat")', { id: id }, function (res) {
-        if (res.ok) {
-            let html = "";
-            res.data.forEach((item, i) => {
-                let ten = item.TenThietBiDeXuat || item.Ten || '';
-                let sl = item.SoLuong || 0;
-                let dvt = item.DonViTinh || item.DVT || 'Cái/Bộ';
-                let gia = item.GiaDuKien || item.Gia || 0;
-                html += `<tr>
-                    <td style="border: 1px solid black; text-align: center; padding: 5px;">${i + 1}</td>
-                    <td style="border: 1px solid black; padding: 5px; font-weight: bold;">${ten}</td>
-                    <td style="border: 1px solid black; text-align: center; padding: 5px;">${dvt}</td>
-                    <td style="border: 1px solid black; text-align: center; padding: 5px;">${sl}</td>
-                    <td style="border: 1px solid black; text-align: right; padding: 5px;">${Number(gia).toLocaleString('vi-VN')} đ</td>
-                </tr>`;
-            });
-            document.getElementById('outBody').innerHTML = html;
-            document.getElementById('outMoTa').innerText = "Căn cứ theo nhu cầu thực tế của khoa/phòng.";
-
-            // 4. Lệnh in
-            window.print();
-        }
-    });
-}
 </script>
