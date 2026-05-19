@@ -443,6 +443,30 @@
             return;
         }
         var tenKhoa = document.getElementById('ct_ten').textContent;
+        
+        // 1. Tự động tải về máy (file CSV)
+        var csv = [];
+        csv.push("STT,Mã TB,Tên Thiết Bị,Danh Mục,Giá Trị,Trạng Thái");
+        _chiTietData.thietBi.forEach(function(t, i) {
+            var row = [];
+            row.push(i + 1);
+            row.push('"' + t.id + '"');
+            row.push('"' + (t.tenTB || '').replace(/"/g, '""') + '"');
+            row.push('"' + (t.danhMuc || '').replace(/"/g, '""') + '"');
+            row.push('"' + Number(t.gia).toLocaleString('vi-VN') + ' đ"');
+            row.push('"' + (t.trangThai || '').replace(/"/g, '""') + '"');
+            csv.push(row.join(","));
+        });
+        var csvFile = new Blob(["\uFEFF" + csv.join("\n")], {type: "text/csv;charset=utf-8;"});
+        var downloadLink = document.createElement("a");
+        downloadLink.download = "Danh_Sach_Thiet_Bi_" + tenKhoa.replace(/\s+/g, '_') + ".csv";
+        downloadLink.href = window.URL.createObjectURL(csvFile);
+        downloadLink.style.display = "none";
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+
+        // 2. Mở cửa sổ in
         var printWindow = window.open('', '', 'height=600,width=800');
         printWindow.document.write('<html><head><title>Danh Sách Thiết Bị - ' + tenKhoa + '</title>');
         printWindow.document.write('<style>');
