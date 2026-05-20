@@ -1,240 +1,283 @@
 ﻿@model QLTB.Models.KiemKeTaiSanViewModel
 @using System.Linq
 @{
-    ViewBag.Title = "Kiểm Kê Tài Sản - Phòng CSVC";
+    ViewBag.Title = "Kiểm Kê Tài Sản";
     int phanTram = Model.TongThietBi > 0 ? (int)((double)Model.DaKiemKe / Model.TongThietBi * 100) : 0;
     int khoaIdx  = 0;
     int nhomIdx  = 0;
 }
 
 <style>
-    body, td, th, select, input, button, a { font-size: 15px; }
-    .page-hdr h2 { color:#1a237e; font-weight:700; font-size:24px; margin:0; }
-    .page-hdr p  { color:#666; font-size:14px; margin:3px 0 0; }
+/* ── Reset & base ── */
+*, *::before, *::after { box-sizing: border-box; }
+body { font-family: 'Segoe UI', sans-serif; background: #f4f6fb; color: #222; }
 
-    /* ── Progress card ── */
-    .kk-progress-card { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); padding:22px 26px; margin-bottom:20px; }
-    .kk-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:18px; }
-    .kk-stat { text-align:center; }
-    .kk-stat .num { font-size:32px; font-weight:800; }
-    .kk-stat .lbl { font-size:13px; color:#888; font-weight:600; margin-top:3px; }
-    .kk-stat.total .num   { color:#1a237e; }
-    .kk-stat.done .num    { color:#43a047; }
-    .kk-stat.pending .num { color:#fb8c00; }
-    .progress-bar-wrap { background:#f0f2f8; border-radius:8px; height:12px; overflow:hidden; }
-    .progress-bar { height:100%; background:linear-gradient(90deg,#43a047,#66bb6a); border-radius:8px; transition:width .6s; }
-    .progress-label { display:flex; justify-content:space-between; font-size:13px; color:#888; margin-top:7px; }
+/* ── Page header ── */
+.pg-hdr { margin-bottom: 20px; }
+.pg-hdr h2 { font-size: 22px; font-weight: 700; color: #1a237e; margin: 0 0 3px; }
+.pg-hdr p  { font-size: 13px; color: #777; margin: 0; }
 
-    .toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
-    .btn-primary   { background:#1a237e; color:#fff; border:none; border-radius:8px; padding:10px 20px; font-size:14px; font-weight:600; cursor:pointer; text-decoration:none; display:inline-block; }
-    .btn-secondary { background:#e8eaf6; color:#1a237e; border:none; border-radius:8px; padding:10px 20px; font-size:14px; font-weight:600; cursor:pointer; }
-    .btn-dinhky    { background:#fff3e0; color:#e65100; border:1px solid #ffcc80; border-radius:8px; padding:10px 20px; font-size:14px; font-weight:600; cursor:pointer; }
-    .btn-dinhky:hover { background:#ffe0b2; }
-    .alert-error   { background:#fce4ec; border:1px solid #ef9a9a; border-radius:10px; padding:14px 18px; color:#c62828; font-size:14px; margin-bottom:16px; }
-    .alert-success { background:#e8f5e9; border:1px solid #a5d6a7; border-radius:10px; padding:14px 18px; color:#2e7d32; font-size:14px; margin-bottom:16px; }
+/* ── Alerts ── */
+.alert { border-radius: 8px; padding: 12px 16px; font-size: 13.5px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.alert-success { background: #e8f5e9; border-left: 4px solid #43a047; color: #2e7d32; }
+.alert-error   { background: #fce4ec; border-left: 4px solid #e53935; color: #b71c1c; }
 
-    /* ── Cấp 1: Đơn vị quản lý ── */
-    .khoa-block { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); margin-bottom:16px; overflow:hidden; }
-    .khoa-row {
-        display:flex; align-items:center; gap:10px;
-        background:#e8eaf6; padding:12px 16px;
-        cursor:pointer; user-select:none;
-    }
-    .khoa-row:hover { background:#dde0f5; }
-    .khoa-row .khoa-name { font-size:15px; font-weight:700; color:#1a237e; flex:1; }
-    .khoa-row .khoa-meta { font-size:13px; color:#555; }
+/* ── Stat cards ── */
+.stat-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 16px; }
+.stat-card { background: #fff; border-radius: 10px; padding: 16px 20px; text-align: center; box-shadow: 0 1px 6px rgba(0,0,0,.07); }
+.stat-card .s-num { font-size: 30px; font-weight: 800; line-height: 1; }
+.stat-card .s-lbl { font-size: 12px; color: #888; font-weight: 600; margin-top: 5px; text-transform: uppercase; letter-spacing: .4px; }
+.stat-card.total .s-num { color: #1a237e; }
+.stat-card.done  .s-num { color: #2e7d32; }
+.stat-card.left  .s-num { color: #e65100; }
 
-    /* ── Bảng tên thiết bị (cấp 2) ── */
-    .tb-table { width:100%; border-collapse:collapse; }
-    .tb-table thead th {
-        background:#f5f6ff; color:#1a237e; font-size:12px; font-weight:700;
-        text-transform:uppercase; letter-spacing:.4px; padding:10px 14px;
-        border-bottom:2px solid #e8eaf6; white-space:nowrap;
-    }
-    .tb-table tbody td { padding:10px 14px; font-size:14px; color:#333; border-bottom:1px solid #f0f2f8; vertical-align:middle; }
+/* ── Progress bar ── */
+.prog-card { background: #fff; border-radius: 10px; padding: 14px 20px; margin-bottom: 16px; box-shadow: 0 1px 6px rgba(0,0,0,.07); }
+.prog-track { background: #e8eaf6; border-radius: 99px; height: 10px; overflow: hidden; }
+.prog-fill  { height: 100%; background: linear-gradient(90deg, #1a237e, #42a5f5); border-radius: 99px; transition: width .6s; }
+.prog-label { display: flex; justify-content: space-between; font-size: 12.5px; color: #777; margin-top: 7px; }
 
-    /* ── Hàng tên thiết bị (cấp 2) ── */
-    .row-ten { cursor:pointer; background:#fff; transition:background .15s; }
-    .row-ten:hover td { background:#f5f6ff; }
-    .row-ten td { font-weight:600; }
+/* ── Toolbar ── */
+.toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+.toolbar-left { font-size: 13.5px; color: #555; }
+.toolbar-right { display: flex; gap: 8px; align-items: center; }
 
-    /* ── Hàng chi tiết mã TB (cấp 3) ── */
-    .row-detail { display:none; background:#fafbff; }
-    .row-detail td { padding:8px 14px 8px 48px; font-size:13px; color:#444; border-bottom:1px solid #f0f2f8; vertical-align:middle; }
-    .detail-sub-header td {
-        background:#eef0fb; font-size:12px; font-weight:700; color:#3949ab;
-        text-transform:uppercase; letter-spacing:.3px; padding:6px 14px 6px 48px;
-    }
+/* ── Buttons ── */
+.btn { display: inline-flex; align-items: center; gap: 6px; border: none; border-radius: 7px; padding: 8px 16px; font-size: 13.5px; font-weight: 600; cursor: pointer; text-decoration: none; transition: opacity .15s; }
+.btn:hover { opacity: .88; text-decoration: none; }
+.btn-blue   { background: #1a237e; color: #fff; }
+.btn-gray   { background: #e8eaf6; color: #1a237e; }
+.btn-orange { background: #fff3e0; color: #bf360c; border: 1px solid #ffcc80; }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
 
-    /* ── Toggle icon ── */
-    .toggle-icon { display:inline-block; width:18px; text-align:center; transition:transform .2s; font-style:normal; color:#888; }
-    .is-open > .toggle-icon, .is-open .toggle-icon { transform:rotate(90deg); }
+/* ── Cấp 1: Khoa block ── */
+.khoa-block { background: #fff; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.07); margin-bottom: 12px; overflow: hidden; border: 1px solid #e8eaf6; }
 
-    /* ── Badges ── */
-    .kk-status { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:700; }
-    .kk-status.du      { background:#e8f5e9; color:#2e7d32; }
-    .kk-status.thieu   { background:#fce4ec; color:#c62828; }
-    .kk-status.pending { background:#fff3e0; color:#e65100; }
-    .tb-status { display:inline-block; padding:3px 9px; border-radius:12px; font-size:12px; font-weight:600; }
-    .tb-status.hoatdong { background:#e8f5e9; color:#2e7d32; }
-    .tb-status.baotri   { background:#fff3e0; color:#e65100; }
-    .tb-status.hong     { background:#fce4ec; color:#c62828; }
-    .tb-status.other    { background:#f5f5f5; color:#555; }
+.khoa-row {
+    display: flex; align-items: center; gap: 10px;
+    background: linear-gradient(90deg, #1a237e 0%, #283593 100%);
+    padding: 11px 16px; cursor: pointer; user-select: none;
+}
+.khoa-row:hover { filter: brightness(1.08); }
+.khoa-icon { font-size: 15px; }
+.khoa-name { font-size: 14px; font-weight: 700; color: #fff; flex: 1; }
+.khoa-meta { font-size: 12px; color: #c5cae9; white-space: nowrap; }
+.khoa-arrow { color: #c5cae9; font-size: 12px; transition: transform .2s; }
+.khoa-row.open .khoa-arrow { transform: rotate(90deg); }
 
-    .sl-cell { text-align:center; font-size:14px; font-weight:700; }
-    .sl-sosach { color:#1a237e; }
-    .sl-thucte { color:#43a047; }
-    .mota-id { font-family:monospace; font-size:12px; background:#e8eaf6; color:#1a237e; padding:2px 7px; border-radius:5px; }
+/* ── Cấp 2: Bảng tên thiết bị ── */
+.tb-table { width: 100%; border-collapse: collapse; }
+.tb-table thead th {
+    background: #e8eaf6; color: #3949ab;
+    font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+    padding: 9px 14px; border-bottom: 2px solid #c5cae9; white-space: nowrap;
+}
+.tb-table thead th.center { text-align: center; }
+.tb-table tbody td { padding: 9px 14px; font-size: 13.5px; color: #333; border-bottom: 1px solid #f0f2f8; vertical-align: middle; }
+.tb-table tbody tr:last-child td { border-bottom: none; }
+
+/* Hàng tên thiết bị (cấp 2) */
+.row-ten { cursor: pointer; background: #fff; }
+.row-ten:hover td { background: #f5f6ff; }
+.row-ten td { font-weight: 600; color: #1a237e; }
+.row-ten .sub-text { font-size: 12px; color: #999; font-weight: 400; margin-left: 5px; }
+
+/* ── Cấp 3: Chi tiết mã TB ── */
+.row-detail { display: none; }
+.row-detail td { padding: 7px 14px 7px 46px; font-size: 13px; color: #444; background: #fafbff; border-bottom: 1px solid #f0f2f8; }
+.detail-head td {
+    background: #ede7f6; color: #512da8;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+    padding: 6px 14px 6px 46px; border-bottom: 1px solid #d1c4e9;
+}
+
+/* ── Toggle arrow ── */
+.arr { display: inline-block; font-size: 11px; color: #9e9e9e; transition: transform .2s; margin-right: 4px; }
+.arr.open { transform: rotate(90deg); }
+
+/* ── Badges ── */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 99px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.badge-green  { background: #e8f5e9; color: #2e7d32; }
+.badge-red    { background: #fce4ec; color: #c62828; }
+.badge-orange { background: #fff3e0; color: #e65100; }
+.badge-gray   { background: #f5f5f5; color: #555; }
+.badge-blue   { background: #e3f2fd; color: #1565c0; }
+
+/* ── SL cells ── */
+.sl-wrap { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.sl-num  { font-size: 16px; font-weight: 800; line-height: 1; }
+.sl-lbl  { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: .3px; }
+.sl-blue  .sl-num { color: #1a237e; }
+.sl-green .sl-num { color: #2e7d32; }
+
+/* ── Mã TB chip ── */
+.id-chip { font-family: 'Consolas', monospace; font-size: 12px; background: #e8eaf6; color: #283593; padding: 2px 8px; border-radius: 5px; font-weight: 600; }
+
+/* ── Empty state ── */
+.empty-box { background: #fff; border-radius: 10px; padding: 40px; text-align: center; color: #bbb; font-size: 14px; box-shadow: 0 1px 6px rgba(0,0,0,.07); }
 </style>
 
-<div class="page-hdr" style="margin-bottom:22px">
+<div class="pg-hdr">
     <h2>📊 Kiểm Kê Tài Sản Thiết Bị</h2>
-    <p>Xem tình trạng kiểm kê toàn bộ thiết bị trong hệ thống</p>
+    <p>Tổng hợp tình trạng kiểm kê toàn bộ thiết bị theo đơn vị quản lý</p>
 </div>
 
-@if (ViewBag.Error != null)
-{
-    <div class="alert-error">⚠️ @ViewBag.Error</div>
-}
 @if (TempData["Success"] != null)
 {
-    <div class="alert-success">✅ @TempData["Success"]</div>
+    <div class="alert alert-success">✅ @TempData["Success"]</div>
 }
 @if (TempData["Error"] != null)
 {
-    <div class="alert-error">⚠️ @TempData["Error"]</div>
+    <div class="alert alert-error">⚠️ @TempData["Error"]</div>
+}
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-error">⚠️ @ViewBag.Error</div>
 }
 
-<div class="kk-progress-card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
-        <div style="font-size:16px;font-weight:700;color:#1a237e">📋 Tổng quan kiểm kê tài sản</div>
-        <div style="font-size:13px;color:#888">Cập nhật: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</div>
+<!-- Stat cards -->
+<div class="stat-row">
+    <div class="stat-card total">
+        <div class="s-num">@Model.TongThietBi</div>
+        <div class="s-lbl">Tổng thiết bị</div>
     </div>
-    <div class="kk-stats">
-        <div class="kk-stat total"><div class="num">@Model.TongThietBi</div><div class="lbl">Tổng thiết bị</div></div>
-        <div class="kk-stat done"><div class="num">@Model.DaKiemKe</div><div class="lbl">Đã kiểm kê</div></div>
-        <div class="kk-stat pending"><div class="num">@Model.ChuaKiemKe</div><div class="lbl">Chưa kiểm kê</div></div>
+    <div class="stat-card done">
+        <div class="s-num">@Model.DaKiemKe</div>
+        <div class="s-lbl">Đã kiểm kê</div>
     </div>
-    <div class="progress-bar-wrap">
-        <div class="progress-bar" style="width:@(phanTram)%"></div>
-    </div>
-    <div class="progress-label">
-        <span>Tiến độ: <strong>@phanTram%</strong> (@Model.DaKiemKe/@Model.TongThietBi thiết bị)</span>
-        <span>Còn lại: <strong>@Model.ChuaKiemKe thiết bị</strong></span>
+    <div class="stat-card left">
+        <div class="s-num">@Model.ChuaKiemKe</div>
+        <div class="s-lbl">Chưa kiểm kê</div>
     </div>
 </div>
 
+<!-- Progress -->
+<div class="prog-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:600;color:#1a237e">Tiến độ kiểm kê</span>
+        <span style="font-size:13px;color:#555"><strong>@phanTram%</strong> &nbsp;(@Model.DaKiemKe / @Model.TongThietBi thiết bị)</span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" style="width:@(phanTram)%"></div></div>
+    <div class="prog-label">
+        <span>Đã kiểm: <strong style="color:#2e7d32">@Model.DaKiemKe</strong></span>
+        <span>Còn lại: <strong style="color:#e65100">@Model.ChuaKiemKe</strong></span>
+    </div>
+</div>
+
+<!-- Toolbar -->
 <div class="toolbar">
-    <div style="font-size:15px;color:#555">Danh sách <strong>@Model.TongThietBi</strong> thiết bị trong hệ thống</div>
-    <div style="display:flex;gap:10px;align-items:center">
+    <div class="toolbar-left">
+        Hiển thị <strong>@Model.NhomTheoKhoa.Count</strong> đơn vị &nbsp;·&nbsp; <strong>@Model.TongThietBi</strong> thiết bị
+    </div>
+    <div class="toolbar-right">
         @if (Model.ChuaKiemKe > 0)
         {
-            <a href="@Url.Action("TaoPhieu", "KiemKe")" class="btn-primary">📝 Tạo phiếu kiểm kê (@Model.ChuaKiemKe chưa kiểm)</a>
+            <a href="@Url.Action("TaoPhieu","KiemKe")" class="btn btn-blue">📝 Tạo phiếu kiểm kê <span style="background:rgba(255,255,255,.25);border-radius:99px;padding:1px 8px;font-size:12px">@Model.ChuaKiemKe</span></a>
         }
         else
         {
-            <button class="btn-secondary" disabled>✅ Tất cả đã kiểm kê</button>
+            <button class="btn btn-gray" disabled>✅ Tất cả đã kiểm kê</button>
         }
-        <button type="button" class="btn-dinhky" onclick="xacNhanDinhKy()">🔄 Kiểm kê định kỳ</button>
+        <button type="button" class="btn btn-orange" onclick="xacNhanDinhKy()">🔄 Kiểm kê định kỳ</button>
     </div>
 </div>
 
-@using (Html.BeginForm("KiemKeDinhKy", "KiemKe", FormMethod.Post, new { id = "formDinhKy" }))
+@using (Html.BeginForm("KiemKeDinhKy","KiemKe",FormMethod.Post,new{id="formDinhKy"}))
 {
     @Html.AntiForgeryToken()
 }
 
 @if (!Model.NhomTheoKhoa.Any())
 {
-    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.07);padding:30px;text-align:center;color:#aaa">
-        Chưa có thiết bị nào trong hệ thống
-    </div>
+    <div class="empty-box">Chưa có thiết bị nào trong hệ thống</div>
 }
 else
 {
     foreach (var khoa in Model.NhomTheoKhoa)
     {
-        int tongTBKhoa = khoa.NhomThietBi.Sum(n => n.ChiTiet.Count);
-        int daKKKhoa   = khoa.NhomThietBi.Sum(n => n.ChiTiet.Count(c => c.NgayKiemKe.HasValue));
-        string khoaBodyId = "khoa-body-" + khoaIdx;
+        int tongTB = khoa.NhomThietBi.Sum(n => n.ChiTiet.Count);
+        int daKK   = khoa.NhomThietBi.Sum(n => n.ChiTiet.Count(c => c.NgayKiemKe.HasValue));
+        string bodyId = "kb-" + khoaIdx;
 
         <div class="khoa-block">
-            <!-- Cấp 1: Đơn vị quản lý — click để xổ/đóng toàn bộ bảng -->
-            <div class="khoa-row" onclick="toggleKhoa('@khoaBodyId', this)">
-                <i class="toggle-icon">▶</i>
-                <span class="khoa-name">🏢 @khoa.TenKhoa</span>
-                <span class="khoa-meta">@tongTBKhoa thiết bị &nbsp;|&nbsp; đã kiểm @daKKKhoa/@tongTBKhoa</span>
+            <div class="khoa-row" id="khr-@khoaIdx" onclick="toggleKhoa('@bodyId','khr-@khoaIdx')">
+                <span class="khoa-arrow">▶</span>
+                <span class="khoa-icon">🏢</span>
+                <span class="khoa-name">@khoa.TenKhoa</span>
+                <span class="khoa-meta">@tongTB thiết bị &nbsp;·&nbsp; đã kiểm @daKK / @tongTB</span>
             </div>
 
-            <!-- Bảng tên thiết bị (ẩn mặc định) -->
-            <div id="@khoaBodyId" style="display:none">
+            <div id="@bodyId" style="display:none">
                 <table class="tb-table">
                     <thead>
                         <tr>
-                            <th style="width:32px"></th>
+                            <th style="width:30px"></th>
                             <th>Tên thiết bị</th>
                             <th>Danh mục</th>
-                            <th style="text-align:center">SL Sổ sách</th>
-                            <th style="text-align:center">SL Thực tế</th>
-                            <th>Kết quả KK</th>
+                            <th class="center" style="width:90px">SL Sổ sách</th>
+                            <th class="center" style="width:90px">SL Thực tế</th>
+                            <th style="width:120px">Kết quả KK</th>
                             <th>Ghi chú</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var nhom in khoa.NhomThietBi)
                         {
-                            string groupId = "grp-" + nhomIdx;
-                            string kkClass = nhom.KetQuaKiemKe == "Đủ"    ? "du"
-                                           : nhom.KetQuaKiemKe == "Thiếu" ? "thieu" : "pending";
-                            string kkIcon  = nhom.KetQuaKiemKe == "Đủ"    ? "✅"
-                                           : nhom.KetQuaKiemKe == "Thiếu" ? "⚠️" : "⏳";
+                            string gid    = "g-" + nhomIdx;
+                            string kkCls  = nhom.KetQuaKiemKe == "Đủ"    ? "badge-green"
+                                          : nhom.KetQuaKiemKe == "Thiếu" ? "badge-red" : "badge-orange";
+                            string kkIcon = nhom.KetQuaKiemKe == "Đủ"    ? "✅"
+                                          : nhom.KetQuaKiemKe == "Thiếu" ? "⚠️" : "⏳";
 
-                            <!-- Cấp 2: Tên thiết bị -->
-                            <tr class="row-ten" onclick="toggleNhom('@groupId', this)">
-                                <td style="text-align:center"><i class="toggle-icon">▶</i></td>
+                            <tr class="row-ten" onclick="toggleNhom('@gid',this)">
+                                <td style="text-align:center"><span class="arr" id="arr-@gid">▶</span></td>
                                 <td>
                                     @nhom.TenTB
-                                    <span style="font-size:12px;color:#888;font-weight:400;margin-left:6px">(@nhom.ChiTiet.Count)</span>
+                                    <span class="sub-text">(@nhom.ChiTiet.Count)</span>
                                 </td>
-                                <td style="color:#666">@nhom.TenDanhMuc</td>
-                                <td class="sl-cell"><span class="sl-sosach">@nhom.SoLuongSoSach</span></td>
-                                <td class="sl-cell">
+                                <td style="color:#666;font-weight:400">@nhom.TenDanhMuc</td>
+                                <td style="text-align:center">
+                                    <div class="sl-wrap sl-blue">
+                                        <span class="sl-num">@nhom.SoLuongSoSach</span>
+                                        <span class="sl-lbl">sổ sách</span>
+                                    </div>
+                                </td>
+                                <td style="text-align:center">
                                     @if (nhom.SoLuongThucTe.HasValue)
                                     {
-                                        <span class="sl-thucte">@nhom.SoLuongThucTe</span>
+                                        <div class="sl-wrap sl-green">
+                                            <span class="sl-num">@nhom.SoLuongThucTe</span>
+                                            <span class="sl-lbl">thực tế</span>
+                                        </div>
                                     }
                                     else
                                     {
-                                        <span style="color:#aaa">—</span>
+                                        <span style="color:#ccc;font-size:18px">—</span>
                                     }
                                 </td>
-                                <td><span class="kk-status @kkClass">@kkIcon @nhom.KetQuaKiemKe</span></td>
-                                <td style="color:#666;max-width:160px;font-size:13px">@nhom.GhiChu</td>
+                                <td><span class="badge @kkCls">@kkIcon @nhom.KetQuaKiemKe</span></td>
+                                <td style="font-size:12.5px;color:#777;font-weight:400;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">@nhom.GhiChu</td>
                             </tr>
 
-                            <!-- Sub-header cấp 3 -->
-                            <tr class="row-detail detail-sub-header @groupId">
+                            <tr class="row-detail detail-head @gid">
                                 <td></td>
                                 <td>Mã thiết bị</td>
-                                <td>Trạng thái</td>
-                                <td>Tình trạng</td>
-                                <td colspan="2">Ghi chú</td>
-                                <td></td>
+                                <td>Trạng thái TB</td>
+                                <td>Tình trạng KK</td>
+                                <td colspan="3">Ghi chú</td>
                             </tr>
 
-                            <!-- Cấp 3: Mã thiết bị -->
                             foreach (var ct in nhom.ChiTiet)
                             {
-                                string ttClass = ct.TrangThaiTB == "Hoạt động" ? "hoatdong"
-                                               : ct.TrangThaiTB == "Bảo trì"   ? "baotri"
-                                               : ct.TrangThaiTB == "Hỏng"      ? "hong" : "other";
-                                <tr class="row-detail @groupId">
+                                string tCls = ct.TrangThaiTB == "Hoạt động" ? "badge-green"
+                                            : ct.TrangThaiTB == "Bảo trì"   ? "badge-orange"
+                                            : ct.TrangThaiTB == "Hỏng"      ? "badge-red" : "badge-gray";
+                                <tr class="row-detail @gid">
                                     <td></td>
-                                    <td><span class="mota-id">@ct.ID_ThietBi</span></td>
-                                    <td><span class="tb-status @ttClass">@ct.TrangThaiTB</span></td>
+                                    <td><span class="id-chip">@ct.ID_ThietBi</span></td>
+                                    <td><span class="badge @tCls">@ct.TrangThaiTB</span></td>
                                     <td style="color:#555">@(ct.TinhTrangThucTe ?? "—")</td>
-                                    <td colspan="2" style="color:#666">@(ct.GhiChu ?? "")</td>
-                                    <td></td>
+                                    <td colspan="3" style="color:#777;font-size:12.5px">@(ct.GhiChu ?? "")</td>
                                 </tr>
                             }
                             nhomIdx++;
@@ -248,29 +291,24 @@ else
 }
 
 <script>
-    /* Cấp 1: xổ/đóng toàn bộ bảng của khoa */
-    function toggleKhoa(bodyId, headerRow) {
-        var body   = document.getElementById(bodyId);
-        var icon   = headerRow.querySelector('.toggle-icon');
-        var isOpen = body.style.display !== 'none';
-        body.style.display = isOpen ? 'none' : 'block';
-        icon.style.transform = isOpen ? '' : 'rotate(90deg)';
-    }
+function toggleKhoa(bodyId, headerId) {
+    var body = document.getElementById(bodyId);
+    var hdr  = document.getElementById(headerId);
+    var open = body.style.display !== 'none';
+    body.style.display = open ? 'none' : 'block';
+    hdr.classList.toggle('open', !open);
+}
 
-    /* Cấp 2: xổ/đóng các hàng mã TB của nhóm tên */
-    function toggleNhom(groupId, row) {
-        var icon   = row.querySelector('.toggle-icon');
-        var isOpen = icon.style.transform === 'rotate(90deg)';
-        document.querySelectorAll('.' + groupId).forEach(function (r) {
-            r.style.display = isOpen ? 'none' : 'table-row';
-        });
-        icon.style.transform = isOpen ? '' : 'rotate(90deg)';
-    }
+function toggleNhom(gid, row) {
+    var arr  = document.getElementById('arr-' + gid);
+    var open = arr.classList.contains('open');
+    document.querySelectorAll('.' + gid).forEach(function(r){ r.style.display = open ? 'none' : 'table-row'; });
+    arr.classList.toggle('open', !open);
+}
 
-    /* Kiểm kê định kỳ — xác nhận 2 bước trước khi reset */
-    function xacNhanDinhKy() {
-        if (!confirm('⚠️ KIỂM KÊ ĐỊNH KỲ\n\nThao tác này sẽ XÓA TOÀN BỘ kết quả kiểm kê hiện tại và đặt lại trạng thái "Chưa kiểm kê" cho tất cả thiết bị.\n\nBạn có chắc chắn muốn tiếp tục?')) return;
-        if (!confirm('Xác nhận lần 2: Dữ liệu kiểm kê cũ sẽ không thể khôi phục. Tiếp tục?')) return;
-        document.getElementById('formDinhKy').submit();
-    }
+function xacNhanDinhKy() {
+    if (!confirm('⚠️ KIỂM KÊ ĐỊNH KỲ\n\nThao tác này sẽ XÓA TOÀN BỘ kết quả kiểm kê hiện tại và đặt lại trạng thái "Chưa kiểm kê" cho tất cả thiết bị.\n\nBạn có chắc chắn muốn tiếp tục?')) return;
+    if (!confirm('Xác nhận lần 2: Dữ liệu kiểm kê cũ sẽ không thể khôi phục. Tiếp tục?')) return;
+    document.getElementById('formDinhKy').submit();
+}
 </script>
