@@ -4,25 +4,21 @@
     ViewBag.Title = "Kiểm Kê Tài Sản";
     int phanTram = Model.TongThietBi > 0 ? (int)((double)Model.DaKiemKe / Model.TongThietBi * 100) : 0;
     int khoaIdx  = 0;
-    int nhomIdx  = 0;
 }
 
 <style>
-/* ── Reset & base ── */
 *, *::before, *::after { box-sizing: border-box; }
 body { font-family: 'Segoe UI', sans-serif; background: #f4f6fb; color: #222; }
 
-/* ── Page header ── */
 .pg-hdr { margin-bottom: 20px; }
 .pg-hdr h2 { font-size: 22px; font-weight: 700; color: #1a237e; margin: 0 0 3px; }
 .pg-hdr p  { font-size: 13px; color: #777; margin: 0; }
 
-/* ── Alerts ── */
 .alert { border-radius: 8px; padding: 12px 16px; font-size: 13.5px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
 .alert-success { background: #e8f5e9; border-left: 4px solid #43a047; color: #2e7d32; }
 .alert-error   { background: #fce4ec; border-left: 4px solid #e53935; color: #b71c1c; }
 
-/* ── Stat cards ── */
+/* Stat cards */
 .stat-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 16px; }
 .stat-card { background: #fff; border-radius: 10px; padding: 16px 20px; text-align: center; box-shadow: 0 1px 6px rgba(0,0,0,.07); }
 .stat-card .s-num { font-size: 30px; font-weight: 800; line-height: 1; }
@@ -31,18 +27,18 @@ body { font-family: 'Segoe UI', sans-serif; background: #f4f6fb; color: #222; }
 .stat-card.done  .s-num { color: #2e7d32; }
 .stat-card.left  .s-num { color: #e65100; }
 
-/* ── Progress bar ── */
+/* Progress */
 .prog-card { background: #fff; border-radius: 10px; padding: 14px 20px; margin-bottom: 16px; box-shadow: 0 1px 6px rgba(0,0,0,.07); }
 .prog-track { background: #e8eaf6; border-radius: 99px; height: 10px; overflow: hidden; }
-.prog-fill  { height: 100%; background: linear-gradient(90deg, #1a237e, #42a5f5); border-radius: 99px; transition: width .6s; }
+.prog-fill  { height: 100%; background: linear-gradient(90deg,#1a237e,#42a5f5); border-radius: 99px; transition: width .6s; }
 .prog-label { display: flex; justify-content: space-between; font-size: 12.5px; color: #777; margin-top: 7px; }
 
-/* ── Toolbar ── */
+/* Toolbar */
 .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
 .toolbar-left { font-size: 13.5px; color: #555; }
 .toolbar-right { display: flex; gap: 8px; align-items: center; }
 
-/* ── Buttons ── */
+/* Buttons */
 .btn { display: inline-flex; align-items: center; gap: 6px; border: none; border-radius: 7px; padding: 8px 16px; font-size: 13.5px; font-weight: 600; cursor: pointer; text-decoration: none; transition: opacity .15s; }
 .btn:hover { opacity: .88; text-decoration: none; }
 .btn-blue   { background: #1a237e; color: #fff; }
@@ -50,73 +46,7 @@ body { font-family: 'Segoe UI', sans-serif; background: #f4f6fb; color: #222; }
 .btn-orange { background: #fff3e0; color: #bf360c; border: 1px solid #ffcc80; }
 .btn[disabled] { opacity: .5; cursor: not-allowed; }
 
-/* ── Cấp 1: Khoa block ── */
-.khoa-block { background: #fff; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.07); margin-bottom: 12px; overflow: hidden; border: 1px solid #e8eaf6; }
-
-.khoa-row {
-    display: flex; align-items: center; gap: 10px;
-    background: linear-gradient(90deg, #1a237e 0%, #283593 100%);
-    padding: 11px 16px; cursor: pointer; user-select: none;
-}
-.khoa-row:hover { filter: brightness(1.08); }
-.khoa-icon { font-size: 15px; }
-.khoa-name { font-size: 14px; font-weight: 700; color: #fff; flex: 1; }
-.khoa-meta { font-size: 12px; color: #c5cae9; white-space: nowrap; }
-.khoa-arrow { color: #c5cae9; font-size: 12px; transition: transform .2s; }
-.khoa-row.open .khoa-arrow { transform: rotate(90deg); }
-
-/* ── Cấp 2: Bảng tên thiết bị ── */
-.tb-table { width: 100%; border-collapse: collapse; }
-.tb-table thead th {
-    background: #e8eaf6; color: #3949ab;
-    font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
-    padding: 9px 14px; border-bottom: 2px solid #c5cae9; white-space: nowrap;
-}
-.tb-table thead th.center { text-align: center; }
-.tb-table tbody td { padding: 9px 14px; font-size: 13.5px; color: #333; border-bottom: 1px solid #f0f2f8; vertical-align: middle; }
-.tb-table tbody tr:last-child td { border-bottom: none; }
-
-/* Hàng tên thiết bị (cấp 2) */
-.row-ten { cursor: pointer; background: #fff; }
-.row-ten:hover td { background: #f5f6ff; }
-.row-ten td { font-weight: 600; color: #1a237e; }
-.row-ten .sub-text { font-size: 12px; color: #999; font-weight: 400; margin-left: 5px; }
-
-/* ── Cấp 3: Chi tiết mã TB ── */
-.row-detail { display: none; }
-.row-detail td { padding: 7px 14px 7px 46px; font-size: 13px; color: #444; background: #fafbff; border-bottom: 1px solid #f0f2f8; }
-.detail-head td {
-    background: #ede7f6; color: #512da8;
-    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
-    padding: 6px 14px 6px 46px; border-bottom: 1px solid #d1c4e9;
-}
-
-/* ── Toggle arrow ── */
-.arr { display: inline-block; font-size: 11px; color: #9e9e9e; transition: transform .2s; margin-right: 4px; }
-.arr.open { transform: rotate(90deg); }
-
-/* ── Badges ── */
-.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 99px; font-size: 12px; font-weight: 700; white-space: nowrap; }
-.badge-green  { background: #e8f5e9; color: #2e7d32; }
-.badge-red    { background: #fce4ec; color: #c62828; }
-.badge-orange { background: #fff3e0; color: #e65100; }
-.badge-gray   { background: #f5f5f5; color: #555; }
-.badge-blue   { background: #e3f2fd; color: #1565c0; }
-
-/* ── SL cells ── */
-.sl-wrap { display: flex; flex-direction: column; align-items: center; gap: 1px; }
-.sl-num  { font-size: 16px; font-weight: 800; line-height: 1; }
-.sl-lbl  { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: .3px; }
-.sl-blue  .sl-num { color: #1a237e; }
-.sl-green .sl-num { color: #2e7d32; }
-
-/* ── Mã TB chip ── */
-.id-chip { font-family: 'Consolas', monospace; font-size: 12px; background: #e8eaf6; color: #283593; padding: 2px 8px; border-radius: 5px; font-weight: 600; }
-
-/* ── Empty state ── */
-.empty-box { background: #fff; border-radius: 10px; padding: 40px; text-align: center; color: #bbb; font-size: 14px; box-shadow: 0 1px 6px rgba(0,0,0,.07); }
-
-/* ── Search bar ── */
+/* Search bar */
 .search-bar {
     background: #fff; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.07);
     padding: 10px 16px; margin-bottom: 14px;
@@ -124,10 +54,7 @@ body { font-family: 'Segoe UI', sans-serif; background: #f4f6fb; color: #222; }
     border: 1.5px solid #e8eaf6; transition: border-color .2s, box-shadow .2s;
 }
 .search-bar:focus-within { border-color: #3949ab; box-shadow: 0 0 0 3px rgba(57,73,171,.15); }
-.search-inp {
-    flex: 1; border: none; outline: none;
-    font-size: 14px; color: #333; background: transparent;
-}
+.search-inp { flex: 1; border: none; outline: none; font-size: 14px; color: #333; background: transparent; }
 .search-inp::placeholder { color: #bbb; }
 .search-clear {
     background: #e8eaf6; border: none; border-radius: 99px;
@@ -137,14 +64,50 @@ body { font-family: 'Segoe UI', sans-serif; background: #f4f6fb; color: #222; }
 }
 .search-clear.vis { display: flex; }
 .search-info { font-size: 12.5px; color: #7986cb; white-space: nowrap; flex-shrink: 0; min-width: 80px; text-align: right; }
-
-/* Highlight từ khóa */
 mark.hl { background: #fff59d; border-radius: 3px; padding: 0 2px; font-style: normal; }
 
-/* Ẩn khi không khớp */
+/* Khoa block */
+.khoa-block { background: #fff; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.07); margin-bottom: 12px; overflow: hidden; border: 1px solid #e8eaf6; }
 .khoa-block.s-hide { display: none; }
-.row-ten.s-hide    { display: none; }
-.row-detail.s-hide { display: none; }
+
+.khoa-row {
+    display: flex; align-items: center; gap: 10px;
+    background: linear-gradient(90deg,#1a237e,#283593);
+    padding: 11px 16px; cursor: pointer; user-select: none;
+}
+.khoa-row:hover { filter: brightness(1.08); }
+.khoa-arrow { color: #c5cae9; font-size: 12px; transition: transform .2s; }
+.khoa-row.open .khoa-arrow { transform: rotate(90deg); }
+.khoa-name { font-size: 14px; font-weight: 700; color: #fff; flex: 1; }
+.khoa-meta { font-size: 12px; color: #c5cae9; white-space: nowrap; }
+
+/* Bảng thiết bị */
+.tb-table { width: 100%; border-collapse: collapse; }
+.tb-table thead th {
+    background: #e8eaf6; color: #3949ab;
+    font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+    padding: 9px 14px; border-bottom: 2px solid #c5cae9; white-space: nowrap;
+}
+.tb-table tbody td { padding: 9px 14px; font-size: 13.5px; color: #333; border-bottom: 1px solid #f0f2f8; vertical-align: middle; }
+.tb-table tbody tr:last-child td { border-bottom: none; }
+.tb-table tbody tr:hover td { background: #f5f6ff; }
+.tb-table tbody tr.s-hide { display: none; }
+
+/* Badges */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 99px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.badge-green  { background: #e8f5e9; color: #2e7d32; }
+.badge-red    { background: #fce4ec; color: #c62828; }
+.badge-orange { background: #fff3e0; color: #e65100; }
+.badge-gray   { background: #f5f5f5; color: #555; }
+
+/* ID chip */
+.id-chip { font-family: 'Consolas', monospace; font-size: 12px; background: #e8eaf6; color: #283593; padding: 2px 8px; border-radius: 5px; font-weight: 600; }
+
+/* Tên TB trong ô */
+.ten-tb { font-weight: 600; color: #1a237e; font-size: 13.5px; }
+.danh-muc { font-size: 12px; color: #999; margin-top: 2px; }
+
+.empty-box { background: #fff; border-radius: 10px; padding: 40px; text-align: center; color: #bbb; font-size: 14px; box-shadow: 0 1px 6px rgba(0,0,0,.07); }
 </style>
 
 <div class="pg-hdr">
@@ -152,36 +115,16 @@ mark.hl { background: #fff59d; border-radius: 3px; padding: 0 2px; font-style: n
     <p>Tổng hợp tình trạng kiểm kê toàn bộ thiết bị theo đơn vị quản lý</p>
 </div>
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">✅ @TempData["Success"]</div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-error">⚠️ @TempData["Error"]</div>
-}
-@if (ViewBag.Error != null)
-{
-    <div class="alert alert-error">⚠️ @ViewBag.Error</div>
-}
+@if (TempData["Success"] != null) { <div class="alert alert-success">✅ @TempData["Success"]</div> }
+@if (TempData["Error"]   != null) { <div class="alert alert-error">⚠️ @TempData["Error"]</div> }
+@if (ViewBag.Error       != null) { <div class="alert alert-error">⚠️ @ViewBag.Error</div> }
 
-<!-- Stat cards -->
 <div class="stat-row">
-    <div class="stat-card total">
-        <div class="s-num">@Model.TongThietBi</div>
-        <div class="s-lbl">Tổng thiết bị</div>
-    </div>
-    <div class="stat-card done">
-        <div class="s-num">@Model.DaKiemKe</div>
-        <div class="s-lbl">Đã kiểm kê</div>
-    </div>
-    <div class="stat-card left">
-        <div class="s-num">@Model.ChuaKiemKe</div>
-        <div class="s-lbl">Chưa kiểm kê</div>
-    </div>
+    <div class="stat-card total"><div class="s-num">@Model.TongThietBi</div><div class="s-lbl">Tổng thiết bị</div></div>
+    <div class="stat-card done"><div class="s-num">@Model.DaKiemKe</div><div class="s-lbl">Đã kiểm kê</div></div>
+    <div class="stat-card left"><div class="s-num">@Model.ChuaKiemKe</div><div class="s-lbl">Chưa kiểm kê</div></div>
 </div>
 
-<!-- Progress -->
 <div class="prog-card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <span style="font-size:13px;font-weight:600;color:#1a237e">Tiến độ kiểm kê</span>
@@ -194,7 +137,6 @@ mark.hl { background: #fff59d; border-radius: 3px; padding: 0 2px; font-style: n
     </div>
 </div>
 
-<!-- Toolbar -->
 <div class="toolbar">
     <div class="toolbar-left">
         Hiển thị <strong>@Model.NhomTheoKhoa.Count</strong> đơn vị &nbsp;·&nbsp; <strong>@Model.TongThietBi</strong> thiết bị
@@ -202,26 +144,23 @@ mark.hl { background: #fff59d; border-radius: 3px; padding: 0 2px; font-style: n
     <div class="toolbar-right">
         @if (Model.ChuaKiemKe > 0)
         {
-            <a href="@Url.Action("TaoPhieu","KiemKe")" class="btn btn-blue">📝 Tạo phiếu kiểm kê <span style="background:rgba(255,255,255,.25);border-radius:99px;padding:1px 8px;font-size:12px">@Model.ChuaKiemKe</span></a>
+            <a href="@Url.Action("TaoPhieu","KiemKe")" class="btn btn-blue">
+                📝 Tạo phiếu kiểm kê
+                <span style="background:rgba(255,255,255,.25);border-radius:99px;padding:1px 8px;font-size:12px">@Model.ChuaKiemKe</span>
+            </a>
         }
-        else
-        {
-            <button class="btn btn-gray" disabled>✅ Tất cả đã kiểm kê</button>
-        }
+        else { <button class="btn btn-gray" disabled>✅ Tất cả đã kiểm kê</button> }
         <button type="button" class="btn btn-orange" onclick="xacNhanDinhKy()">🔄 Kiểm kê định kỳ</button>
     </div>
 </div>
 
 @using (Html.BeginForm("KiemKeDinhKy","KiemKe",FormMethod.Post,new{id="formDinhKy"}))
-{
-    @Html.AntiForgeryToken()
-}
+{ @Html.AntiForgeryToken() }
 
-<!-- Search bar -->
 <div class="search-bar">
     <span style="color:#9e9e9e;font-size:16px">🔍</span>
     <input type="text" id="searchInp" class="search-inp"
-           placeholder="Tìm theo tên thiết bị, mã TB, đơn vị quản lý, kết quả kiểm kê..."
+           placeholder="Tìm theo tên thiết bị, mã TB, đơn vị quản lý, tình trạng..."
            oninput="doSearch(this.value)" autocomplete="off" />
     <button type="button" class="search-clear" id="searchClear" onclick="clearSearch()" title="Xóa">✕</button>
     <span class="search-info" id="searchInfo"></span>
@@ -242,85 +181,46 @@ else
         <div class="khoa-block">
             <div class="khoa-row" id="khr-@khoaIdx" onclick="toggleKhoa('@bodyId','khr-@khoaIdx')">
                 <span class="khoa-arrow">▶</span>
-                <span class="khoa-icon">🏢</span>
+                <span style="font-size:15px">🏢</span>
                 <span class="khoa-name">@khoa.TenKhoa</span>
                 <span class="khoa-meta">@tongTB thiết bị &nbsp;·&nbsp; đã kiểm @daKK / @tongTB</span>
             </div>
-
             <div id="@bodyId" style="display:none">
                 <table class="tb-table">
                     <thead>
                         <tr>
-                            <th style="width:30px"></th>
+                            <th>Mã thiết bị</th>
                             <th>Tên thiết bị</th>
-                            <th>Danh mục</th>
-                            <th class="center" style="width:90px">SL Sổ sách</th>
-                            <th class="center" style="width:90px">SL Thực tế</th>
-                            <th style="width:120px">Kết quả KK</th>
+                            <th>Trạng thái</th>
+                            <th>Tình trạng KK</th>
+                            <th>Kết quả KK</th>
                             <th>Ghi chú</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var nhom in khoa.NhomThietBi)
                         {
-                            string gid    = "g-" + nhomIdx;
                             string kkCls  = nhom.KetQuaKiemKe == "Đủ"    ? "badge-green"
                                           : nhom.KetQuaKiemKe == "Thiếu" ? "badge-red" : "badge-orange";
                             string kkIcon = nhom.KetQuaKiemKe == "Đủ"    ? "✅"
                                           : nhom.KetQuaKiemKe == "Thiếu" ? "⚠️" : "⏳";
-
-                            <tr class="row-ten" onclick="toggleNhom('@gid',this)">
-                                <td style="text-align:center"><span class="arr" id="arr-@gid">▶</span></td>
-                                <td>
-                                    @nhom.TenTB
-                                    <span class="sub-text">(@nhom.ChiTiet.Count)</span>
-                                </td>
-                                <td style="color:#666;font-weight:400">@nhom.TenDanhMuc</td>
-                                <td style="text-align:center">
-                                    <div class="sl-wrap sl-blue">
-                                        <span class="sl-num">@nhom.SoLuongSoSach</span>
-                                        <span class="sl-lbl">sổ sách</span>
-                                    </div>
-                                </td>
-                                <td style="text-align:center">
-                                    @if (nhom.SoLuongThucTe.HasValue)
-                                    {
-                                        <div class="sl-wrap sl-green">
-                                            <span class="sl-num">@nhom.SoLuongThucTe</span>
-                                            <span class="sl-lbl">thực tế</span>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <span style="color:#ccc;font-size:18px">—</span>
-                                    }
-                                </td>
-                                <td><span class="badge @kkCls">@kkIcon @nhom.KetQuaKiemKe</span></td>
-                                <td style="font-size:12.5px;color:#777;font-weight:400;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">@nhom.GhiChu</td>
-                            </tr>
-
-                            <tr class="row-detail detail-head @gid">
-                                <td></td>
-                                <td>Mã thiết bị</td>
-                                <td>Trạng thái TB</td>
-                                <td>Tình trạng KK</td>
-                                <td colspan="3">Ghi chú</td>
-                            </tr>
-
                             foreach (var ct in nhom.ChiTiet)
                             {
                                 string tCls = ct.TrangThaiTB == "Hoạt động" ? "badge-green"
                                             : ct.TrangThaiTB == "Bảo trì"   ? "badge-orange"
                                             : ct.TrangThaiTB == "Hỏng"      ? "badge-red" : "badge-gray";
-                                <tr class="row-detail @gid">
-                                    <td></td>
+                                <tr data-ten="@nhom.TenTB.ToLower()" data-ma="@ct.ID_ThietBi.ToLower()" data-tt="@(ct.TinhTrangThucTe ?? "")">
                                     <td><span class="id-chip">@ct.ID_ThietBi</span></td>
+                                    <td>
+                                        <div class="ten-tb">@nhom.TenTB</div>
+                                        <div class="danh-muc">@nhom.TenDanhMuc</div>
+                                    </td>
                                     <td><span class="badge @tCls">@ct.TrangThaiTB</span></td>
-                                    <td style="color:#555">@(ct.TinhTrangThucTe ?? "—")</td>
-                                    <td colspan="3" style="color:#777;font-size:12.5px">@(ct.GhiChu ?? "")</td>
+                                    <td style="color:#555;font-size:13px">@(ct.TinhTrangThucTe ?? "—")</td>
+                                    <td><span class="badge @kkCls">@kkIcon @nhom.KetQuaKiemKe</span></td>
+                                    <td style="color:#777;font-size:12.5px;max-width:180px">@(ct.GhiChu ?? "")</td>
                                 </tr>
                             }
-                            nhomIdx++;
                         }
                     </tbody>
                 </table>
@@ -339,22 +239,13 @@ function toggleKhoa(bodyId, headerId) {
     hdr.classList.toggle('open', !open);
 }
 
-function toggleNhom(gid, row) {
-    var arr  = document.getElementById('arr-' + gid);
-    var open = arr.classList.contains('open');
-    document.querySelectorAll('.' + gid).forEach(function(r){ r.style.display = open ? 'none' : 'table-row'; });
-    arr.classList.toggle('open', !open);
-}
-
 function xacNhanDinhKy() {
     if (!confirm('⚠️ KIỂM KÊ ĐỊNH KỲ\n\nThao tác này sẽ XÓA TOÀN BỘ kết quả kiểm kê hiện tại và đặt lại trạng thái "Chưa kiểm kê" cho tất cả thiết bị.\n\nBạn có chắc chắn muốn tiếp tục?')) return;
     if (!confirm('Xác nhận lần 2: Dữ liệu kiểm kê cũ sẽ không thể khôi phục. Tiếp tục?')) return;
     document.getElementById('formDinhKy').submit();
 }
 
-/* ════════════════════════════════════════
-   TÌM KIẾM
-════════════════════════════════════════ */
+/* ── Tìm kiếm ── */
 function doSearch(q) {
     q = q.trim().toLowerCase();
     var clearBtn = document.getElementById('searchClear');
@@ -363,103 +254,55 @@ function doSearch(q) {
 
     if (!q) {
         document.querySelectorAll('.khoa-block').forEach(function(b) { b.classList.remove('s-hide'); });
-        document.querySelectorAll('.row-ten').forEach(function(r) { r.classList.remove('s-hide'); });
-        document.querySelectorAll('.row-detail').forEach(function(r) { r.classList.remove('s-hide'); });
+        document.querySelectorAll('.tb-table tbody tr').forEach(function(r) { r.classList.remove('s-hide'); });
         removeHighlights();
         infoEl.textContent = '';
         return;
     }
 
     removeHighlights();
-    var totalMatch = 0;
+    var total = 0;
 
-    document.querySelectorAll('.khoa-block').forEach(function(khoaBlock) {
-        // Lấy text tên khoa
-        var khoaNameEl = khoaBlock.querySelector('.khoa-name');
+    document.querySelectorAll('.khoa-block').forEach(function(block) {
+        var khoaNameEl = block.querySelector('.khoa-name');
         var khoaText   = khoaNameEl ? khoaNameEl.textContent.toLowerCase() : '';
         var khoaMatch  = khoaText.includes(q);
-        var khoaHasAny = false;
+        var hasAny     = false;
 
-        // Duyệt từng hàng tên thiết bị (cấp 2)
-        var tbody = khoaBlock.querySelector('tbody');
-        if (!tbody) { khoaBlock.classList.add('s-hide'); return; }
+        block.querySelectorAll('tbody tr').forEach(function(row) {
+            var ten = row.getAttribute('data-ten') || '';
+            var ma  = row.getAttribute('data-ma')  || '';
+            var tt  = row.getAttribute('data-tt')  || '';
+            var match = khoaMatch || ten.includes(q) || ma.includes(q) || tt.includes(q);
 
-        // Nhóm các hàng theo gid
-        var allRows = Array.from(tbody.querySelectorAll('tr'));
-        // Tìm các hàng row-ten
-        allRows.filter(function(r) { return r.classList.contains('row-ten'); }).forEach(function(rowTen) {
-            var tenEl   = rowTen.querySelector('td:nth-child(2)');
-            var tenText = tenEl ? tenEl.textContent.toLowerCase() : '';
-            var nhomMatch = khoaMatch || tenText.includes(q);
-
-            // Tìm gid của nhóm này
-            var arrEl = rowTen.querySelector('.arr');
-            var gid   = arrEl ? arrEl.id.replace('arr-', '') : null;
-
-            // Kiểm tra các hàng chi tiết (cấp 3) của nhóm này
-            var detailRows = gid ? tbody.querySelectorAll('tr.' + gid) : [];
-            var nhomHasDetail = false;
-
-            detailRows.forEach(function(dr) {
-                if (dr.classList.contains('detail-head')) return; // bỏ qua header
-                var idChipEl = dr.querySelector('.id-chip');
-                var idText   = idChipEl ? idChipEl.textContent.toLowerCase() : '';
-                var ttEl     = dr.querySelector('td:nth-child(4)');
-                var ttText   = ttEl ? ttEl.textContent.toLowerCase() : '';
-
-                if (nhomMatch || idText.includes(q) || ttText.includes(q)) {
-                    dr.classList.remove('s-hide');
-                    nhomHasDetail = true;
-                    if (idChipEl && idText.includes(q)) highlightEl(idChipEl, q);
-                } else {
-                    dr.classList.add('s-hide');
-                }
-            });
-
-            if (nhomMatch || nhomHasDetail) {
-                rowTen.classList.remove('s-hide');
-                khoaHasAny = true;
-                totalMatch++;
-
-                // Mở accordion khoa + nhóm
-                var kBody = khoaBlock.querySelector('[id^="kb-"]');
-                var kHdr  = khoaBlock.querySelector('.khoa-row');
-                if (kBody && kBody.style.display === 'none') {
-                    kBody.style.display = 'block';
-                    if (kHdr) kHdr.classList.add('open');
-                }
-                if (gid) {
-                    var arr = document.getElementById('arr-' + gid);
-                    if (arr && !arr.classList.contains('open')) {
-                        detailRows.forEach(function(dr) {
-                            if (!dr.classList.contains('s-hide')) dr.style.display = 'table-row';
-                        });
-                        arr.classList.add('open');
-                    }
-                }
-
-                // Highlight tên thiết bị
-                if (tenEl && tenText.includes(q)) highlightEl(tenEl, q);
+            if (match) {
+                row.classList.remove('s-hide');
+                hasAny = true;
+                total++;
+                // Highlight
+                var idChip = row.querySelector('.id-chip');
+                var tenEl  = row.querySelector('.ten-tb');
+                if (idChip && ma.includes(q))  highlightEl(idChip, q);
+                if (tenEl  && ten.includes(q)) highlightEl(tenEl,  q);
             } else {
-                rowTen.classList.add('s-hide');
-                // Ẩn detail-head của nhóm này
-                if (gid) {
-                    var dh = tbody.querySelector('tr.detail-head.' + gid);
-                    if (dh) dh.classList.add('s-hide');
-                }
+                row.classList.add('s-hide');
             }
         });
 
-        if (khoaMatch || khoaHasAny) {
-            khoaBlock.classList.remove('s-hide');
+        if (khoaMatch || hasAny) {
+            block.classList.remove('s-hide');
+            // Mở accordion
+            var body = block.querySelector('[id^="kb-"]');
+            var hdr  = block.querySelector('.khoa-row');
+            if (body && body.style.display === 'none') { body.style.display = 'block'; if (hdr) hdr.classList.add('open'); }
             if (khoaNameEl && khoaText.includes(q)) highlightEl(khoaNameEl, q);
         } else {
-            khoaBlock.classList.add('s-hide');
+            block.classList.add('s-hide');
         }
     });
 
-    infoEl.textContent = totalMatch > 0 ? totalMatch + ' kết quả' : 'Không tìm thấy';
-    infoEl.style.color = totalMatch > 0 ? '#7986cb' : '#e53935';
+    infoEl.textContent = total > 0 ? total + ' kết quả' : 'Không tìm thấy';
+    infoEl.style.color = total > 0 ? '#7986cb' : '#e53935';
 }
 
 function clearSearch() {

@@ -2,25 +2,23 @@
 @using System.Linq
 @{
     ViewBag.Title = "Tạo Phiếu Kiểm Kê";
-    int gIdx = 0;
     int kIdx = 0;
+    int tbIdx = 0; // index toàn cục cho từng TB trong DanhSachChuaKiem
 }
 
 <style>
 *, *::before, *::after { box-sizing: border-box; }
 body { font-family: 'Segoe UI', sans-serif; background: #f0f2f8; color: #222; }
 
-/* ── Page header ── */
 .pg-hdr { margin-bottom: 20px; }
 .pg-hdr h2 { font-size: 22px; font-weight: 700; color: #1a237e; margin: 0 0 3px; }
 .pg-hdr p  { font-size: 13px; color: #777; margin: 0; }
 
-/* ── Alerts ── */
 .alert { border-radius: 8px; padding: 12px 16px; font-size: 13.5px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
 .alert-error { background: #fce4ec; border-left: 4px solid #e53935; color: #b71c1c; }
 .alert-info  { background: #e3f2fd; border-left: 4px solid #1e88e5; color: #0d47a1; }
 
-/* ── Info card ── */
+/* Info card */
 .info-card {
     background: #fff; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.07);
     padding: 14px 20px; margin-bottom: 16px;
@@ -31,20 +29,37 @@ body { font-family: 'Segoe UI', sans-serif; background: #f0f2f8; color: #222; }
 .info-item strong { color: #1a237e; }
 .val-warn { color: #e65100; font-weight: 700; }
 
-/* ════════════════════════════════════════
-   CẤP 1 — KHOA BLOCK
-════════════════════════════════════════ */
+/* Search bar */
+.search-bar {
+    background: #fff; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.07);
+    padding: 10px 16px; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+    border: 1.5px solid #e8eaf6; transition: border-color .2s, box-shadow .2s;
+}
+.search-bar:focus-within { border-color: #3949ab; box-shadow: 0 0 0 3px rgba(57,73,171,.15); }
+.search-inp { flex: 1; border: none; outline: none; font-size: 14px; color: #333; background: transparent; }
+.search-inp::placeholder { color: #bbb; }
+.search-clear {
+    background: #e8eaf6; border: none; border-radius: 99px;
+    width: 22px; height: 22px; cursor: pointer; color: #666;
+    font-size: 13px; display: none; align-items: center; justify-content: center;
+    flex-shrink: 0; padding: 0; line-height: 1;
+}
+.search-clear.vis { display: flex; }
+.search-info { font-size: 12.5px; color: #7986cb; white-space: nowrap; flex-shrink: 0; min-width: 80px; text-align: right; }
+mark.hl { background: #fff59d; border-radius: 3px; padding: 0 2px; font-style: normal; }
+
+/* Khoa block */
 .khoa-block {
     border-radius: 10px; overflow: hidden;
     box-shadow: 0 2px 8px rgba(0,0,0,.09);
-    margin-bottom: 14px;
-    border: 1px solid #283593;
+    margin-bottom: 14px; border: 1px solid #283593;
 }
+.khoa-block.s-hide { display: none; }
 
-/* Header khoa — click để xổ/đóng */
 .khoa-hdr {
     display: flex; align-items: center; gap: 10px;
-    background: linear-gradient(90deg, #1a237e 0%, #3949ab 100%);
+    background: linear-gradient(90deg,#1a237e,#3949ab);
     padding: 12px 16px; cursor: pointer; user-select: none;
 }
 .khoa-hdr:hover { filter: brightness(1.1); }
@@ -52,92 +67,41 @@ body { font-family: 'Segoe UI', sans-serif; background: #f0f2f8; color: #222; }
 .khoa-arrow { color: #c5cae9; font-size: 12px; transition: transform .22s; flex-shrink: 0; }
 .khoa-hdr.open .khoa-arrow { transform: rotate(90deg); }
 .khoa-title { font-size: 14.5px; font-weight: 700; color: #fff; flex: 1; }
-.khoa-badge {
-    background: rgba(255,255,255,.18); color: #e8eaf6;
-    font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 99px;
+.khoa-badge { background: rgba(255,255,255,.18); color: #e8eaf6; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 99px; }
+
+/* Bảng thiết bị bên trong khoa */
+.khoa-body { display: none; background: #fff; }
+
+.tb-table { width: 100%; border-collapse: collapse; }
+.tb-table thead th {
+    background: #e8eaf6; color: #3949ab;
+    font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+    padding: 9px 14px; border-bottom: 2px solid #c5cae9; white-space: nowrap;
 }
+.tb-table tbody td { padding: 9px 14px; font-size: 13.5px; color: #333; border-bottom: 1px solid #f0f2f8; vertical-align: middle; }
+.tb-table tbody tr:last-child td { border-bottom: none; }
+.tb-table tbody tr:hover td { background: #f5f6ff; }
+.tb-table tbody tr.checked-row td { background: #f1f8e9; }
+.tb-table tbody tr.s-hide { display: none; }
 
-/* Body khoa — chứa các nhóm tên TB */
-.khoa-body { background: #eef0fb; padding: 10px 12px; display: none; }
+/* Checkbox */
+.ck { width: 16px; height: 16px; cursor: pointer; accent-color: #1a237e; }
 
-/* ════════════════════════════════════════
-   CẤP 2 — NHÓM TÊN THIẾT BỊ
-════════════════════════════════════════ */
-.nhom-card {
-    background: #fff; border-radius: 8px;
-    border: 1px solid #c5cae9;
-    margin-bottom: 8px; overflow: hidden;
-}
-.nhom-card:last-child { margin-bottom: 0; }
-
-/* Header nhóm — click để xổ/đóng chi tiết */
-.nhom-hdr {
-    display: flex; align-items: center; gap: 10px;
-    background: #e8eaf6; padding: 9px 14px;
-    cursor: pointer; user-select: none;
-    border-bottom: 1px solid transparent;
-    transition: background .15s;
-}
-.nhom-hdr:hover { background: #dde0f5; }
-.nhom-hdr.open { background: #c5cae9; border-bottom-color: #9fa8da; }
-.nhom-ck { width: 16px; height: 16px; cursor: pointer; accent-color: #1a237e; flex-shrink: 0; }
-.nhom-arrow { color: #5c6bc0; font-size: 11px; transition: transform .2s; flex-shrink: 0; }
-.nhom-hdr.open .nhom-arrow { transform: rotate(90deg); }
-.nhom-name { font-size: 14px; font-weight: 700; color: #1a237e; flex: 1; }
-.nhom-count { font-size: 12px; color: #7986cb; font-weight: 500; }
-
-/* SL pills trong header nhóm */
-.sl-pills { display: flex; gap: 6px; align-items: center; }
-.sl-pill {
-    display: flex; flex-direction: column; align-items: center;
-    background: #fff; border-radius: 7px; padding: 3px 10px;
-    border: 1px solid #c5cae9; min-width: 52px;
-}
-.sl-pill .pn { font-size: 15px; font-weight: 800; line-height: 1; }
-.sl-pill .pl { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: .3px; }
-.sl-pill.blue .pn { color: #1a237e; }
-.sl-pill.green .pn { color: #2e7d32; }
-
-/* ════════════════════════════════════════
-   CẤP 3 — DANH SÁCH MÃ THIẾT BỊ
-════════════════════════════════════════ */
-.nhom-body { display: none; background: #fafbff; }
-
-/* Sub-header cột */
-.tb-col-hdr {
-    display: grid;
-    grid-template-columns: 36px 1fr 110px 160px 1fr;
-    gap: 0; padding: 6px 14px 6px 14px;
-    background: #ede7f6; border-bottom: 1px solid #d1c4e9;
-    font-size: 11px; font-weight: 700; color: #512da8;
-    text-transform: uppercase; letter-spacing: .5px;
-}
-
-/* Mỗi hàng TB */
-.tb-row {
-    display: grid;
-    grid-template-columns: 36px 1fr 110px 160px 1fr;
-    gap: 0; padding: 8px 14px;
-    border-bottom: 1px solid #f0f2f8;
-    align-items: center; transition: background .12s;
-}
-.tb-row:last-child { border-bottom: none; }
-.tb-row:hover { background: #f5f6ff; }
-.tb-row.checked-row { background: #f1f8e9; }
-
-.tb-ck { width: 16px; height: 16px; cursor: pointer; accent-color: #1a237e; }
-
-/* ── Badges ── */
+/* Badges */
 .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 99px; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .badge-green  { background: #e8f5e9; color: #2e7d32; }
 .badge-red    { background: #fce4ec; color: #c62828; }
 .badge-orange { background: #fff3e0; color: #e65100; }
 .badge-gray   { background: #f5f5f5; color: #555; }
 
-/* ── ID chip ── */
-.id-chip { font-family: 'Consolas', monospace; font-size: 12.5px; background: #e8eaf6; color: #283593; padding: 3px 9px; border-radius: 5px; font-weight: 700; }
+/* ID chip */
+.id-chip { font-family: 'Consolas', monospace; font-size: 12px; background: #e8eaf6; color: #283593; padding: 2px 8px; border-radius: 5px; font-weight: 600; }
 
-/* ── Inputs ── */
+/* Tên TB */
+.ten-tb   { font-weight: 600; color: #1a237e; font-size: 13.5px; }
+.danh-muc { font-size: 12px; color: #999; margin-top: 2px; }
+
+/* Inputs */
 .tt-sel {
     padding: 5px 9px; border: 1.5px solid #d0d5e8; border-radius: 6px;
     font-size: 13px; background: #fff; width: 100%; color: #333;
@@ -153,7 +117,7 @@ body { font-family: 'Segoe UI', sans-serif; background: #f0f2f8; color: #222; }
 .note-inp:focus { border-color: #3949ab; outline: none; }
 .note-inp:disabled { background: #f5f5f5; color: #bbb; cursor: not-allowed; border-color: #e8e8e8; }
 
-/* ── Action bar (sticky) ── */
+/* Action bar sticky */
 .action-bar {
     position: sticky; bottom: 0; z-index: 20;
     background: #fff; border-top: 2px solid #e8eaf6;
@@ -167,52 +131,19 @@ body { font-family: 'Segoe UI', sans-serif; background: #f0f2f8; color: #222; }
 .prog-mini { background: #e8eaf6; border-radius: 99px; height: 6px; overflow: hidden; width: 180px; margin-top: 4px; }
 .prog-mini-fill { height: 100%; background: linear-gradient(90deg,#43a047,#66bb6a); border-radius: 99px; transition: width .4s; }
 
-/* ── Buttons ── */
+/* Buttons */
 .btn { display: inline-flex; align-items: center; gap: 6px; border: none; border-radius: 7px; padding: 9px 18px; font-size: 13.5px; font-weight: 600; cursor: pointer; text-decoration: none; transition: opacity .15s; }
 .btn:hover { opacity: .88; text-decoration: none; }
 .btn-blue { background: #1a237e; color: #fff; }
 .btn-gray { background: #e8eaf6; color: #1a237e; }
-
-/* ── Search bar ── */
-.search-bar {
-    background: #fff; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.07);
-    padding: 10px 16px; margin-bottom: 14px;
-    display: flex; align-items: center; gap: 10px;
-    border: 1.5px solid #e8eaf6; transition: border-color .2s, box-shadow .2s;
-}
-.search-bar:focus-within { border-color: #3949ab; box-shadow: 0 0 0 3px rgba(57,73,171,.15); }
-.search-inp {
-    flex: 1; border: none; outline: none;
-    font-size: 14px; color: #333; background: transparent;
-}
-.search-inp::placeholder { color: #bbb; }
-.search-clear {
-    background: #e8eaf6; border: none; border-radius: 99px;
-    width: 22px; height: 22px; cursor: pointer; color: #666;
-    font-size: 13px; display: none; align-items: center; justify-content: center;
-    flex-shrink: 0; padding: 0; line-height: 1;
-}
-.search-clear.vis { display: flex; }
-.search-info { font-size: 12.5px; color: #7986cb; white-space: nowrap; flex-shrink: 0; min-width: 80px; text-align: right; }
-
-/* Highlight từ khóa */
-mark.hl { background: #fff59d; border-radius: 3px; padding: 0 2px; font-style: normal; }
-
-/* Ẩn khi không khớp tìm kiếm */
-.khoa-block.s-hide { display: none; }
-.nhom-card.s-hide  { display: none; }
-.tb-row.s-hide     { display: none; }
 </style>
 
 <div class="pg-hdr">
     <h2>📝 Tạo Phiếu Kiểm Kê Tài Sản</h2>
-    <p>Tick chọn thiết bị → bấm mũi tên để mở rộng → chọn tình trạng và nhập ghi chú</p>
+    <p>Tick chọn thiết bị → chọn tình trạng và nhập ghi chú</p>
 </div>
 
-@if (ViewBag.Error != null)
-{
-    <div class="alert alert-error">⚠️ @ViewBag.Error</div>
-}
+@if (ViewBag.Error != null) { <div class="alert alert-error">⚠️ @ViewBag.Error</div> }
 
 <div class="info-card">
     <div class="info-item">📋 Mã phiếu: <strong>@Model.ID_KiemKe</strong></div>
@@ -228,7 +159,6 @@ mark.hl { background: #fff59d; border-radius: 3px; padding: 0 2px; font-style: n
 }
 else
 {
-    <!-- Search bar -->
     <div class="search-bar">
         <span style="color:#9e9e9e;font-size:16px">🔍</span>
         <input type="text" id="searchInp" class="search-inp"
@@ -237,6 +167,7 @@ else
         <button type="button" class="search-clear" id="searchClear" onclick="clearSearch()" title="Xóa">✕</button>
         <span class="search-info" id="searchInfo"></span>
     </div>
+
     using (Html.BeginForm("HoanTat","KiemKe",FormMethod.Post,new{id="formKiemKe"}))
     {
         @Html.AntiForgeryToken()
@@ -260,7 +191,6 @@ else
             string kCkId   = "ck-k-" + kIdx;
 
             <div class="khoa-block">
-                <!-- CẤP 1: Header khoa -->
                 <div class="khoa-hdr" id="@kHdrId" onclick="toggleKhoaBody('@kBodyId','@kHdrId')">
                     <input type="checkbox" class="khoa-ck ck-khoa" id="@kCkId"
                            data-khoa="@kIdx" onclick="event.stopPropagation();onKhoaCk(this)" />
@@ -268,62 +198,46 @@ else
                     <span class="khoa-title">🏢 @nhomKhoa.TenKhoa</span>
                     <span class="khoa-badge">@tongTB thiết bị chưa kiểm</span>
                 </div>
-
-                <!-- CẤP 1: Body khoa — chứa các nhóm tên TB -->
                 <div class="khoa-body" id="@kBodyId">
-                    @foreach (var nhom in nhomKhoa.NhomThietBi)
-                    {
-                        string gid    = "g-" + gIdx;
-                        string nBodyId = "nb-" + gIdx;
-                        string nHdrId  = "nh-" + gIdx;
-                        string nCkId   = "ck-n-" + gIdx;
-
-                        <div class="nhom-card">
-                            <!-- CẤP 2: Header nhóm tên TB -->
-                            <div class="nhom-hdr" id="@nHdrId" onclick="toggleNhomBody('@nBodyId','@nHdrId')">
-                                <input type="checkbox" class="nhom-ck ck-nhom" id="@nCkId"
-                                       data-group="@gid" data-khoa="@kIdx"
-                                       onclick="event.stopPropagation();onNhomCk(this)" />
-                                <span class="nhom-arrow">▶</span>
-                                <span class="nhom-name">@nhom.TenTB</span>
-                                <span class="nhom-count">@nhom.TenDanhMuc &nbsp;·&nbsp; @nhom.ChiTiet.Count thiết bị</span>
-                                <div class="sl-pills">
-                                    <div class="sl-pill blue">
-                                        <span class="pn">@nhom.SoLuongSoSach</span>
-                                        <span class="pl">Sổ sách</span>
-                                    </div>
-                                    <div class="sl-pill green">
-                                        <span class="pn">@nhom.SoLuongThucTe</span>
-                                        <span class="pl">Thực tế</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- CẤP 3: Danh sách mã TB -->
-                            <div class="nhom-body" id="@nBodyId">
-                                <div class="tb-col-hdr">
-                                    <div></div>
-                                    <div>Mã thiết bị</div>
-                                    <div>Trạng thái</div>
-                                    <div>Tình trạng <span style="color:#e53935">*</span></div>
-                                    <div>Ghi chú</div>
-                                </div>
-                                @foreach (var ct in nhom.ChiTiet)
+                    <table class="tb-table">
+                        <thead>
+                            <tr>
+                                <th style="width:36px">
+                                    <input type="checkbox" class="ck ck-khoa-all" data-khoa="@kIdx"
+                                           onclick="onKhoaCkAll(this)" title="Chọn tất cả" />
+                                </th>
+                                <th>Mã thiết bị</th>
+                                <th>Tên thiết bị</th>
+                                <th>Trạng thái</th>
+                                <th style="width:160px">Tình trạng <span style="color:#e53935">*</span></th>
+                                <th>Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var nhom in nhomKhoa.NhomThietBi)
+                            {
+                                foreach (var ct in nhom.ChiTiet)
                                 {
-                                    int idx  = Model.DanhSachChuaKiem.FindIndex(x => x.ID_ThietBi == ct.ID_ThietBi);
+                                    int idx = Model.DanhSachChuaKiem.FindIndex(x => x.ID_ThietBi == ct.ID_ThietBi);
                                     string tCls = ct.TrangThaiTB == "Hoạt động" ? "badge-green"
                                                 : ct.TrangThaiTB == "Bảo trì"   ? "badge-orange"
                                                 : ct.TrangThaiTB == "Hỏng"      ? "badge-red" : "badge-gray";
-                                    <div class="tb-row" id="rt-@idx">
-                                        <div>
-                                            <input type="checkbox" class="tb-ck ck-tb"
-                                                   id="ck-t-@idx" data-idx="@idx"
-                                                   data-group="@gid" data-khoa="@kIdx"
+                                    <tr id="rt-@idx"
+                                        data-ten="@nhom.TenTB.ToLower()"
+                                        data-ma="@ct.ID_ThietBi.ToLower()"
+                                        data-khoa="@kIdx">
+                                        <td style="text-align:center">
+                                            <input type="checkbox" class="ck ck-tb"
+                                                   id="ck-t-@idx" data-idx="@idx" data-khoa="@kIdx"
                                                    onclick="onTBCk(this)" />
-                                        </div>
-                                        <div><span class="id-chip">@ct.ID_ThietBi</span></div>
-                                        <div><span class="badge @tCls">@ct.TrangThaiTB</span></div>
-                                        <div>
+                                        </td>
+                                        <td><span class="id-chip">@ct.ID_ThietBi</span></td>
+                                        <td>
+                                            <div class="ten-tb">@nhom.TenTB</div>
+                                            <div class="danh-muc">@nhom.TenDanhMuc</div>
+                                        </td>
+                                        <td><span class="badge @tCls">@ct.TrangThaiTB</span></td>
+                                        <td>
                                             <select name="DanhSachChuaKiem[@idx].TinhTrangThucTe"
                                                     class="tt-sel" id="tt-@idx" data-idx="@idx" disabled>
                                                 <option value="">-- Chọn --</option>
@@ -332,18 +246,18 @@ else
                                                 <option value="Hỏng">Hỏng</option>
                                                 <option value="Mất">Mất</option>
                                             </select>
-                                        </div>
-                                        <div>
+                                        </td>
+                                        <td>
                                             <input type="text" name="DanhSachChuaKiem[@idx].GhiChu"
                                                    class="note-inp" id="gc-@idx"
                                                    placeholder="Ghi chú (tùy chọn)" disabled />
-                                        </div>
-                                    </div>
+                                        </td>
+                                    </tr>
+                                    tbIdx++;
                                 }
-                            </div>
-                        </div>
-                        gIdx++;
-                    }
+                            }
+                        </tbody>
+                    </table>
                 </div>
             </div>
             kIdx++;
@@ -366,7 +280,7 @@ else
 }
 
 <script>
-/* ── Toggle khoa body ── */
+/* ── Toggle khoa ── */
 function toggleKhoaBody(bodyId, hdrId) {
     var body = document.getElementById(bodyId);
     var hdr  = document.getElementById(hdrId);
@@ -375,16 +289,7 @@ function toggleKhoaBody(bodyId, hdrId) {
     hdr.classList.toggle('open', !open);
 }
 
-/* ── Toggle nhóm body ── */
-function toggleNhomBody(bodyId, hdrId) {
-    var body = document.getElementById(bodyId);
-    var hdr  = document.getElementById(hdrId);
-    var open = body.style.display === 'block';
-    body.style.display = open ? 'none' : 'block';
-    hdr.classList.toggle('open', !open);
-}
-
-/* ── Enable/disable input của 1 TB ── */
+/* ── Enable/disable input ── */
 function setTB(idx, on) {
     var sel = document.getElementById('tt-' + idx);
     var gc  = document.getElementById('gc-' + idx);
@@ -398,66 +303,53 @@ function setTB(idx, on) {
 /* ── Tick từng TB ── */
 function onTBCk(ck) {
     setTB(ck.getAttribute('data-idx'), ck.checked);
-    syncNhom(ck.getAttribute('data-group'));
     syncKhoa(ck.getAttribute('data-khoa'));
+    syncKhoaAll(ck.getAttribute('data-khoa'));
 }
 
-/* ── Tick nhóm → tick/bỏ tất cả TB, mở body ── */
-function onNhomCk(ck) {
-    var gid = ck.getAttribute('data-group');
-    document.querySelectorAll('.ck-tb[data-group="' + gid + '"]').forEach(function(tb) {
+/* ── Tick checkbox header khoa (chọn tất cả trong bảng) ── */
+function onKhoaCkAll(ck) {
+    var kid = ck.getAttribute('data-khoa');
+    document.querySelectorAll('.ck-tb[data-khoa="' + kid + '"]').forEach(function(tb) {
         tb.checked = ck.checked;
         setTB(tb.getAttribute('data-idx'), ck.checked);
     });
-    if (ck.checked) {
-        var nHdr = ck.closest('.nhom-hdr');
-        var nBody = nHdr ? document.getElementById(nHdr.id.replace('nh-','nb-')) : null;
-        if (nBody && nBody.style.display !== 'block') toggleNhomBody(nBody.id, nHdr.id);
-    }
-    syncKhoa(ck.getAttribute('data-khoa'));
+    // Sync checkbox header khoa
+    var kCk = document.querySelector('.ck-khoa[data-khoa="' + kid + '"]');
+    if (kCk) { kCk.checked = ck.checked; kCk.indeterminate = false; }
 }
 
-/* ── Tick khoa → tick/bỏ tất cả nhóm + TB, mở body ── */
+/* ── Tick checkbox khoa (header gradient) ── */
 function onKhoaCk(ck) {
     var kid = ck.getAttribute('data-khoa');
     var kHdr  = ck.closest('.khoa-hdr');
     var kBody = kHdr ? document.getElementById(kHdr.id.replace('kh-','kb-')) : null;
     if (ck.checked && kBody && kBody.style.display !== 'block') toggleKhoaBody(kBody.id, kHdr.id);
 
-    document.querySelectorAll('.ck-nhom[data-khoa="' + kid + '"]').forEach(function(n) {
-        n.checked = ck.checked;
-        var gid = n.getAttribute('data-group');
-        document.querySelectorAll('.ck-tb[data-group="' + gid + '"]').forEach(function(tb) {
-            tb.checked = ck.checked;
-            setTB(tb.getAttribute('data-idx'), ck.checked);
-        });
-        if (ck.checked) {
-            var nHdr = n.closest('.nhom-hdr');
-            var nBody = nHdr ? document.getElementById(nHdr.id.replace('nh-','nb-')) : null;
-            if (nBody && nBody.style.display !== 'block') toggleNhomBody(nBody.id, nHdr.id);
-        }
+    document.querySelectorAll('.ck-tb[data-khoa="' + kid + '"]').forEach(function(tb) {
+        tb.checked = ck.checked;
+        setTB(tb.getAttribute('data-idx'), ck.checked);
     });
+    // Sync checkbox all trong thead
+    var allCk = document.querySelector('.ck-khoa-all[data-khoa="' + kid + '"]');
+    if (allCk) { allCk.checked = ck.checked; allCk.indeterminate = false; }
 }
 
-/* ── Sync indeterminate ── */
-function syncNhom(gid) {
-    var tbs = document.querySelectorAll('.ck-tb[data-group="' + gid + '"]');
-    var n   = Array.from(tbs).filter(function(t) { return t.checked; }).length;
-    var ck  = document.querySelector('.ck-nhom[data-group="' + gid + '"]');
-    if (!ck) return;
-    ck.checked = n === tbs.length && tbs.length > 0;
-    ck.indeterminate = n > 0 && n < tbs.length;
-}
+/* ── Sync indeterminate khoa ── */
 function syncKhoa(kid) {
     var tbs = document.querySelectorAll('.ck-tb[data-khoa="' + kid + '"]');
     var n   = Array.from(tbs).filter(function(t) { return t.checked; }).length;
     var ck  = document.querySelector('.ck-khoa[data-khoa="' + kid + '"]');
-    if (!ck) return;
-    ck.checked = n === tbs.length && tbs.length > 0;
-    ck.indeterminate = n > 0 && n < tbs.length;
+    if (ck) { ck.checked = n === tbs.length && tbs.length > 0; ck.indeterminate = n > 0 && n < tbs.length; }
+}
+function syncKhoaAll(kid) {
+    var tbs = document.querySelectorAll('.ck-tb[data-khoa="' + kid + '"]');
+    var n   = Array.from(tbs).filter(function(t) { return t.checked; }).length;
+    var ck  = document.querySelector('.ck-khoa-all[data-khoa="' + kid + '"]');
+    if (ck) { ck.checked = n === tbs.length && tbs.length > 0; ck.indeterminate = n > 0 && n < tbs.length; }
 }
 
-/* ── Cập nhật đếm & progress ── */
+/* ── Cập nhật đếm ── */
 function updateCounts() {
     var ticked = document.querySelectorAll('.ck-tb:checked').length;
     var dien   = 0;
@@ -479,9 +371,7 @@ document.getElementById('btnHT').addEventListener('click', function(e) {
         var s = document.getElementById('tt-' + ck.getAttribute('data-idx'));
         return s && !s.value;
     });
-    missing.forEach(function(ck) {
-        document.getElementById('tt-' + ck.getAttribute('data-idx')).classList.add('invalid');
-    });
+    missing.forEach(function(ck) { document.getElementById('tt-' + ck.getAttribute('data-idx')).classList.add('invalid'); });
     if (missing.length) {
         e.preventDefault();
         var firstIdx = missing[0].getAttribute('data-idx');
@@ -489,16 +379,11 @@ document.getElementById('btnHT').addEventListener('click', function(e) {
         if (firstSel) {
             var row = document.getElementById('rt-' + firstIdx);
             if (row) {
-                // Mở nhóm chứa TB này
-                var nBody = row.closest('.nhom-body');
-                var nHdr  = nBody ? nBody.previousElementSibling : null;
-                if (nBody && nBody.style.display !== 'block') toggleNhomBody(nBody.id, nHdr.id);
-                // Mở khoa chứa nhóm này
                 var kBody = row.closest('.khoa-body');
                 var kHdr  = kBody ? kBody.previousElementSibling : null;
                 if (kBody && kBody.style.display !== 'block') toggleKhoaBody(kBody.id, kHdr.id);
             }
-            setTimeout(function() { firstSel.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 150);
+            setTimeout(function() { firstSel.scrollIntoView({ behavior:'smooth', block:'center' }); }, 150);
         }
         alert('Vui lòng chọn tình trạng cho ' + missing.length + ' thiết bị đã tick còn thiếu.');
     }
@@ -509,85 +394,61 @@ document.getElementById('formKiemKe').addEventListener('submit', function() {
     document.querySelectorAll('.tt-sel, .note-inp').forEach(function(el) { el.disabled = false; });
 });
 
-/* ════════════════════════════════════════
-   TÌM KIẾM
-════════════════════════════════════════ */
+/* ── Tìm kiếm ── */
 function doSearch(q) {
     q = q.trim().toLowerCase();
-    var clearBtn  = document.getElementById('searchClear');
-    var infoEl    = document.getElementById('searchInfo');
+    var clearBtn = document.getElementById('searchClear');
+    var infoEl   = document.getElementById('searchInfo');
     clearBtn.classList.toggle('vis', q.length > 0);
 
     if (!q) {
-        // Reset — hiện tất cả, xóa highlight
-        document.querySelectorAll('.khoa-block').forEach(function(kb) { kb.classList.remove('s-hide'); });
-        document.querySelectorAll('.nhom-card').forEach(function(nc) { nc.classList.remove('s-hide'); });
-        document.querySelectorAll('.tb-row').forEach(function(tr) { tr.classList.remove('s-hide'); });
+        document.querySelectorAll('.khoa-block').forEach(function(b) { b.classList.remove('s-hide'); });
+        document.querySelectorAll('.tb-table tbody tr').forEach(function(r) { r.classList.remove('s-hide'); });
         removeHighlights();
         infoEl.textContent = '';
         return;
     }
 
     removeHighlights();
-    var totalMatch = 0;
+    var total = 0;
 
-    document.querySelectorAll('.khoa-block').forEach(function(khoaBlock) {
-        var khoaTitle = khoaBlock.querySelector('.khoa-title');
-        var khoaText  = khoaTitle ? khoaTitle.textContent.toLowerCase() : '';
+    document.querySelectorAll('.khoa-block').forEach(function(block) {
+        var titleEl  = block.querySelector('.khoa-title');
+        var khoaText = titleEl ? titleEl.textContent.toLowerCase() : '';
         var khoaMatch = khoaText.includes(q);
-        var khoaHasMatch = false;
+        var hasAny = false;
 
-        khoaBlock.querySelectorAll('.nhom-card').forEach(function(nhomCard) {
-            var nhomName = nhomCard.querySelector('.nhom-name');
-            var nhomText = nhomName ? nhomName.textContent.toLowerCase() : '';
-            var nhomMatch = nhomText.includes(q);
-            var nhomHasMatch = false;
+        block.querySelectorAll('tbody tr').forEach(function(row) {
+            var ten = row.getAttribute('data-ten') || '';
+            var ma  = row.getAttribute('data-ma')  || '';
+            var match = khoaMatch || ten.includes(q) || ma.includes(q);
 
-            nhomCard.querySelectorAll('.tb-row').forEach(function(tbRow) {
-                var idChip = tbRow.querySelector('.id-chip');
-                var idText = idChip ? idChip.textContent.toLowerCase() : '';
-                var tbMatch = khoaMatch || nhomMatch || idText.includes(q);
-
-                if (tbMatch) {
-                    tbRow.classList.remove('s-hide');
-                    nhomHasMatch = true;
-                    totalMatch++;
-                    // Highlight
-                    if (idChip && idText.includes(q)) highlightEl(idChip, q);
-                } else {
-                    tbRow.classList.add('s-hide');
-                }
-            });
-
-            if (khoaMatch || nhomMatch || nhomHasMatch) {
-                nhomCard.classList.remove('s-hide');
-                khoaHasMatch = true;
-                // Mở nhóm nếu có kết quả
-                var nBody = nhomCard.querySelector('.nhom-body');
-                var nHdr  = nhomCard.querySelector('.nhom-hdr');
-                if (nBody && nHdr) { nBody.style.display = 'block'; nHdr.classList.add('open'); }
-                // Highlight tên nhóm
-                if (nhomName && nhomText.includes(q)) highlightEl(nhomName, q);
+            if (match) {
+                row.classList.remove('s-hide');
+                hasAny = true;
+                total++;
+                var idChip = row.querySelector('.id-chip');
+                var tenEl  = row.querySelector('.ten-tb');
+                if (idChip && ma.includes(q))  highlightEl(idChip, q);
+                if (tenEl  && ten.includes(q)) highlightEl(tenEl,  q);
             } else {
-                nhomCard.classList.add('s-hide');
+                row.classList.add('s-hide');
             }
         });
 
-        if (khoaMatch || khoaHasMatch) {
-            khoaBlock.classList.remove('s-hide');
-            // Mở khoa
-            var kBody = khoaBlock.querySelector('.khoa-body');
-            var kHdr  = khoaBlock.querySelector('.khoa-hdr');
-            if (kBody && kHdr) { kBody.style.display = 'block'; kHdr.classList.add('open'); }
-            // Highlight tên khoa
-            if (khoaTitle && khoaText.includes(q)) highlightEl(khoaTitle, q);
+        if (khoaMatch || hasAny) {
+            block.classList.remove('s-hide');
+            var kBody = block.querySelector('.khoa-body');
+            var kHdr  = block.querySelector('.khoa-hdr');
+            if (kBody && kBody.style.display !== 'block') { kBody.style.display = 'block'; if (kHdr) kHdr.classList.add('open'); }
+            if (titleEl && khoaText.includes(q)) highlightEl(titleEl, q);
         } else {
-            khoaBlock.classList.add('s-hide');
+            block.classList.add('s-hide');
         }
     });
 
-    infoEl.textContent = totalMatch > 0 ? totalMatch + ' kết quả' : 'Không tìm thấy';
-    infoEl.style.color = totalMatch > 0 ? '#7986cb' : '#e53935';
+    infoEl.textContent = total > 0 ? total + ' kết quả' : 'Không tìm thấy';
+    infoEl.style.color = total > 0 ? '#7986cb' : '#e53935';
 }
 
 function clearSearch() {
@@ -596,15 +457,13 @@ function clearSearch() {
     document.getElementById('searchInp').focus();
 }
 
-/* Highlight text trong element */
 function highlightEl(el, q) {
     var orig = el.getAttribute('data-orig') || el.textContent;
     el.setAttribute('data-orig', orig);
-    var re  = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    var re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
     el.innerHTML = orig.replace(re, '<mark class="hl">$1</mark>');
 }
 
-/* Xóa tất cả highlight */
 function removeHighlights() {
     document.querySelectorAll('[data-orig]').forEach(function(el) {
         el.textContent = el.getAttribute('data-orig');
