@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using QLTB.Models.Repositories;
 
 namespace QLTB.Models.Services
@@ -8,6 +9,7 @@ namespace QLTB.Models.Services
 
         public KiemKeTaiSanViewModel GetKiemKeTaiSan() => _repo.GetKiemKeTaiSan();
         public TaoPhieuKiemKeViewModel GetTaoPhieuData(string nguoiTao) => _repo.GetTaoPhieuData(nguoiTao);
-        public (bool ok, string msg) HoanTatKiemKe(TaoPhieuKiemKeViewModel model) => _repo.HoanTatKiemKe(model);
+        public (bool ok, string msg) HoanTatKiemKe(string idKiemKe, string nguoiTao, List<ItemTaoKiemKe> chiTiet) => _repo.HoanTatKiemKe(idKiemKe, nguoiTao, chiTiet);
+        public (bool ok, string msg) KiemKeDinhKy() => _repo.KiemKeDinhKy();
     }
 }
