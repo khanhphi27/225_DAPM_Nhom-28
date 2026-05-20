@@ -172,6 +172,36 @@ body { font-family: 'Segoe UI', sans-serif; background: #f0f2f8; color: #222; }
 .btn:hover { opacity: .88; text-decoration: none; }
 .btn-blue { background: #1a237e; color: #fff; }
 .btn-gray { background: #e8eaf6; color: #1a237e; }
+
+/* ── Search bar ── */
+.search-bar {
+    background: #fff; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.07);
+    padding: 10px 16px; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+    border: 1.5px solid #e8eaf6; transition: border-color .2s, box-shadow .2s;
+}
+.search-bar:focus-within { border-color: #3949ab; box-shadow: 0 0 0 3px rgba(57,73,171,.15); }
+.search-inp {
+    flex: 1; border: none; outline: none;
+    font-size: 14px; color: #333; background: transparent;
+}
+.search-inp::placeholder { color: #bbb; }
+.search-clear {
+    background: #e8eaf6; border: none; border-radius: 99px;
+    width: 22px; height: 22px; cursor: pointer; color: #666;
+    font-size: 13px; display: none; align-items: center; justify-content: center;
+    flex-shrink: 0; padding: 0; line-height: 1;
+}
+.search-clear.vis { display: flex; }
+.search-info { font-size: 12.5px; color: #7986cb; white-space: nowrap; flex-shrink: 0; min-width: 80px; text-align: right; }
+
+/* Highlight từ khóa */
+mark.hl { background: #fff59d; border-radius: 3px; padding: 0 2px; font-style: normal; }
+
+/* Ẩn khi không khớp tìm kiếm */
+.khoa-block.s-hide { display: none; }
+.nhom-card.s-hide  { display: none; }
+.tb-row.s-hide     { display: none; }
 </style>
 
 <div class="pg-hdr">
@@ -198,6 +228,15 @@ body { font-family: 'Segoe UI', sans-serif; background: #f0f2f8; color: #222; }
 }
 else
 {
+    <!-- Search bar -->
+    <div class="search-bar">
+        <span style="color:#9e9e9e;font-size:16px">🔍</span>
+        <input type="text" id="searchInp" class="search-inp"
+               placeholder="Tìm theo tên thiết bị, mã TB, đơn vị quản lý..."
+               oninput="doSearch(this.value)" autocomplete="off" />
+        <button type="button" class="search-clear" id="searchClear" onclick="clearSearch()" title="Xóa">✕</button>
+        <span class="search-info" id="searchInfo"></span>
+    </div>
     using (Html.BeginForm("HoanTat","KiemKe",FormMethod.Post,new{id="formKiemKe"}))
     {
         @Html.AntiForgeryToken()
@@ -469,4 +508,107 @@ document.getElementById('btnHT').addEventListener('click', function(e) {
 document.getElementById('formKiemKe').addEventListener('submit', function() {
     document.querySelectorAll('.tt-sel, .note-inp').forEach(function(el) { el.disabled = false; });
 });
+
+/* ════════════════════════════════════════
+   TÌM KIẾM
+════════════════════════════════════════ */
+function doSearch(q) {
+    q = q.trim().toLowerCase();
+    var clearBtn  = document.getElementById('searchClear');
+    var infoEl    = document.getElementById('searchInfo');
+    clearBtn.classList.toggle('vis', q.length > 0);
+
+    if (!q) {
+        // Reset — hiện tất cả, xóa highlight
+        document.querySelectorAll('.khoa-block').forEach(function(kb) { kb.classList.remove('s-hide'); });
+        document.querySelectorAll('.nhom-card').forEach(function(nc) { nc.classList.remove('s-hide'); });
+        document.querySelectorAll('.tb-row').forEach(function(tr) { tr.classList.remove('s-hide'); });
+        removeHighlights();
+        infoEl.textContent = '';
+        return;
+    }
+
+    removeHighlights();
+    var totalMatch = 0;
+
+    document.querySelectorAll('.khoa-block').forEach(function(khoaBlock) {
+        var khoaTitle = khoaBlock.querySelector('.khoa-title');
+        var khoaText  = khoaTitle ? khoaTitle.textContent.toLowerCase() : '';
+        var khoaMatch = khoaText.includes(q);
+        var khoaHasMatch = false;
+
+        khoaBlock.querySelectorAll('.nhom-card').forEach(function(nhomCard) {
+            var nhomName = nhomCard.querySelector('.nhom-name');
+            var nhomText = nhomName ? nhomName.textContent.toLowerCase() : '';
+            var nhomMatch = nhomText.includes(q);
+            var nhomHasMatch = false;
+
+            nhomCard.querySelectorAll('.tb-row').forEach(function(tbRow) {
+                var idChip = tbRow.querySelector('.id-chip');
+                var idText = idChip ? idChip.textContent.toLowerCase() : '';
+                var tbMatch = khoaMatch || nhomMatch || idText.includes(q);
+
+                if (tbMatch) {
+                    tbRow.classList.remove('s-hide');
+                    nhomHasMatch = true;
+                    totalMatch++;
+                    // Highlight
+                    if (idChip && idText.includes(q)) highlightEl(idChip, q);
+                } else {
+                    tbRow.classList.add('s-hide');
+                }
+            });
+
+            if (khoaMatch || nhomMatch || nhomHasMatch) {
+                nhomCard.classList.remove('s-hide');
+                khoaHasMatch = true;
+                // Mở nhóm nếu có kết quả
+                var nBody = nhomCard.querySelector('.nhom-body');
+                var nHdr  = nhomCard.querySelector('.nhom-hdr');
+                if (nBody && nHdr) { nBody.style.display = 'block'; nHdr.classList.add('open'); }
+                // Highlight tên nhóm
+                if (nhomName && nhomText.includes(q)) highlightEl(nhomName, q);
+            } else {
+                nhomCard.classList.add('s-hide');
+            }
+        });
+
+        if (khoaMatch || khoaHasMatch) {
+            khoaBlock.classList.remove('s-hide');
+            // Mở khoa
+            var kBody = khoaBlock.querySelector('.khoa-body');
+            var kHdr  = khoaBlock.querySelector('.khoa-hdr');
+            if (kBody && kHdr) { kBody.style.display = 'block'; kHdr.classList.add('open'); }
+            // Highlight tên khoa
+            if (khoaTitle && khoaText.includes(q)) highlightEl(khoaTitle, q);
+        } else {
+            khoaBlock.classList.add('s-hide');
+        }
+    });
+
+    infoEl.textContent = totalMatch > 0 ? totalMatch + ' kết quả' : 'Không tìm thấy';
+    infoEl.style.color = totalMatch > 0 ? '#7986cb' : '#e53935';
+}
+
+function clearSearch() {
+    document.getElementById('searchInp').value = '';
+    doSearch('');
+    document.getElementById('searchInp').focus();
+}
+
+/* Highlight text trong element */
+function highlightEl(el, q) {
+    var orig = el.getAttribute('data-orig') || el.textContent;
+    el.setAttribute('data-orig', orig);
+    var re  = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    el.innerHTML = orig.replace(re, '<mark class="hl">$1</mark>');
+}
+
+/* Xóa tất cả highlight */
+function removeHighlights() {
+    document.querySelectorAll('[data-orig]').forEach(function(el) {
+        el.textContent = el.getAttribute('data-orig');
+        el.removeAttribute('data-orig');
+    });
+}
 </script>
