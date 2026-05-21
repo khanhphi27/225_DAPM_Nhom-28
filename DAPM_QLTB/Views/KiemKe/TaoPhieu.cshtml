@@ -1,222 +1,473 @@
 ﻿@model QLTB.Models.TaoPhieuKiemKeViewModel
 @using System.Linq
 @{
-    ViewBag.Title = "Tạo Phiếu Kiểm Kê - Phòng CSVC";
+    ViewBag.Title = "Tạo Phiếu Kiểm Kê";
+    int kIdx = 0;
+    int tbIdx = 0; // index toàn cục cho từng TB trong DanhSachChuaKiem
 }
 
 <style>
-    body, td, th, select, input, button, a { font-size: 15px; }
+*, *::before, *::after { box-sizing: border-box; }
+body { font-family: 'Segoe UI', sans-serif; background: #f0f2f8; color: #222; }
 
-    .page-hdr h2 { color:#1a237e; font-weight:700; font-size:24px; margin:0; }
-    .page-hdr p  { color:#666; font-size:14px; margin:3px 0 0; }
+.pg-hdr { margin-bottom: 20px; }
+.pg-hdr h2 { font-size: 22px; font-weight: 700; color: #1a237e; margin: 0 0 3px; }
+.pg-hdr p  { font-size: 13px; color: #777; margin: 0; }
 
-    .info-card {
-        background:#e8eaf6; border-radius:12px; padding:18px 24px;
-        margin-bottom:20px; display:flex; gap:32px; flex-wrap:wrap; align-items:center;
-    }
-    .info-item { font-size:14px; color:#333; }
-    .info-item strong { color:#1a237e; }
+.alert { border-radius: 8px; padding: 12px 16px; font-size: 13.5px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.alert-error { background: #fce4ec; border-left: 4px solid #e53935; color: #b71c1c; }
+.alert-info  { background: #e3f2fd; border-left: 4px solid #1e88e5; color: #0d47a1; }
 
-    .alert-info  { background:#e3f2fd; border:1px solid #90caf9; border-radius:10px; padding:14px 18px; color:#1565c0; font-size:14px; margin-bottom:16px; }
-    .alert-warn  { background:#fff8e1; border:1px solid #ffe082; border-radius:10px; padding:14px 18px; color:#e65100; font-size:14px; margin-bottom:16px; }
-    .alert-error { background:#fce4ec; border:1px solid #ef9a9a; border-radius:10px; padding:14px 18px; color:#c62828; font-size:14px; margin-bottom:16px; }
+/* Info card */
+.info-card {
+    background: #fff; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.07);
+    padding: 14px 20px; margin-bottom: 16px;
+    display: flex; flex-wrap: wrap; gap: 20px; align-items: center;
+    border-left: 4px solid #1a237e;
+}
+.info-item { font-size: 13.5px; color: #444; }
+.info-item strong { color: #1a237e; }
+.val-warn { color: #e65100; font-weight: 700; }
 
-    .card-table { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); overflow:hidden; margin-bottom:20px; }
-    .card-table table { width:100%; border-collapse:collapse; }
-    .card-table thead th {
-        background:#e8eaf6; color:#1a237e; font-size:13px; font-weight:700;
-        text-transform:uppercase; letter-spacing:.4px; padding:14px 16px; border:none; white-space:nowrap;
-    }
-    .card-table tbody td { padding:12px 16px; font-size:14px; color:#333; border-bottom:1px solid #f0f2f8; vertical-align:middle; }
-    .card-table tbody tr:last-child td { border-bottom:none; }
-    .card-table tbody tr:hover td { background:#f5f6ff; }
+/* Search bar */
+.search-bar {
+    background: #fff; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.07);
+    padding: 10px 16px; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+    border: 1.5px solid #e8eaf6; transition: border-color .2s, box-shadow .2s;
+}
+.search-bar:focus-within { border-color: #3949ab; box-shadow: 0 0 0 3px rgba(57,73,171,.15); }
+.search-inp { flex: 1; border: none; outline: none; font-size: 14px; color: #333; background: transparent; }
+.search-inp::placeholder { color: #bbb; }
+.search-clear {
+    background: #e8eaf6; border: none; border-radius: 99px;
+    width: 22px; height: 22px; cursor: pointer; color: #666;
+    font-size: 13px; display: none; align-items: center; justify-content: center;
+    flex-shrink: 0; padding: 0; line-height: 1;
+}
+.search-clear.vis { display: flex; }
+.search-info { font-size: 12.5px; color: #7986cb; white-space: nowrap; flex-shrink: 0; min-width: 80px; text-align: right; }
+mark.hl { background: #fff59d; border-radius: 3px; padding: 0 2px; font-style: normal; }
 
-    .group-header td { background:#f0f2ff; padding:10px 16px; font-size:13px; font-weight:700; color:#1a237e; }
+/* Khoa block */
+.khoa-block {
+    border-radius: 10px; overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,.09);
+    margin-bottom: 14px; border: 1px solid #283593;
+}
+.khoa-block.s-hide { display: none; }
 
-    .qty-input {
-        width:90px; padding:7px 10px; border:1px solid #d0d5e8;
-        border-radius:6px; font-size:15px; text-align:center; font-weight:600;
-    }
-    .qty-input:focus { border-color:#3949ab; outline:none; box-shadow:0 0 0 2px #c5cae9; }
+.khoa-hdr {
+    display: flex; align-items: center; gap: 10px;
+    background: linear-gradient(90deg,#1a237e,#3949ab);
+    padding: 12px 16px; cursor: pointer; user-select: none;
+}
+.khoa-hdr:hover { filter: brightness(1.1); }
+.khoa-ck { width: 17px; height: 17px; cursor: pointer; accent-color: #fff; flex-shrink: 0; }
+.khoa-arrow { color: #c5cae9; font-size: 12px; transition: transform .22s; flex-shrink: 0; }
+.khoa-hdr.open .khoa-arrow { transform: rotate(90deg); }
+.khoa-title { font-size: 14.5px; font-weight: 700; color: #fff; flex: 1; }
+.khoa-badge { background: rgba(255,255,255,.18); color: #e8eaf6; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 99px; }
 
-    .sl-he-thong-cell { text-align:center; font-size:15px; font-weight:700; color:#1a237e; }
+/* Bảng thiết bị bên trong khoa */
+.khoa-body { display: none; background: #fff; }
 
-    .tt-select {
-        padding:7px 12px; border:1px solid #d0d5e8; border-radius:6px;
-        font-size:14px; background:#fff; min-width:150px;
-    }
-    .tt-select:focus { border-color:#3949ab; outline:none; }
+.tb-table { width: 100%; border-collapse: collapse; }
+.tb-table thead th {
+    background: #e8eaf6; color: #3949ab;
+    font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+    padding: 9px 14px; border-bottom: 2px solid #c5cae9; white-space: nowrap;
+}
+.tb-table tbody td { padding: 9px 14px; font-size: 13.5px; color: #333; border-bottom: 1px solid #f0f2f8; vertical-align: middle; }
+.tb-table tbody tr:last-child td { border-bottom: none; }
+.tb-table tbody tr:hover td { background: #f5f6ff; }
+.tb-table tbody tr.checked-row td { background: #f1f8e9; }
+.tb-table tbody tr.s-hide { display: none; }
 
-    .note-input {
-        width:100%; padding:7px 10px; border:1px solid #d0d5e8;
-        border-radius:6px; font-size:14px; background:#fff;
-    }
-    .note-input:focus { border-color:#3949ab; outline:none; }
+/* Checkbox */
+.ck { width: 16px; height: 16px; cursor: pointer; accent-color: #1a237e; }
 
-    .tb-status { display:inline-block; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600; }
-    .tb-status.hoatdong { background:#e8f5e9; color:#2e7d32; }
-    .tb-status.baotri   { background:#fff3e0; color:#e65100; }
-    .tb-status.hong     { background:#fce4ec; color:#c62828; }
-    .tb-status.other    { background:#f5f5f5; color:#555; }
+/* Badges */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 99px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.badge-green  { background: #e8f5e9; color: #2e7d32; }
+.badge-red    { background: #fce4ec; color: #c62828; }
+.badge-orange { background: #fff3e0; color: #e65100; }
+.badge-gray   { background: #f5f5f5; color: #555; }
 
-    .action-bar {
-        display:flex; justify-content:space-between; align-items:center;
-        background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07);
-        padding:18px 24px;
-    }
-    .btn-primary   { background:#1a237e; color:#fff; border:none; border-radius:8px; padding:11px 26px; font-size:15px; font-weight:600; cursor:pointer; }
-    .btn-primary:hover { background:#283593; }
-    .btn-secondary { background:#e8eaf6; color:#1a237e; border:none; border-radius:8px; padding:11px 22px; font-size:14px; font-weight:600; cursor:pointer; text-decoration:none; display:inline-block; }
-    .btn-secondary:hover { background:#c5cae9; text-decoration:none; color:#1a237e; }
+/* ID chip */
+.id-chip { font-family: 'Consolas', monospace; font-size: 12px; background: #e8eaf6; color: #283593; padding: 2px 8px; border-radius: 5px; font-weight: 600; }
 
-    .counter-badge { background:#1a237e; color:#fff; border-radius:20px; padding:3px 12px; font-size:13px; font-weight:700; margin-left:8px; }
+/* Tên TB */
+.ten-tb   { font-weight: 600; color: #1a237e; font-size: 13.5px; }
+.danh-muc { font-size: 12px; color: #999; margin-top: 2px; }
+
+/* Inputs */
+.tt-sel {
+    padding: 5px 9px; border: 1.5px solid #d0d5e8; border-radius: 6px;
+    font-size: 13px; background: #fff; width: 100%; color: #333;
+}
+.tt-sel:focus { border-color: #3949ab; outline: none; box-shadow: 0 0 0 2px #c5cae9; }
+.tt-sel.invalid { border-color: #e53935; background: #fff8f8; }
+.tt-sel:disabled { background: #f5f5f5; color: #bbb; cursor: not-allowed; border-color: #e8e8e8; }
+
+.note-inp {
+    padding: 5px 9px; border: 1.5px solid #d0d5e8; border-radius: 6px;
+    font-size: 13px; background: #fff; width: 100%; color: #333;
+}
+.note-inp:focus { border-color: #3949ab; outline: none; }
+.note-inp:disabled { background: #f5f5f5; color: #bbb; cursor: not-allowed; border-color: #e8e8e8; }
+
+/* Action bar sticky */
+.action-bar {
+    position: sticky; bottom: 0; z-index: 20;
+    background: #fff; border-top: 2px solid #e8eaf6;
+    box-shadow: 0 -3px 14px rgba(0,0,0,.1);
+    padding: 13px 20px; margin-top: 12px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-radius: 10px 10px 0 0;
+}
+.action-counts { font-size: 13.5px; color: #555; display: flex; gap: 18px; align-items: center; }
+.cnt-badge { background: #1a237e; color: #fff; border-radius: 99px; padding: 1px 10px; font-size: 12.5px; font-weight: 700; margin-left: 4px; }
+.prog-mini { background: #e8eaf6; border-radius: 99px; height: 6px; overflow: hidden; width: 180px; margin-top: 4px; }
+.prog-mini-fill { height: 100%; background: linear-gradient(90deg,#43a047,#66bb6a); border-radius: 99px; transition: width .4s; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 6px; border: none; border-radius: 7px; padding: 9px 18px; font-size: 13.5px; font-weight: 600; cursor: pointer; text-decoration: none; transition: opacity .15s; }
+.btn:hover { opacity: .88; text-decoration: none; }
+.btn-blue { background: #1a237e; color: #fff; }
+.btn-gray { background: #e8eaf6; color: #1a237e; }
 </style>
 
-<div class="page-hdr" style="margin-bottom:22px">
+<div class="pg-hdr">
     <h2>📝 Tạo Phiếu Kiểm Kê Tài Sản</h2>
-    <p>Nhập số lượng và tình trạng thực tế cho các thiết bị chưa được kiểm kê</p>
+    <p>Tick chọn thiết bị → chọn tình trạng và nhập ghi chú</p>
 </div>
 
-@if (ViewBag.Error != null)
-{
-    <div class="alert-error">⚠️ @ViewBag.Error</div>
-}
+@if (ViewBag.Error != null) { <div class="alert alert-error">⚠️ @ViewBag.Error</div> }
 
 <div class="info-card">
     <div class="info-item">📋 Mã phiếu: <strong>@Model.ID_KiemKe</strong></div>
     <div class="info-item">📅 Ngày tạo: <strong>@Model.NgayKiemKe.ToString("dd/MM/yyyy HH:mm")</strong></div>
     <div class="info-item">👤 Người thực hiện: <strong>@Model.NguoiTao</strong></div>
-    <div class="info-item">🔢 Thiết bị chưa kiểm: <strong style="color:#fb8c00">@Model.DanhSachChuaKiem.Count</strong></div>
+    <div class="info-item">🔢 Chưa kiểm: <span class="val-warn">@Model.DanhSachChuaKiem.Count thiết bị</span></div>
 </div>
 
 @if (!Model.DanhSachChuaKiem.Any())
 {
-    <div class="alert-info">✅ Tất cả thiết bị đã được kiểm kê. Không có thiết bị nào cần tạo phiếu mới.</div>
-    <a href="@Url.Action("DanhSach", "KiemKe")" class="btn-secondary">← Quay lại</a>
+    <div class="alert alert-info">✅ Tất cả thiết bị đã được kiểm kê.</div>
+    <a href="@Url.Action("DanhSach","KiemKe")" class="btn btn-gray">← Quay lại</a>
 }
 else
 {
-    <div class="alert-warn">
-        ⚠️ Chỉ những thiết bị bạn <strong>nhập số lượng thực tế</strong> mới được lưu vào phiếu kiểm kê.
-        Thiết bị không nhập gì sẽ vẫn ở trạng thái <em>chưa kiểm kê</em>.
+    <div class="search-bar">
+        <span style="color:#9e9e9e;font-size:16px">🔍</span>
+        <input type="text" id="searchInp" class="search-inp"
+               placeholder="Tìm theo tên thiết bị, mã TB, đơn vị quản lý..."
+               oninput="doSearch(this.value)" autocomplete="off" />
+        <button type="button" class="search-clear" id="searchClear" onclick="clearSearch()" title="Xóa">✕</button>
+        <span class="search-info" id="searchInfo"></span>
     </div>
 
-    using (Html.BeginForm("HoanTat", "KiemKe", FormMethod.Post))
+    using (Html.BeginForm("HoanTat","KiemKe",FormMethod.Post,new{id="formKiemKe"}))
     {
         @Html.AntiForgeryToken()
+        @Html.Hidden("idKiemKe", Model.ID_KiemKe)
 
-        <div class="card-table">
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Mã TB</th>
-                        <th>Tên thiết bị</th>
-                        <th>Danh mục</th>
-                        <th>Đơn vị quản lý</th>
-                        <th>Trạng thái</th>
-                        <th>SL Sổ sách</th>
-                        <th>SL Thực tế <span style="color:#e53935">*</span></th>
-                        <th>Tình trạng thực tế</th>
-                        <th>Ghi chú</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @{
-                        string currentKhoa = null;
-                        int stt = 0;
-                    }
-                    @for (int i = 0; i < Model.DanhSachChuaKiem.Count; i++)
-                    {
-                        var tb = Model.DanhSachChuaKiem[i];
+        for (int i = 0; i < Model.DanhSachChuaKiem.Count; i++)
+        {
+            var h = Model.DanhSachChuaKiem[i];
+            @Html.Hidden("DanhSachChuaKiem[" + i + "].ID_ThietBi",  h.ID_ThietBi)
+            @Html.Hidden("DanhSachChuaKiem[" + i + "].TenTB",       h.TenTB)
+            @Html.Hidden("DanhSachChuaKiem[" + i + "].TrangThaiTB", h.TrangThaiTB)
+            @Html.Hidden("DanhSachChuaKiem[" + i + "].TenKhoa",     h.TenKhoa)
+            @Html.Hidden("DanhSachChuaKiem[" + i + "].TenDanhMuc",  h.TenDanhMuc)
+        }
 
-                        if (tb.TenKhoa != currentKhoa)
-                        {
-                            currentKhoa = tb.TenKhoa;
-                            int soTBKhoa = Model.DanhSachChuaKiem.Count(x => x.TenKhoa == currentKhoa);
-                            <tr class="group-header">
-                                <td colspan="10">🏢 @currentKhoa — @soTBKhoa thiết bị chưa kiểm</td>
+        foreach (var nhomKhoa in Model.NhomTheoKhoa)
+        {
+            int tongTB = nhomKhoa.NhomThietBi.Sum(n => n.ChiTiet.Count);
+            string kBodyId = "kb-" + kIdx;
+            string kHdrId  = "kh-" + kIdx;
+            string kCkId   = "ck-k-" + kIdx;
+
+            <div class="khoa-block">
+                <div class="khoa-hdr" id="@kHdrId" onclick="toggleKhoaBody('@kBodyId','@kHdrId')">
+                    <input type="checkbox" class="khoa-ck ck-khoa" id="@kCkId"
+                           data-khoa="@kIdx" onclick="event.stopPropagation();onKhoaCk(this)" />
+                    <span class="khoa-arrow">▶</span>
+                    <span class="khoa-title">🏢 @nhomKhoa.TenKhoa</span>
+                    <span class="khoa-badge">@tongTB thiết bị chưa kiểm</span>
+                </div>
+                <div class="khoa-body" id="@kBodyId">
+                    <table class="tb-table">
+                        <thead>
+                            <tr>
+                                <th style="width:36px">
+                                    <input type="checkbox" class="ck ck-khoa-all" data-khoa="@kIdx"
+                                           onclick="onKhoaCkAll(this)" title="Chọn tất cả" />
+                                </th>
+                                <th>Mã thiết bị</th>
+                                <th>Tên thiết bị</th>
+                                <th>Trạng thái</th>
+                                <th style="width:160px">Tình trạng <span style="color:#e53935">*</span></th>
+                                <th>Ghi chú</th>
                             </tr>
-                        }
-                        stt++;
-                        string trangThaiClass = tb.TrangThaiTB == "Hoạt động" ? "hoatdong"
-                                              : tb.TrangThaiTB == "Bảo trì"   ? "baotri"
-                                              : tb.TrangThaiTB == "Hỏng"      ? "hong" : "other";
-
-                        @Html.Hidden("DanhSachChuaKiem[" + i + "].ID_ThietBi",     tb.ID_ThietBi)
-                        @Html.Hidden("DanhSachChuaKiem[" + i + "].TenTB",          tb.TenTB)
-                        @Html.Hidden("DanhSachChuaKiem[" + i + "].TrangThaiTB",    tb.TrangThaiTB)
-                        @Html.Hidden("DanhSachChuaKiem[" + i + "].TenKhoa",        tb.TenKhoa)
-                        @Html.Hidden("DanhSachChuaKiem[" + i + "].TenDanhMuc",     tb.TenDanhMuc)
-                        @Html.Hidden("DanhSachChuaKiem[" + i + "].SoLuongHeThong", tb.SoLuongHeThong)
-
-                        <tr>
-                            <td style="color:#aaa;font-size:13px">@stt</td>
-                            <td><strong style="color:#1a237e">@tb.ID_ThietBi</strong></td>
-                            <td>@tb.TenTB</td>
-                            <td style="color:#666">@tb.TenDanhMuc</td>
-                            <td>@tb.TenKhoa</td>
-                            <td><span class="tb-status @trangThaiClass">@tb.TrangThaiTB</span></td>
-                            <td class="sl-he-thong-cell">@tb.SoLuongHeThong</td>
-                            <td>
-                                <input type="number" min="0"
-                                       name="DanhSachChuaKiem[@i].SoLuongThucTe"
-                                       class="qty-input sl-input"
-                                       placeholder="Nhập SL" />
-                            </td>
-                            <td>
-                                <select name="DanhSachChuaKiem[@i].TinhTrangThucTe" class="tt-select">
-                                    <option value="Bình thường">Bình thường</option>
-                                    <option value="Cần bảo trì">Cần bảo trì</option>
-                                    <option value="Hỏng">Hỏng</option>
-                                    <option value="Mất">Mất</option>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="text"
-                                       name="DanhSachChuaKiem[@i].GhiChu"
-                                       class="note-input"
-                                       placeholder="Ghi chú (tùy chọn)" />
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                        </thead>
+                        <tbody>
+                            @foreach (var nhom in nhomKhoa.NhomThietBi)
+                            {
+                                foreach (var ct in nhom.ChiTiet)
+                                {
+                                    int idx = Model.DanhSachChuaKiem.FindIndex(x => x.ID_ThietBi == ct.ID_ThietBi);
+                                    string tCls = ct.TrangThaiTB == "Hoạt động" ? "badge-green"
+                                                : ct.TrangThaiTB == "Bảo trì"   ? "badge-orange"
+                                                : ct.TrangThaiTB == "Hỏng"      ? "badge-red" : "badge-gray";
+                                    <tr id="rt-@idx"
+                                        data-ten="@nhom.TenTB.ToLower()"
+                                        data-ma="@ct.ID_ThietBi.ToLower()"
+                                        data-khoa="@kIdx">
+                                        <td style="text-align:center">
+                                            <input type="checkbox" class="ck ck-tb"
+                                                   id="ck-t-@idx" data-idx="@idx" data-khoa="@kIdx"
+                                                   onclick="onTBCk(this)" />
+                                        </td>
+                                        <td><span class="id-chip">@ct.ID_ThietBi</span></td>
+                                        <td>
+                                            <div class="ten-tb">@nhom.TenTB</div>
+                                            <div class="danh-muc">@nhom.TenDanhMuc</div>
+                                        </td>
+                                        <td><span class="badge @tCls">@ct.TrangThaiTB</span></td>
+                                        <td>
+                                            <select name="DanhSachChuaKiem[@idx].TinhTrangThucTe"
+                                                    class="tt-sel" id="tt-@idx" data-idx="@idx" disabled>
+                                                <option value="">-- Chọn --</option>
+                                                <option value="Bình thường">Bình thường</option>
+                                                <option value="Cần bảo trì">Cần bảo trì</option>
+                                                <option value="Hỏng">Hỏng</option>
+                                                <option value="Mất">Mất</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="text" name="DanhSachChuaKiem[@idx].GhiChu"
+                                                   class="note-inp" id="gc-@idx"
+                                                   placeholder="Ghi chú (tùy chọn)" disabled />
+                                        </td>
+                                    </tr>
+                                    tbIdx++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            kIdx++;
+        }
 
         <div class="action-bar">
-            <div style="font-size:14px;color:#555">
-                Đã nhập:
-                <span id="daNhapCount" class="counter-badge">0</span>
-                / @Model.DanhSachChuaKiem.Count thiết bị
+            <div>
+                <div class="action-counts">
+                    <span>Đã chọn: <span class="cnt-badge" id="cntTick">0</span></span>
+                    <span>Đã điền tình trạng: <span class="cnt-badge" id="cntDien">0</span></span>
+                </div>
+                <div class="prog-mini"><div class="prog-mini-fill" id="progFill" style="width:0%"></div></div>
             </div>
-            <div style="display:flex;gap:12px;align-items:center">
-                <a href="@Url.Action("DanhSach", "KiemKe")" class="btn-secondary">← Hủy bỏ</a>
-                <button type="submit" class="btn-primary" id="btnHoanTat">✅ Hoàn tất kiểm kê</button>
+            <div style="display:flex;gap:10px;align-items:center">
+                <a href="@Url.Action("DanhSach","KiemKe")" class="btn btn-gray">← Hủy bỏ</a>
+                <button type="submit" class="btn btn-blue" id="btnHT">✅ Hoàn tất kiểm kê</button>
             </div>
         </div>
     }
 }
 
 <script>
-    document.querySelectorAll('.sl-input').forEach(function (inp) {
-        inp.addEventListener('input', capNhatDem);
-    });
+/* ── Toggle khoa ── */
+function toggleKhoaBody(bodyId, hdrId) {
+    var body = document.getElementById(bodyId);
+    var hdr  = document.getElementById(hdrId);
+    var open = body.style.display === 'block';
+    body.style.display = open ? 'none' : 'block';
+    hdr.classList.toggle('open', !open);
+}
 
-    function capNhatDem() {
-        var count = 0;
-        document.querySelectorAll('.sl-input').forEach(function (inp) {
-            if (inp.value !== '') count++;
-        });
-        document.getElementById('daNhapCount').textContent = count;
+/* ── Enable/disable input ── */
+function setTB(idx, on) {
+    var sel = document.getElementById('tt-' + idx);
+    var gc  = document.getElementById('gc-' + idx);
+    var row = document.getElementById('rt-' + idx);
+    if (sel) { sel.disabled = !on; if (!on) { sel.value = ''; sel.classList.remove('invalid'); } }
+    if (gc)  { gc.disabled  = !on; if (!on) gc.value = ''; }
+    if (row) row.classList.toggle('checked-row', on);
+    updateCounts();
+}
+
+/* ── Tick từng TB ── */
+function onTBCk(ck) {
+    setTB(ck.getAttribute('data-idx'), ck.checked);
+    syncKhoa(ck.getAttribute('data-khoa'));
+    syncKhoaAll(ck.getAttribute('data-khoa'));
+}
+
+/* ── Tick checkbox header khoa (chọn tất cả trong bảng) ── */
+function onKhoaCkAll(ck) {
+    var kid = ck.getAttribute('data-khoa');
+    document.querySelectorAll('.ck-tb[data-khoa="' + kid + '"]').forEach(function(tb) {
+        tb.checked = ck.checked;
+        setTB(tb.getAttribute('data-idx'), ck.checked);
+    });
+    // Sync checkbox header khoa
+    var kCk = document.querySelector('.ck-khoa[data-khoa="' + kid + '"]');
+    if (kCk) { kCk.checked = ck.checked; kCk.indeterminate = false; }
+}
+
+/* ── Tick checkbox khoa (header gradient) ── */
+function onKhoaCk(ck) {
+    var kid = ck.getAttribute('data-khoa');
+    var kHdr  = ck.closest('.khoa-hdr');
+    var kBody = kHdr ? document.getElementById(kHdr.id.replace('kh-','kb-')) : null;
+    if (ck.checked && kBody && kBody.style.display !== 'block') toggleKhoaBody(kBody.id, kHdr.id);
+
+    document.querySelectorAll('.ck-tb[data-khoa="' + kid + '"]').forEach(function(tb) {
+        tb.checked = ck.checked;
+        setTB(tb.getAttribute('data-idx'), ck.checked);
+    });
+    // Sync checkbox all trong thead
+    var allCk = document.querySelector('.ck-khoa-all[data-khoa="' + kid + '"]');
+    if (allCk) { allCk.checked = ck.checked; allCk.indeterminate = false; }
+}
+
+/* ── Sync indeterminate khoa ── */
+function syncKhoa(kid) {
+    var tbs = document.querySelectorAll('.ck-tb[data-khoa="' + kid + '"]');
+    var n   = Array.from(tbs).filter(function(t) { return t.checked; }).length;
+    var ck  = document.querySelector('.ck-khoa[data-khoa="' + kid + '"]');
+    if (ck) { ck.checked = n === tbs.length && tbs.length > 0; ck.indeterminate = n > 0 && n < tbs.length; }
+}
+function syncKhoaAll(kid) {
+    var tbs = document.querySelectorAll('.ck-tb[data-khoa="' + kid + '"]');
+    var n   = Array.from(tbs).filter(function(t) { return t.checked; }).length;
+    var ck  = document.querySelector('.ck-khoa-all[data-khoa="' + kid + '"]');
+    if (ck) { ck.checked = n === tbs.length && tbs.length > 0; ck.indeterminate = n > 0 && n < tbs.length; }
+}
+
+/* ── Cập nhật đếm ── */
+function updateCounts() {
+    var ticked = document.querySelectorAll('.ck-tb:checked').length;
+    var dien   = 0;
+    document.querySelectorAll('.tt-sel:not(:disabled)').forEach(function(s) { if (s.value) dien++; });
+    document.getElementById('cntTick').textContent = ticked;
+    document.getElementById('cntDien').textContent = dien;
+    document.getElementById('progFill').style.width = (ticked > 0 ? Math.round(dien / ticked * 100) : 0) + '%';
+}
+
+document.querySelectorAll('.tt-sel').forEach(function(s) {
+    s.addEventListener('change', function() { this.classList.toggle('invalid', !this.value); updateCounts(); });
+});
+
+/* ── Submit validation ── */
+document.getElementById('btnHT').addEventListener('click', function(e) {
+    var ticked = Array.from(document.querySelectorAll('.ck-tb:checked'));
+    if (!ticked.length) { e.preventDefault(); alert('Vui lòng tick chọn ít nhất 1 thiết bị để kiểm kê.'); return; }
+    var missing = ticked.filter(function(ck) {
+        var s = document.getElementById('tt-' + ck.getAttribute('data-idx'));
+        return s && !s.value;
+    });
+    missing.forEach(function(ck) { document.getElementById('tt-' + ck.getAttribute('data-idx')).classList.add('invalid'); });
+    if (missing.length) {
+        e.preventDefault();
+        var firstIdx = missing[0].getAttribute('data-idx');
+        var firstSel = document.getElementById('tt-' + firstIdx);
+        if (firstSel) {
+            var row = document.getElementById('rt-' + firstIdx);
+            if (row) {
+                var kBody = row.closest('.khoa-body');
+                var kHdr  = kBody ? kBody.previousElementSibling : null;
+                if (kBody && kBody.style.display !== 'block') toggleKhoaBody(kBody.id, kHdr.id);
+            }
+            setTimeout(function() { firstSel.scrollIntoView({ behavior:'smooth', block:'center' }); }, 150);
+        }
+        alert('Vui lòng chọn tình trạng cho ' + missing.length + ' thiết bị đã tick còn thiếu.');
+    }
+});
+
+/* ── Enable all trước khi submit ── */
+document.getElementById('formKiemKe').addEventListener('submit', function() {
+    document.querySelectorAll('.tt-sel, .note-inp').forEach(function(el) { el.disabled = false; });
+});
+
+/* ── Tìm kiếm ── */
+function doSearch(q) {
+    q = q.trim().toLowerCase();
+    var clearBtn = document.getElementById('searchClear');
+    var infoEl   = document.getElementById('searchInfo');
+    clearBtn.classList.toggle('vis', q.length > 0);
+
+    if (!q) {
+        document.querySelectorAll('.khoa-block').forEach(function(b) { b.classList.remove('s-hide'); });
+        document.querySelectorAll('.tb-table tbody tr').forEach(function(r) { r.classList.remove('s-hide'); });
+        removeHighlights();
+        infoEl.textContent = '';
+        return;
     }
 
-    document.getElementById('btnHoanTat')?.addEventListener('click', function (e) {
-        var coNhap = false;
-        document.querySelectorAll('.sl-input').forEach(function (inp) { if (inp.value !== '') coNhap = true; });
-        if (!coNhap) {
-            e.preventDefault();
-            alert('Vui lòng nhập số lượng thực tế cho ít nhất 1 thiết bị trước khi hoàn tất.');
+    removeHighlights();
+    var total = 0;
+
+    document.querySelectorAll('.khoa-block').forEach(function(block) {
+        var titleEl  = block.querySelector('.khoa-title');
+        var khoaText = titleEl ? titleEl.textContent.toLowerCase() : '';
+        var khoaMatch = khoaText.includes(q);
+        var hasAny = false;
+
+        block.querySelectorAll('tbody tr').forEach(function(row) {
+            var ten = row.getAttribute('data-ten') || '';
+            var ma  = row.getAttribute('data-ma')  || '';
+            var match = khoaMatch || ten.includes(q) || ma.includes(q);
+
+            if (match) {
+                row.classList.remove('s-hide');
+                hasAny = true;
+                total++;
+                var idChip = row.querySelector('.id-chip');
+                var tenEl  = row.querySelector('.ten-tb');
+                if (idChip && ma.includes(q))  highlightEl(idChip, q);
+                if (tenEl  && ten.includes(q)) highlightEl(tenEl,  q);
+            } else {
+                row.classList.add('s-hide');
+            }
+        });
+
+        if (khoaMatch || hasAny) {
+            block.classList.remove('s-hide');
+            var kBody = block.querySelector('.khoa-body');
+            var kHdr  = block.querySelector('.khoa-hdr');
+            if (kBody && kBody.style.display !== 'block') { kBody.style.display = 'block'; if (kHdr) kHdr.classList.add('open'); }
+            if (titleEl && khoaText.includes(q)) highlightEl(titleEl, q);
+        } else {
+            block.classList.add('s-hide');
         }
     });
+
+    infoEl.textContent = total > 0 ? total + ' kết quả' : 'Không tìm thấy';
+    infoEl.style.color = total > 0 ? '#7986cb' : '#e53935';
+}
+
+function clearSearch() {
+    document.getElementById('searchInp').value = '';
+    doSearch('');
+    document.getElementById('searchInp').focus();
+}
+
+function highlightEl(el, q) {
+    var orig = el.getAttribute('data-orig') || el.textContent;
+    el.setAttribute('data-orig', orig);
+    var re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    el.innerHTML = orig.replace(re, '<mark class="hl">$1</mark>');
+}
+
+function removeHighlights() {
+    document.querySelectorAll('[data-orig]').forEach(function(el) {
+        el.textContent = el.getAttribute('data-orig');
+        el.removeAttribute('data-orig');
+    });
+}
 </script>

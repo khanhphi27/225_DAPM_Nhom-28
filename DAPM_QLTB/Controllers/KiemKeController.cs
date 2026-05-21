@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Web.Mvc;
 using QLTB.Models;
 using QLTB.Models.Services;
@@ -30,12 +31,25 @@ namespace QLTB.Controllers
         }
 
         [HttpPost]
-        public ActionResult HoanTat(TaoPhieuKiemKeViewModel model)
+        public ActionResult HoanTat(string idKiemKe, List<ItemTaoKiemKe> DanhSachChuaKiem)
         {
             var r = CheckAuth(); if (r != null) return RedirectToAction("Login", "Account");
             try
             {
-                var (ok, msg) = _svc.HoanTatKiemKe(model);
+                var (ok, msg) = _svc.HoanTatKiemKe(idKiemKe, Session["UserId"]?.ToString(), DanhSachChuaKiem);
+                TempData[ok ? "Success" : "Error"] = msg;
+            }
+            catch (Exception ex) { TempData["Error"] = ex.Message; }
+            return RedirectToAction("DanhSach");
+        }
+
+        [HttpPost]
+        public ActionResult KiemKeDinhKy()
+        {
+            var r = CheckAuth(); if (r != null) return RedirectToAction("Login", "Account");
+            try
+            {
+                var (ok, msg) = _svc.KiemKeDinhKy();
                 TempData[ok ? "Success" : "Error"] = msg;
             }
             catch (Exception ex) { TempData["Error"] = ex.Message; }
