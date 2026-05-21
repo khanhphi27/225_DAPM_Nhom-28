@@ -1,4 +1,4 @@
-﻿@model QLTB.Models.BGHDashboardViewModel
+@model QLTB.Models.BGHDashboardViewModel
 @{
     ViewBag.Title = "Dashboard BGH";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -39,7 +39,7 @@
             <div class="card shadow border-0 text-center p-4">
                 <i class="bi bi-file-earmark-check fs-1 text-primary mb-3"></i>
                 <a href="@Url.Action("XetDuyetYeuCau", "DeXuat")" class="btn btn-outline-primary btn-lg">Xét Duyệt Yêu Cầu</a>
-                <p class="text-muted small mt-2 mb-0">@Model.ChoDeXuatDuyet yêu cầu chờ duyệt</p>
+                <p class="text-muted small mt-2 mb-0">@Model.ChoDeXuatDuyet yêu cầu xét duyệt</p>
             </div>
         </div>
         <div class="col-md-4">

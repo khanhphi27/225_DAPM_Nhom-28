@@ -52,6 +52,59 @@ namespace QLTB.Models.Repositories
             return null;
         }
 
+        public object GetChiTiet(string id)
+        {
+            var nguoiDung = new System.Collections.Generic.List<object>();
+            var thietBi   = new System.Collections.Generic.List<object>();
+            using (var conn = DbHelper.GetConnection())
+            {
+                conn.Open();
+                // Danh sách người dùng
+                const string sqlND = @"
+                    SELECT nd.ID_NguoiDung, nd.HoTen, nd.Email,
+                           ISNULL(vn.VaiTroNo,'') AS VaiTroNo,
+                           CASE nd.TrangThaiTK WHEN 1 THEN N'Hoạt động' ELSE N'Khóa' END AS TrangThai
+                    FROM NGUOIDUNG nd
+                    LEFT JOIN VAITRO_NGUOIDUNG vn ON vn.NguoiDungNo = nd.ID_NguoiDung
+                    WHERE nd.Khoa_BanNo = @id ORDER BY nd.HoTen";
+                using (var cmd = new SqlCommand(sqlND, conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+                    using (var rd = cmd.ExecuteReader())
+                        while (rd.Read())
+                            nguoiDung.Add(new {
+                                id       = rd["ID_NguoiDung"].ToString(),
+                                hoTen    = rd["HoTen"].ToString(),
+                                email    = rd["Email"] == DBNull.Value ? "" : rd["Email"].ToString(),
+                                vaiTro   = rd["VaiTroNo"].ToString(),
+                                trangThai = rd["TrangThai"].ToString()
+                            });
+                }
+                // Danh sách thiết bị
+                const string sqlTB = @"
+                    SELECT tb.ID_ThietBi, tb.TenTB, tb.TrangThaiTB,
+                           ISNULL(dm.TenDanhMuc,'') AS TenDanhMuc,
+                           ISNULL(tb.Gia,0) AS Gia
+                    FROM THIETBI tb
+                    LEFT JOIN DANHMUC dm ON dm.ID_DanhMuc = tb.DanhMucNo
+                    WHERE tb.KhoaPhongBan = @id ORDER BY tb.TenTB";
+                using (var cmd = new SqlCommand(sqlTB, conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+                    using (var rd = cmd.ExecuteReader())
+                        while (rd.Read())
+                            thietBi.Add(new {
+                                id        = rd["ID_ThietBi"].ToString(),
+                                tenTB     = rd["TenTB"].ToString(),
+                                trangThai = rd["TrangThaiTB"]?.ToString() ?? "",
+                                danhMuc   = rd["TenDanhMuc"].ToString(),
+                                gia       = rd["Gia"] == DBNull.Value ? 0m : Convert.ToDecimal(rd["Gia"])
+                            });
+                }
+            }
+            return new { nguoiDung, thietBi };
+        }
+
         public (bool ok, string msg) Create(string id, string ten)
         {
             if (string.IsNullOrWhiteSpace(id)) return (false, "Vui lòng nhập ID khoa.");

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<QLTB.Models.KhoaPhongBanViewModel>
+@model IEnumerable<QLTB.Models.KhoaPhongBanViewModel>
 @{
     ViewBag.Title = "Quản Lý Khoa / Phòng Ban";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -128,7 +128,7 @@
                 <tr data-id="@kp.ID_KhoaPhongBan.ToLower()" data-ten="@kp.TenPhongBanKhoa.ToLower()">
                     <td style="color:#999">@stt</td>
                     <td><code style="font-size:11px;background:#f0f2f8;padding:2px 7px;border-radius:4px;">@kp.ID_KhoaPhongBan</code></td>
-                    <td><strong>@kp.TenPhongBanKhoa</strong></td>
+                    <td><strong style="cursor:pointer;color:#1a237e;text-decoration:underline dotted;" onclick="openChiTiet('@kp.ID_KhoaPhongBan', '@Html.Raw(kp.TenPhongBanKhoa.Replace("'", "\\'"))')">@kp.TenPhongBanKhoa</strong></td>
                     <td style="text-align:center">
                         <span class="badge-count nd">👤 @kp.SoNguoiDung</span>
                     </td>
@@ -205,6 +205,71 @@
         <div class="modal-footer">
             <button class="btn-cancel" onclick="closeAll()">Hủy</button>
             <button class="btn-danger" onclick="submitDelete()">🗑️ Xóa</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL CHI TIẾT KHOA ===== -->
+<div class="modal-overlay" id="modalChiTiet">
+    <div class="modal-box" style="width:720px;max-height:85vh;overflow-y:auto;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div class="modal-title" style="margin:0;">🏢 Chi Tiết Khoa — <span id="ct_ten" style="color:#3949ab;"></span></div>
+            <button onclick="closeAll()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;">✕</button>
+        </div>
+
+        <!-- Tab -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;border-bottom:2px solid #e8eaf6;padding-bottom:0;">
+            <div style="display:flex;gap:4px;">
+                <button id="tabNDBtn" onclick="switchTab('nd')"
+                    style="padding:8px 18px;border:none;background:transparent;font-size:13px;font-weight:600;color:#1a237e;border-bottom:2px solid #1a237e;cursor:pointer;margin-bottom:-2px;">
+                    👤 Người dùng (<span id="ct_soND">0</span>)
+                </button>
+                <button id="tabTBBtn" onclick="switchTab('tb')"
+                    style="padding:8px 18px;border:none;background:transparent;font-size:13px;font-weight:600;color:#888;border-bottom:2px solid transparent;cursor:pointer;margin-bottom:-2px;">
+                    💻 Thiết bị (<span id="ct_soTB">0</span>)
+                </button>
+            </div>
+            <button id="btnPrintTB" onclick="inDanhSachThietBi()" style="display:none; margin-bottom: 8px; padding:6px 12px; border:none; background:#e8eaf6; color:#1a237e; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">
+                <i class="bi bi-file-word-fill"></i> Tải Word
+            </button>
+        </div>
+
+        <!-- Tab người dùng -->
+        <div id="tabND">
+            <div id="ct_nd_loading" style="text-align:center;padding:20px;color:#aaa;">Đang tải...</div>
+            <table id="ct_nd_table" style="width:100%;border-collapse:collapse;display:none;">
+                <thead>
+                    <tr style="background:#e8eaf6;">
+                        <th style="padding:9px 12px;font-size:11px;font-weight:700;text-transform:uppercase;color:#1a237e;text-align:left;">#</th>
+                        <th style="padding:9px 12px;font-size:11px;font-weight:700;text-transform:uppercase;color:#1a237e;text-align:left;">ID</th>
+                        <th style="padding:9px 12px;font-size:11px;font-weight:700;text-transform:uppercase;color:#1a237e;text-align:left;">Họ tên</th>
+                        <th style="padding:9px 12px;font-size:11px;font-weight:700;text-transform:uppercase;color:#1a237e;text-align:left;">Email</th>
+                        <th style="padding:9px 12px;font-size:11px;font-weight:700;text-transform:uppercase;color:#1a237e;text-align:left;">Vai trò</th>
+                        <th style="padding:9px 12px;font-size:11px;font-weight:700;text-transform:uppercase;color:#1a237e;text-align:center;">Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody id="ct_nd_body"></tbody>
+            </table>
+            <div id="ct_nd_empty" style="text-align:center;padding:24px;color:#aaa;display:none;">Chưa có người dùng nào.</div>
+        </div>
+
+        <!-- Tab thiết bị -->
+        <div id="tabTB" style="display:none;">
+            <div id="ct_tb_loading" style="text-align:center;padding:20px;color:#aaa;">Đang tải...</div>
+            <table id="ct_tb_table" style="width:100%;border-collapse:collapse;display:none;">
+                <thead>
+                    <tr style="background:#e8eaf6;">
+                        <th style="padding:9px 12px;font-size:11px;font-weight:700;text-transform:uppercase;color:#1a237e;text-align:left;">#</th>
+                        <th style="padding:9px 12px;font-size:11px;font-weight:700;text-transform:uppercase;color:#1a237e;text-align:left;">Mã TB</th>
+                        <th style="padding:9px 12px;font-size:11px;font-weight:700;text-transform:uppercase;color:#1a237e;text-align:left;">Tên thiết bị</th>
+                        <th style="padding:9px 12px;font-size:11px;font-weight:700;text-transform:uppercase;color:#1a237e;text-align:left;">Danh mục</th>
+                        <th style="padding:9px 12px;font-size:11px;font-weight:700;text-transform:uppercase;color:#1a237e;text-align:right;">Giá trị</th>
+                        <th style="padding:9px 12px;font-size:11px;font-weight:700;text-transform:uppercase;color:#1a237e;text-align:center;">Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody id="ct_tb_body"></tbody>
+            </table>
+            <div id="ct_tb_empty" style="text-align:center;padding:24px;color:#aaa;display:none;">Chưa có thiết bị nào.</div>
         </div>
     </div>
 </div>
@@ -287,6 +352,146 @@
             if (res.ok) { showAlert(res.msg, 'success'); closeAll(); setTimeout(function () { location.reload(); }, 1200); }
             else showAlert(res.msg, 'error');
         });
+    }
+
+    // ── Chi tiết khoa ─────────────────────────────────────────
+    var _chiTietData = null;
+
+    function openChiTiet(id, ten) {
+        document.getElementById('ct_ten').textContent = ten;
+        document.getElementById('ct_nd_loading').style.display = '';
+        document.getElementById('ct_tb_loading').style.display = '';
+        document.getElementById('ct_nd_table').style.display = 'none';
+        document.getElementById('ct_tb_table').style.display = 'none';
+        document.getElementById('ct_nd_empty').style.display = 'none';
+        document.getElementById('ct_tb_empty').style.display = 'none';
+        switchTab('nd');
+        document.getElementById('modalChiTiet').classList.add('active');
+
+        $.get('@Url.Action("GetChiTiet","Khoa")', { id: id }, function(res) {
+            if (!res.ok) { showAlert('Lỗi tải chi tiết: ' + res.msg, 'error'); return; }
+            _chiTietData = res.data;
+
+            // Người dùng
+            var nd = res.data.nguoiDung || [];
+            document.getElementById('ct_soND').textContent = nd.length;
+            document.getElementById('ct_nd_loading').style.display = 'none';
+            if (nd.length === 0) {
+                document.getElementById('ct_nd_empty').style.display = '';
+            } else {
+                var vaiTroMap = { 'VT_TK':'Trưởng Khoa','VT_CSVC':'Quản lý CSVC','VT_KHTC':'Quản lý KHTC','VT_BGH':'Ban Giám Hiệu' };
+                var html = nd.map(function(u, i) {
+                    var vt = vaiTroMap[u.vaiTro] || (u.vaiTro || '—');
+                    var ttCls = u.trangThai === 'Hoạt động' ? 'color:#2e7d32;background:#e8f5e9' : 'color:#c62828;background:#fce4ec';
+                    return '<tr style="border-bottom:1px solid #f0f2f8;">'
+                        + '<td style="padding:9px 12px;color:#999;">' + (i+1) + '</td>'
+                        + '<td style="padding:9px 12px;"><code style="font-size:11px;background:#f0f2f8;padding:2px 6px;border-radius:4px;">' + u.id + '</code></td>'
+                        + '<td style="padding:9px 12px;font-weight:600;">' + u.hoTen + '</td>'
+                        + '<td style="padding:9px 12px;color:#666;font-size:12px;">' + (u.email || '—') + '</td>'
+                        + '<td style="padding:9px 12px;font-size:12px;">' + vt + '</td>'
+                        + '<td style="padding:9px 12px;text-align:center;"><span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;' + ttCls + '">' + u.trangThai + '</span></td>'
+                        + '</tr>';
+                }).join('');
+                document.getElementById('ct_nd_body').innerHTML = html;
+                document.getElementById('ct_nd_table').style.display = '';
+            }
+
+            // Thiết bị
+            var tb = res.data.thietBi || [];
+            document.getElementById('ct_soTB').textContent = tb.length;
+            document.getElementById('ct_tb_loading').style.display = 'none';
+            if (tb.length === 0) {
+                document.getElementById('ct_tb_empty').style.display = '';
+            } else {
+                var html2 = tb.map(function(t, i) {
+                    var ttCls2 = t.trangThai === 'Đang sử dụng' ? 'color:#2e7d32;background:#e8f5e9'
+                               : t.trangThai === 'Báo hỏng'     ? 'color:#c62828;background:#fce4ec'
+                               : 'color:#e65100;background:#fff3e0';
+                    return '<tr style="border-bottom:1px solid #f0f2f8;">'
+                        + '<td style="padding:9px 12px;color:#999;">' + (i+1) + '</td>'
+                        + '<td style="padding:9px 12px;"><code style="font-size:11px;background:#f0f2f8;padding:2px 6px;border-radius:4px;">' + t.id + '</code></td>'
+                        + '<td style="padding:9px 12px;font-weight:600;">' + t.tenTB + '</td>'
+                        + '<td style="padding:9px 12px;color:#666;font-size:12px;">' + (t.danhMuc || '—') + '</td>'
+                        + '<td style="padding:9px 12px;text-align:right;font-size:12px;">' + Number(t.gia).toLocaleString('vi-VN') + ' đ</td>'
+                        + '<td style="padding:9px 12px;text-align:center;"><span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;' + ttCls2 + '">' + (t.trangThai || '—') + '</span></td>'
+                        + '</tr>';
+                }).join('');
+                document.getElementById('ct_tb_body').innerHTML = html2;
+                document.getElementById('ct_tb_table').style.display = '';
+            }
+        }).fail(function() { showAlert('Lỗi kết nối khi tải chi tiết.', 'error'); });
+    }
+
+    function switchTab(tab) {
+        document.getElementById('tabND').style.display = tab === 'nd' ? '' : 'none';
+        document.getElementById('tabTB').style.display = tab === 'tb' ? '' : 'none';
+        document.getElementById('tabNDBtn').style.color = tab === 'nd' ? '#1a237e' : '#888';
+        document.getElementById('tabNDBtn').style.borderBottomColor = tab === 'nd' ? '#1a237e' : 'transparent';
+        document.getElementById('tabTBBtn').style.color = tab === 'tb' ? '#1a237e' : '#888';
+        document.getElementById('tabTBBtn').style.borderBottomColor = tab === 'tb' ? '#1a237e' : 'transparent';
+        
+        var btnPrint = document.getElementById('btnPrintTB');
+        if (btnPrint) {
+            btnPrint.style.display = tab === 'tb' ? '' : 'none';
+        }
+    }
+
+    // ── In Danh Sách Thiết Bị (Xuất Word) ─────────────────────────────────────────
+    function inDanhSachThietBi() {
+        if (!_chiTietData || !_chiTietData.thietBi || _chiTietData.thietBi.length === 0) {
+            showAlert('Không có thiết bị nào để xuất.', 'error');
+            return;
+        }
+        var tenKhoa = document.getElementById('ct_ten').textContent;
+        
+        // Tạo nội dung HTML cho file Word với định dạng giống bản xem trước
+        var htmlContent = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>";
+        htmlContent += "<head><meta charset='utf-8'><title>Danh Sách Thiết Bị</title>";
+        htmlContent += "<style>";
+        htmlContent += "body { font-family: 'Segoe UI', Arial, sans-serif; }";
+        htmlContent += "h2 { text-align: center; color: #1a237e; margin-bottom: 5px; font-size: 18px; }";
+        htmlContent += ".khoa-name { text-align: center; font-size: 14px; color: #555; margin-bottom: 20px; }";
+        htmlContent += "table { width: 100%; border-collapse: collapse; margin-top: 10px; }";
+        htmlContent += "th { background-color: #e8eaf6; color: #1a237e; padding: 12px 14px; text-align: left; font-size: 12px; font-weight: bold; border-bottom: 2px solid #d0d5e8; }";
+        htmlContent += "td { padding: 11px 14px; border-bottom: 1px solid #f0f2f8; font-size: 13px; color: #333; }";
+        htmlContent += "</style></head><body>";
+        
+        htmlContent += "<h2>DANH SÁCH THIẾT BỊ</h2>";
+        htmlContent += "<div class='khoa-name'>Khoa / Phòng ban: <strong>" + tenKhoa + "</strong></div>";
+        htmlContent += "<table>";
+        htmlContent += "<thead><tr>";
+        htmlContent += "<th>#</th>";
+        htmlContent += "<th>MÃ TB</th>";
+        htmlContent += "<th>TÊN THIẾT BỊ</th>";
+        htmlContent += "<th>DANH MỤC</th>";
+        htmlContent += "<th style='text-align:right'>GIÁ TRỊ</th>";
+        htmlContent += "<th style='text-align:center'>TRẠNG THÁI</th>";
+        htmlContent += "</tr></thead><tbody>";
+        
+        _chiTietData.thietBi.forEach(function(t, i) {
+            var ttColor = t.trangThai === 'Đang sử dụng' ? '#2e7d32' : (t.trangThai === 'Báo hỏng' ? '#c62828' : '#e65100');
+            var ttBg = t.trangThai === 'Đang sử dụng' ? '#e8f5e9' : (t.trangThai === 'Báo hỏng' ? '#fce4ec' : '#fff3e0');
+            
+            htmlContent += "<tr>";
+            htmlContent += "<td style='color:#999;'>" + (i + 1) + "</td>";
+            htmlContent += "<td><span style='font-family: monospace; background: #f0f2f8; padding: 3px 6px; border-radius: 4px;'> " + t.id + " </span></td>";
+            htmlContent += "<td><strong>" + t.tenTB + "</strong></td>";
+            htmlContent += "<td style='color:#666;'>" + (t.danhMuc || '—') + "</td>";
+            htmlContent += "<td style='text-align:right;'>" + Number(t.gia).toLocaleString('vi-VN') + " đ</td>";
+            htmlContent += "<td style='text-align:center;'><span style='background-color: " + ttBg + "; color: " + ttColor + "; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold;'> " + (t.trangThai || '—') + " </span></td>";
+            htmlContent += "</tr>";
+        });
+        
+        htmlContent += "</tbody></table></body></html>";
+        
+        var blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
+        var downloadLink = document.createElement("a");
+        downloadLink.download = "Danh_Sach_Thiet_Bi_" + tenKhoa.replace(/\s+/g, '_') + ".doc";
+        downloadLink.href = window.URL.createObjectURL(blob);
+        downloadLink.style.display = "none";
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
     }
 
     // ── Xóa ──────────────────────────────────────────────────
